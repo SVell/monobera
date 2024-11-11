@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePollGauges, type Gauge } from "@bera/berajs";
 import {
@@ -36,6 +36,11 @@ export default function GlobalGaugeWeightTable({
   const [sorting, setSorting] = useState([
     { id: "activeIncentivesInHoney", desc: true },
   ]);
+
+  useEffect(() => {
+    // Set page to 0 if markets change to avoid showing empty page
+    setPage(0);
+  }, [markets]);
 
   const { gaugeCounts, gaugeList, isLoading, isValidating } = usePollGauges(
     {
