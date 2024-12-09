@@ -50,6 +50,8 @@ import DynamicPoolCreationPreview from "../components/dynamic-pool-create-previe
 import OwnershipInput, { OwnershipType } from "../components/ownership-input";
 import PoolTypeSelector from "../components/pool-type-selector";
 import { getPoolUrl } from "../fetchPools";
+import ProcessSteps from "../components/process-steps";
+import PoolCreationSummary from "../components/pool-creation-summary";
 
 const emptyTokenInput: TokenInputType = {
   address: "" as `0x${string}`,
@@ -102,6 +104,13 @@ export default function CreatePageContent() {
     string | null
   >(null);
   const [isPreviewOpen, setPreviewOpen] = useState(false);
+
+  /** --------- */
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  /** --------- */
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
     useSubgraphTokenInformations({
@@ -333,7 +342,7 @@ export default function CreatePageContent() {
   });
 
   return (
-    <div className="flex w-full max-w-[600px] flex-col items-center justify-center gap-6">
+    <div className="flex w-full flex-col items-center justify-center gap-6">
       {ModalPortal}
       <Button
         variant={"ghost"}
@@ -342,12 +351,36 @@ export default function CreatePageContent() {
         onClick={() => router.push("/pools")}
       >
         <Icons.arrowLeft className="h-4 w-4" />
-        <div className="text-sm font-medium">All Pools</div>
+        <div className="text-sm font-medium">Back to Pools</div>
       </Button>
-      <div className="flex w-full flex-col items-center justify-center gap-16">
-        <PoolTypeSelector poolType={poolType} onPoolTypeChange={setPoolType} />
+      <h2 className="self-start text-3xl font-semibold">Create a Pool</h2>
+      <div className="flex w-full flex-row justify-center gap-12">
+        <ProcessSteps
+          titles={[
+            "Pool Type",
+            "Select Tokens",
+            "Deposit Liquidity",
+            "Set Parameters",
+            "Set Info",
+          ]}
+          selectedIndex={currentStep}
+          completedIndexes={completedSteps}
+        />
+        {currentStep === 0 && (
+          <PoolTypeSelector
+            poolType={poolType}
+            onPoolTypeChange={setPoolType}
+          />
+        )}
 
-        <section className="flex w-full flex-col gap-4">
+        {currentStep === 1 && "select tokens"}
+        {currentStep === 2 && "deposit liquidity"}
+        {currentStep === 3 && "set parameters"}
+        {currentStep === 4 && "set info"}
+
+        <PoolCreationSummary poolType={poolType} />
+
+        {/* <section className="flex w-full flex-col gap-4">
           <h2 className="self-start text-3xl font-semibold">{`Select Tokens ${
             poolType === PoolType.Weighted ? "& Weighting" : ""
           }`}</h2>
@@ -563,7 +596,9 @@ export default function CreatePageContent() {
           </Button>
         </ActionButton>
 
-        <DynamicPoolCreationPreview
+        */}
+
+        {/* <DynamicPoolCreationPreview
           open={isPreviewOpen}
           setOpen={setPreviewOpen}
           poolCreateTokens={poolCreateTokens}
@@ -588,7 +623,7 @@ export default function CreatePageContent() {
           createPoolErrorMessage={createPoolErrorMessage}
           tokensNeedApproval={tokensNeedApproval}
           refreshAllowances={refreshAllowances}
-        />
+        /> */}
       </div>
     </div>
   );
