@@ -14,11 +14,24 @@ const ProcessSteps = ({
    * Indexes of the completed steps
    */
   completedIndexes,
-}: { titles: string[]; selectedIndex: number; completedIndexes: number[] }) => {
+  /**
+   * Function to set the selected step
+   */
+  setCurrentStep,
+}: {
+  titles: string[];
+  selectedIndex: number;
+  completedIndexes: number[];
+  setCurrentStep: (arg0: number) => void;
+}) => {
   return (
-    <div className="flex flex-col items-start gap-8">
+    <div className="flex flex-col items-start gap-8 cursor-pointer">
       {titles.map((title, index) => (
-        <div key={index} className="relative">
+        <div
+          key={index}
+          className="relative"
+          onClick={() => setCurrentStep(index)}
+        >
           {index < titles.length - 1 && (
             <div className="absolute left-4 top-full w-0.5 h-8 bg-[#373332]" />
           )}

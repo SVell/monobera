@@ -77,6 +77,22 @@ const DEFAULT_TOKENS = [emptyToken, emptyToken];
 const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
 const DEFAULT_WEIGHTS = [500000000000000000n, 500000000000000000n];
 
+const NextButton = ({
+  onClick,
+  disabled,
+}: { onClick: () => void; disabled: boolean }) => (
+  <Button
+    onClick={onClick}
+    disabled={disabled}
+    className={cn(
+      "w-[111px] self-end mt-6",
+      disabled ? "opacity-50 cursor-not-allowed" : "opacity-100",
+    )}
+  >
+    Next
+  </Button>
+);
+
 export default function CreatePageContent() {
   const router = useRouter();
   const { captureException, track } = useAnalytics();
@@ -365,160 +381,232 @@ export default function CreatePageContent() {
           ]}
           selectedIndex={currentStep}
           completedIndexes={completedSteps}
+          setCurrentStep={setCurrentStep}
         />
-        {currentStep === 0 && (
-          <PoolTypeSelector
-            poolType={poolType}
-            onPoolTypeChange={setPoolType}
-          />
-        )}
 
-        {currentStep === 1 && "select tokens"}
-        {currentStep === 2 && "deposit liquidity"}
-        {currentStep === 3 && "set parameters"}
-        {currentStep === 4 && "set info"}
+        {/* 
+          Pool creation steps
+          */}
+        <div className="flex flex-col w-full">
+          {currentStep === 0 && (
+            <PoolTypeSelector
+              poolType={poolType}
+              onPoolTypeChange={setPoolType}
+            />
+          )}
 
-        <PoolCreationSummary poolType={poolType} />
-
-        {/* <section className="flex w-full flex-col gap-4">
-          <h2 className="self-start text-3xl font-semibold">{`Select Tokens ${
-            poolType === PoolType.Weighted ? "& Weighting" : ""
-          }`}</h2>
-          <div className="flex w-full flex-col gap-2">
-            {poolCreateTokens.map((token, index) => (
-              <CreatePoolInput
-                // NOTE: WBERA and BERA are mutually exclusive options, we wrap BERA -> WBERA in poolCreationHelper
-                key={`token-${index}`}
-                token={token}
-                selectedTokens={poolCreateTokens}
-                weight={weights[index]}
-                displayWeight={poolType === PoolType.Weighted}
-                locked={lockedWeights[index]}
-                displayRemove={poolCreateTokens.length > minTokensLength}
-                index={index}
-                onTokenSelection={(selectedToken) => {
-                  if (selectedToken) {
-                    // FIXME: how is this needing to be handled??
-                    handlePoolTokenChange(index, selectedToken);
-                  }
-                }}
-                onWeightChange={handleWeightChange}
-                onLockToggle={toggleLock}
-                onRemoveToken={handleRemoveToken}
-              />
-            ))}
-          </div>
-
-          {poolCreateTokens.length < maxTokensLength && (
-            <>
-              <Separator className="text-muted-foreground opacity-50" />
-              <div className="mr-auto -translate-x-4">
-                <Button
-                  onClick={handleAddToken}
-                  variant="ghost"
-                  className="text-foreground"
-                >
-                  <Icons.plusCircle className="h-6 w-6" />
-                  <p className="pl-2"> Add Token</p>
-                </Button>
+          {currentStep === 1 && (
+            <section className="flex w-full flex-col gap-4">
+              <h2 className="self-start text-3xl font-semibold">{`Select Tokens ${
+                poolType === PoolType.Weighted ? "& Weighting" : ""
+              }`}</h2>
+              <div className="flex w-full flex-col gap-2">
+                {poolCreateTokens.map((token, index) => (
+                  <CreatePoolInput
+                    // NOTE: WBERA and BERA are mutually exclusive options, we wrap BERA -> WBERA in poolCreationHelper
+                    key={`token-${index}`}
+                    token={token}
+                    selectedTokens={poolCreateTokens}
+                    weight={weights[index]}
+                    displayWeight={poolType === PoolType.Weighted}
+                    locked={lockedWeights[index]}
+                    displayRemove={poolCreateTokens.length > minTokensLength}
+                    index={index}
+                    onTokenSelection={(selectedToken) => {
+                      if (selectedToken) {
+                        // FIXME: how is this needing to be handled??
+                        handlePoolTokenChange(index, selectedToken);
+                      }
+                    }}
+                    onWeightChange={handleWeightChange}
+                    onLockToggle={toggleLock}
+                    onRemoveToken={handleRemoveToken}
+                  />
+                ))}
               </div>
-            </>
-          )}
-          {weightsError && (
-            <Alert variant="destructive" className="my-4">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{weightsError}</AlertDescription>
-            </Alert>
-          )}
 
-          {isDupePool && dupePool && (
-            <Alert variant="destructive">
-              <AlertTitle>Similar Pool Exists</AlertTitle>
-              <AlertDescription className="space-y-4">
-                <p>
-                  {`Please note that a ${poolType} pool with the same tokens 
+              {poolCreateTokens.length < maxTokensLength && (
+                <>
+                  <Separator className="text-muted-foreground opacity-50" />
+                  <div className="mr-auto -translate-x-4">
+                    <Button
+                      onClick={handleAddToken}
+                      variant="ghost"
+                      className="text-foreground"
+                    >
+                      <Icons.plusCircle className="h-6 w-6" />
+                      <p className="pl-2"> Add Token</p>
+                    </Button>
+                  </div>
+                </>
+              )}
+              {weightsError && (
+                <Alert variant="destructive" className="my-4">
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{weightsError}</AlertDescription>
+                </Alert>
+              )}
+
+              {isDupePool && dupePool && (
+                <Alert variant="destructive">
+                  <AlertTitle>Similar Pool Exists</AlertTitle>
+                  <AlertDescription className="space-y-4">
+                    <p>
+                      {`Please note that a ${poolType} pool with the same tokens 
                 exists, consider adding liquidity instead of creating a new pool:`}
-                </p>
-                <a
-                  href={getPoolUrl(dupePool)}
-                  className="text-sky-600 underline"
-                >
-                  Existing pool
-                </a>
-              </AlertDescription>
-            </Alert>
+                    </p>
+                    <a
+                      href={getPoolUrl(dupePool)}
+                      className="text-sky-600 underline"
+                    >
+                      Existing pool
+                    </a>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </section>
           )}
-        </section>
+          {currentStep === 2 && (
+            <section className="flex w-full flex-col gap-4">
+              <h2 className="self-start text-3xl font-semibold">
+                Set Initial Liquidity
+              </h2>
+              <div className="flex flex-col gap-4">
+                <ul className="divide-y divide-border rounded-lg border">
+                  {initialLiquidityTokens.map((token, index) => (
+                    // NOTE: prices for BERA (wrapped create) must be given in WBERA as that is the wrapped token's value.
+                    <TokenInput
+                      key={`liq-${index}`}
+                      selected={token}
+                      amount={token.amount}
+                      isActionLoading={isLoadingTokenPrices}
+                      customTokenList={
+                        isBera(token) || isBeratoken(token)
+                          ? [wBeraToken, beraToken]
+                          : undefined
+                      }
+                      price={Number(
+                        tokenPrices?.[wrapNativeToken(token)?.address] ?? 0,
+                      )} // TODO (#): this would make more sense as token.usdValue
+                      hidePrice={
+                        !tokenPrices?.[wrapNativeToken(token)?.address]
+                      }
+                      disabled={false}
+                      setAmount={(amount) =>
+                        handleAddLiquidityTokenChange(index, { amount })
+                      }
+                      onExceeding={(isExceeding) =>
+                        handleAddLiquidityTokenChange(index, {
+                          exceeding: isExceeding,
+                        })
+                      }
+                      onTokenSelection={(selectedToken) => {
+                        // NOTE: this is specifically used for if the user wants to select BERA or WBERA
+                        selectedToken &&
+                          handleAddLiquidityTokenChange(index, selectedToken);
+                      }}
+                      showExceeding
+                      selectable={isBera(token) || isBeratoken(token)}
+                      forceShowBalance={true}
+                      hideMax={false}
+                      className={cn(
+                        "w-full grow border-0 bg-transparent pr-4 text-right text-2xl font-semibold outline-none",
+                        token.exceeding && "text-destructive-foreground",
+                      )}
+                    />
+                  ))}
+                </ul>
+                {!weightsError && liquidityMismatchInfo.message && (
+                  <Alert variant="warning" className="my-4">
+                    <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
+                    <AlertDescription>
+                      {liquidityMismatchInfo.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </section>
+          )}
+          {currentStep === 3 && (
+            <OwnershipInput
+              // NOTE: disabling this means that the default (fixed) ownership type is used always
+              ownershipType={ownershipType}
+              owner={owner}
+              onChangeOwnershipType={handleOwnershipTypeChange}
+              onOwnerChange={handleOwnerChange}
+              invalidAddressErrorMessage={invalidAddressErrorMessage}
+              swapFee={swapFee}
+              onSwapFeeChange={setSwapFee}
+              poolType={poolType}
+            />
+          )}
+          {currentStep === 4 && (
+            <section className="flex w-full flex-col gap-4">
+              <InputWithLabel
+                label="Pool Name"
+                variant="black"
+                className="bg-transparent"
+                value={poolName}
+                maxLength={85}
+                onChange={(e) => {
+                  setPoolName(e.target.value);
+                }}
+              />
 
-        <section className="flex w-full flex-col gap-4">
-          <h2 className="self-start text-3xl font-semibold">
-            Set Initial Liquidity
-          </h2>
-          <div className="flex flex-col gap-4">
-            <ul className="divide-y divide-border rounded-lg border">
-              {initialLiquidityTokens.map((token, index) => (
-                // NOTE: prices for BERA (wrapped create) must be given in WBERA as that is the wrapped token's value.
-                <TokenInput
-                  key={`liq-${index}`}
-                  selected={token}
-                  amount={token.amount}
-                  isActionLoading={isLoadingTokenPrices}
-                  customTokenList={
-                    isBera(token) || isBeratoken(token)
-                      ? [wBeraToken, beraToken]
-                      : undefined
-                  }
-                  price={Number(
-                    tokenPrices?.[wrapNativeToken(token)?.address] ?? 0,
-                  )} // TODO (#): this would make more sense as token.usdValue
-                  hidePrice={!tokenPrices?.[wrapNativeToken(token)?.address]}
-                  disabled={false}
-                  setAmount={(amount) =>
-                    handleAddLiquidityTokenChange(index, { amount })
-                  }
-                  onExceeding={(isExceeding) =>
-                    handleAddLiquidityTokenChange(index, {
-                      exceeding: isExceeding,
-                    })
-                  }
-                  onTokenSelection={(selectedToken) => {
-                    // NOTE: this is specifically used for if the user wants to select BERA or WBERA
-                    selectedToken &&
-                      handleAddLiquidityTokenChange(index, selectedToken);
+              <InputWithLabel
+                label="Pool Symbol"
+                variant="black"
+                className="bg-transparent"
+                value={poolSymbol}
+                maxLength={85}
+                onChange={(e) => {
+                  setPoolSymbol(e.target.value.replace(" ", "-"));
+                }}
+              />
+
+              {(poolType === PoolType.ComposableStable ||
+                poolType === PoolType.MetaStable) && (
+                <InputWithLabel
+                  label="Amplification"
+                  variant="black"
+                  className="bg-transparent"
+                  value={amplification}
+                  maxLength={4}
+                  onChange={(e) => {
+                    // NOTE: for some reason max/min dont seem to work in InputWithLabel
+                    const value = Number(e.target.value);
+                    if (value >= 1 && value <= 5000) {
+                      setAmplification(value);
+                    }
                   }}
-                  showExceeding
-                  selectable={isBera(token) || isBeratoken(token)}
-                  forceShowBalance={true}
-                  hideMax={false}
-                  className={cn(
-                    "w-full grow border-0 bg-transparent pr-4 text-right text-2xl font-semibold outline-none",
-                    token.exceeding && "text-destructive-foreground",
-                  )}
+                  tooltip={
+                    <BeraTooltip
+                      size="lg"
+                      wrap={true}
+                      text={`
+                  Controls the pool's sensitivity to imbalances between assets. A higher value causes slippage to occur sooner 
+                  as assets diverge from balance, helping to preserve accurate pricing by discouraging extreme imbalances. 
+                  This is often ideal for stable pairs, as it maintains tighter spreads when token values are close, but 
+                  increases slippage more rapidly for large disparities, supporting the pool's economic stability.`}
+                    />
+                  }
                 />
-              ))}
-            </ul>
-            {!weightsError && liquidityMismatchInfo.message && (
-              <Alert variant="warning" className="my-4">
-                <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
-                <AlertDescription>
-                  {liquidityMismatchInfo.message}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        </section>
+              )}
+            </section>
+          )}
+          <NextButton
+            onClick={() => {
+              if (currentStep !== 4) {
+                setCurrentStep(currentStep + 1);
+              }
+            }}
+            disabled={false}
+          />
+        </div>
 
-        <OwnershipInput
-          // NOTE: disabling this means that the default (fixed) ownership type is used always
-          ownershipType={ownershipType}
-          owner={owner}
-          onChangeOwnershipType={handleOwnershipTypeChange}
-          onOwnerChange={handleOwnerChange}
-          invalidAddressErrorMessage={invalidAddressErrorMessage}
-          swapFee={swapFee}
-          onSwapFeeChange={setSwapFee}
-          poolType={poolType}
-        />
+        <PoolCreationSummary poolType={poolType} tokens={poolCreateTokens} />
+
+        {/*
 
         <section className="flex w-full flex-col gap-4">
           <InputWithLabel

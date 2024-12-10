@@ -56,7 +56,7 @@ const OwnershipInput: React.FC<OwnershipInputProps> = ({
         predefinedFees={predefinedFees}
       />
 
-      <div className="flex hidden items-center gap-1">
+      <div className="flex items-center gap-1">
         <div className="self-start font-semibold">Fee Ownership</div>
         <div className="pt-[-1]">
           <BeraTooltip
@@ -69,7 +69,7 @@ const OwnershipInput: React.FC<OwnershipInputProps> = ({
         </div>
       </div>
 
-      <div className="flex hidden w-full flex-row gap-6">
+      <div className="flex w-full flex-row gap-6">
         <Card
           onClick={() => onChangeOwnershipType(OwnershipType.Governance)}
           className={cn(
