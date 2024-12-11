@@ -1,15 +1,23 @@
 "use client";
 
+import { on } from "events";
 import React from "react";
 import { SwapFeeInput } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@bera/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { Card } from "@bera/ui/card";
 import { InputWithLabel } from "@bera/ui/input";
 import { PoolType } from "@berachain-foundation/berancer-sdk";
+import { Address } from "viem";
 
 import BeraTooltip from "~/components/bera-tooltip";
-import { Address } from "viem";
+import { ParameterPreset } from "../create/CreatePageContent";
 
 export enum OwnershipType {
   Governance = "governance",
@@ -18,6 +26,10 @@ export enum OwnershipType {
 }
 
 interface OwnershipInputProps {
+  amplification: number;
+  onAmplificationChange: (value: number) => void;
+  parameterPreset: ParameterPreset;
+  onChangeParameterPresetType: (type: ParameterPreset) => void;
   ownershipType: OwnershipType;
   owner: string;
   onChangeOwnershipType: (type: OwnershipType) => void;
@@ -28,7 +40,11 @@ interface OwnershipInputProps {
   poolType: PoolType;
 }
 
-const OwnershipInput: React.FC<OwnershipInputProps> = ({
+const ParametersInput: React.FC<OwnershipInputProps> = ({
+  amplification,
+  onAmplificationChange,
+  parameterPreset,
+  onChangeParameterPresetType,
   ownershipType,
   owner,
   onChangeOwnershipType,
@@ -50,35 +66,49 @@ const OwnershipInput: React.FC<OwnershipInputProps> = ({
   }
   return (
     <section className="flex w-full flex-col gap-4">
-      <h3 className="self-start text-xl font-semibold">
-        Select a Parameter Preset
-      </h3>
-
-      <div className="flex w-full flex-col gap-6">
-        <Card
-          className={cn(
-            "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            ownershipType === OwnershipType.Governance &&
-              "border-info-foreground ",
-          )}
-        >
-          <span className="text-lg font-semibold">USD-Backed Stablecoin</span>
-          <span className="-mt-1 text-sm text-muted-foreground">
-            For coins that are USD-Backed
-          </span>
-        </Card>
-        <Card
-          className={cn(
-            "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            ownershipType === OwnershipType.Fixed && "border-info-foreground ",
-          )}
-        >
-          <span className="text-lg font-semibold">Algorithmic Stablecoin</span>
-          <span className="-mt-1 text-sm text-muted-foreground">
-            For coins that are maintained through algorithmic mechanisms
-          </span>
-        </Card>
-      </div>
+      {poolType === PoolType.ComposableStable && (
+        <>
+          <h3 className="self-start text-xl font-semibold">
+            Select a Parameter Preset
+          </h3>
+          <div className="flex w-full flex-col gap-6">
+            <Card
+              className={cn(
+                "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
+                parameterPreset === ParameterPreset.USDBACKED &&
+                  "border-info-foreground ",
+              )}
+              onClick={() =>
+                onChangeParameterPresetType(ParameterPreset.USDBACKED)
+              }
+            >
+              <span className="text-lg font-semibold">
+                USD-Backed Stablecoin
+              </span>
+              <span className="-mt-1 text-sm text-muted-foreground">
+                For coins that are USD-Backed
+              </span>
+            </Card>
+            <Card
+              className={cn(
+                "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
+                parameterPreset === ParameterPreset.ALGORITHMIC &&
+                  "border-info-foreground ",
+              )}
+              onClick={() =>
+                onChangeParameterPresetType(ParameterPreset.ALGORITHMIC)
+              }
+            >
+              <span className="text-lg font-semibold">
+                Algorithmic Stablecoin
+              </span>
+              <span className="-mt-1 text-sm text-muted-foreground">
+                For coins that are maintained through algorithmic mechanisms
+              </span>
+            </Card>
+          </div>
+        </>
+      )}
       <h3 className="self-start text-xl font-semibold">Set Swap Fee</h3>
       <SwapFeeInput
         initialFee={swapFee}
@@ -160,8 +190,43 @@ const OwnershipInput: React.FC<OwnershipInputProps> = ({
           )}
         </div>
       )}
+      {poolType === PoolType.ComposableStable && (
+        // NOTE: at this time there is no need to show advanced settings for pools other than ComposableStable type ones
+        <Accordion type="single" collapsible>
+          <AccordionItem value="item-1">
+            <AccordionTrigger>Advanced</AccordionTrigger>
+            <AccordionContent>
+              <InputWithLabel
+                label="Amplification"
+                variant="black"
+                className="bg-transparent"
+                value={amplification}
+                maxLength={4}
+                onChange={(e) => {
+                  // NOTE: for some reason max/min dont seem to work in InputWithLabel
+                  const value = Number(e.target.value);
+                  if (value >= 1 && value <= 5000) {
+                    onAmplificationChange(value);
+                  }
+                }}
+                tooltip={
+                  <BeraTooltip
+                    size="lg"
+                    wrap={true}
+                    text={`
+                  Controls the pool's sensitivity to imbalances between assets. A higher value causes slippage to occur sooner 
+                  as assets diverge from balance, helping to preserve accurate pricing by discouraging extreme imbalances. 
+                  This is often ideal for stable pairs, as it maintains tighter spreads when token values are close, but 
+                  increases slippage more rapidly for large disparities, supporting the pool's economic stability.`}
+                  />
+                }
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
     </section>
   );
 };
 
-export default OwnershipInput;
+export default ParametersInput;

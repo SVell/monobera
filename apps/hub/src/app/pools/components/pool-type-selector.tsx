@@ -42,18 +42,6 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
             Customizable pool tokens and weights
           </span>
         </Card>
-        <Card
-          onClick={() => {}} // Disabled for now
-          className={cn(
-            "flex w-full cursor-not-allowed flex-col gap-0 border border-border p-4 opacity-50",
-            poolType === PoolType.MetaStable && "border-info-foreground ",
-          )}
-        >
-          <span className="text-lg font-semibold">MetaStable</span>
-          <span className="-mt-1 text-sm text-muted-foreground">
-            Dynamic rates for highly correlated tokens
-          </span>
-        </Card>
       </div>
     </section>
   );

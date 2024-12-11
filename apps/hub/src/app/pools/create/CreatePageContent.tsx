@@ -48,17 +48,11 @@ import { usePoolWeights } from "~/b-sdk/usePoolWeights";
 import useMultipleTokenApprovalsWithSlippage from "~/hooks/useMultipleTokenApprovalsWithSlippage";
 import CreatePoolInput from "../components/create-pool-input";
 import DynamicPoolCreationPreview from "../components/dynamic-pool-create-preview";
-import OwnershipInput, { OwnershipType } from "../components/ownership-input";
-import PoolTypeSelector from "../components/pool-type-selector";
-import { getPoolUrl } from "../fetchPools";
-import ProcessSteps from "../components/process-steps";
+import ParametersInput, { OwnershipType } from "../components/parameters-input";
 import PoolCreationSummary from "../components/pool-creation-summary";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@bera/ui/accordion";
+import PoolTypeSelector from "../components/pool-type-selector";
+import ProcessSteps from "../components/process-steps";
+import { getPoolUrl } from "../fetchPools";
 
 const emptyTokenInput: TokenInputType = {
   address: "" as `0x${string}`,
@@ -75,34 +69,24 @@ const emptyToken: Token = {
   symbol: "",
 };
 
-type ParameterPreset = "USD-Backed Stablecoin" | "Algorithmic Stablecoin";
+export enum ParameterPreset {
+  USDBACKED = "USD-Backed Stablecoin",
+  ALGORITHMIC = "Algorithmic Stablecoin",
+}
 
+// FIXME docstrings here.
+const DEFAULT_USD_BACKED_AMPLIFICATION = 2500;
+const DEFAULT_ALGORITHMIC_AMPLIFICATION = 200;
 const DEFAULT_SWAP_FEE = 0.1;
 const DEFAULT_POOL_TYPE = PoolType.ComposableStable;
-const DEFAULT_AMPLIFICATION = 1;
+const DEFAULT_AMPLIFICATION = DEFAULT_USD_BACKED_AMPLIFICATION;
 const DEFAULT_OWNER = ZERO_ADDRESS;
 const DEFAULT_OWNERSHIP_TYPE = OwnershipType.Fixed;
 const DEFAULT_TOKENS = [emptyToken, emptyToken];
 const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
 const DEFAULT_WEIGHTS = [500000000000000000n, 500000000000000000n];
-
-const NextButton = ({
-  onClick,
-  disabled,
-  isCreatePoolButton,
-}: { onClick: () => void; disabled: boolean; isCreatePoolButton: boolean }) => (
-  <Button
-    onClick={onClick}
-    disabled={disabled}
-    className={cn(
-      "w-[111px] self-end mt-6",
-      disabled ? "opacity-50 cursor-not-allowed" : "opacity-100",
-      isCreatePoolButton && "bg-[#e6b434] w-fit px-8",
-    )}
-  >
-    {isCreatePoolButton ? "Create Pool" : "Next"}
-  </Button>
-);
+const DEFAULT_PARAMETER_PRESET = ParameterPreset.USDBACKED;
+const LAST_FORM_STEP_NUM = 4; // FIXME enum?
 
 export default function CreatePageContent() {
   const router = useRouter();
@@ -113,7 +97,6 @@ export default function CreatePageContent() {
   // States for Pool Creation and Initial Liquidity
   const [poolCreateTokens, setpoolCreateTokens] =
     useState<Token[]>(DEFAULT_TOKENS);
-  console.log(poolCreateTokens);
   const [initialLiquidityTokens, setInitialLiquidityTokens] =
     useState<TokenInputType[]>(DEFAULT_LIQUIDITY);
 
@@ -132,17 +115,12 @@ export default function CreatePageContent() {
     string | null
   >(null);
   const [isPreviewOpen, setPreviewOpen] = useState(false);
-
-  /** --------- */
-
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [nextButtonDisabled, setNextButtonDisabled] = useState(false);
   const [parameterPreset, setParameterPreset] = useState<ParameterPreset>(
-    "USD-Backed Stablecoin",
+    DEFAULT_PARAMETER_PRESET,
   );
-
-  /** --------- */
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
     useSubgraphTokenInformations({
@@ -198,6 +176,18 @@ export default function CreatePageContent() {
         : type === OwnershipType.Fixed
           ? ZERO_ADDRESS
           : account || zeroAddress,
+    );
+  };
+
+  // NOTE: this is effectively only used for stable pools since weighted ones don't support this parameter.
+  const handleParameterPresetChange = (type: ParameterPreset) => {
+    setParameterPreset(type);
+    setAmplification(
+      type === ParameterPreset.USDBACKED
+        ? DEFAULT_USD_BACKED_AMPLIFICATION
+        : type === ParameterPreset.ALGORITHMIC
+          ? DEFAULT_ALGORITHMIC_AMPLIFICATION
+          : 1,
     );
   };
 
@@ -326,7 +316,6 @@ export default function CreatePageContent() {
     onSuccess: async (txHash) => {
       track("create_pool_success");
       const poolId = await getPoolIdFromTx(txHash as `0x${string}`);
-      console.log("poolId", poolId);
       if (poolId) {
         setPoolId(poolId);
       }
@@ -380,7 +369,11 @@ export default function CreatePageContent() {
         return false;
       // Select tokens
       case 1:
-        if (poolCreateTokens.some((token) => token.address.length === 0)) {
+        if (
+          poolCreateTokens.some((token) => token.address.length === 0) ||
+          (poolType === PoolType.Weighted &&
+            weights.some((weight) => weight === 0n))
+        ) {
           return true;
         }
         return false;
@@ -388,8 +381,13 @@ export default function CreatePageContent() {
       case 2:
         if (
           initialLiquidityTokens.some(
-            (token) => token.amount === "0" || token.amount === "",
-          )
+            (token) =>
+              !token.amount ||
+              Number(token.amount) <= 0 ||
+              token.amount === "" ||
+              token.exceeding,
+          ) ||
+          poolCreateTokens.length !== initialLiquidityTokens.length // NOTE: this should never be possible.
         ) {
           return true;
         }
@@ -398,7 +396,8 @@ export default function CreatePageContent() {
       case 3:
         return (
           !owner ||
-          (ownershipType === OwnershipType.Custom && !isAddress(owner))
+          (ownershipType === OwnershipType.Custom && !isAddress(owner)) ||
+          (poolType === PoolType.ComposableStable && !amplification)
         );
       // Set info
       case 4:
@@ -433,9 +432,6 @@ export default function CreatePageContent() {
         <div className="text-sm font-medium">Back to Pools</div>
       </Button>
       <h2 className="self-start text-3xl font-semibold">Create a Pool</h2>
-      {/* <p>
-        Step {currentStep} Disabled {nextButtonDisabled ? "true" : "false"}
-      </p> */}
       <div className="flex w-full flex-row justify-center gap-12">
         <ProcessSteps
           titles={[
@@ -451,17 +447,13 @@ export default function CreatePageContent() {
           currentStep={currentStep}
         />
 
-        {/* 
-          Pool creation steps
-          */}
-        <div className="flex flex-col w-full">
+        <div className="flex w-full flex-col">
           {currentStep === 0 && (
             <PoolTypeSelector
               poolType={poolType}
               onPoolTypeChange={setPoolType}
             />
           )}
-
           {currentStep === 1 && (
             <section className="flex w-full flex-col gap-4">
               <h2 className="self-start text-3xl font-semibold">{`Select Tokens ${
@@ -595,54 +587,20 @@ export default function CreatePageContent() {
             </section>
           )}
           {currentStep === 3 && (
-            <div>
-              <OwnershipInput
-                // NOTE: disabling this means that the default (fixed) ownership type is used always
-                ownershipType={ownershipType}
-                owner={owner}
-                onChangeOwnershipType={handleOwnershipTypeChange}
-                onOwnerChange={handleOwnerChange}
-                invalidAddressErrorMessage={invalidAddressErrorMessage}
-                swapFee={swapFee}
-                onSwapFeeChange={setSwapFee}
-                poolType={poolType}
-              />
-              {/* {(poolType === PoolType.ComposableStable ||
-                poolType === PoolType.MetaStable) && ( */}
-              <Accordion type="single" collapsible>
-                <AccordionItem value="item-1">
-                  <AccordionTrigger>Advanced</AccordionTrigger>
-                  <AccordionContent>
-                    <InputWithLabel
-                      label="Amplification"
-                      variant="black"
-                      className="bg-transparent"
-                      value={amplification}
-                      maxLength={4}
-                      onChange={(e) => {
-                        // NOTE: for some reason max/min dont seem to work in InputWithLabel
-                        const value = Number(e.target.value);
-                        if (value >= 1 && value <= 5000) {
-                          setAmplification(value);
-                        }
-                      }}
-                      tooltip={
-                        <BeraTooltip
-                          size="lg"
-                          wrap={true}
-                          text={`
-                  Controls the pool's sensitivity to imbalances between assets. A higher value causes slippage to occur sooner 
-                  as assets diverge from balance, helping to preserve accurate pricing by discouraging extreme imbalances. 
-                  This is often ideal for stable pairs, as it maintains tighter spreads when token values are close, but 
-                  increases slippage more rapidly for large disparities, supporting the pool's economic stability.`}
-                        />
-                      }
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-              {/* )} */}
-            </div>
+            <ParametersInput
+              amplification={amplification}
+              onAmplificationChange={setAmplification}
+              parameterPreset={parameterPreset}
+              onChangeParameterPresetType={handleParameterPresetChange}
+              ownershipType={ownershipType}
+              owner={owner}
+              onChangeOwnershipType={handleOwnershipTypeChange}
+              onOwnerChange={handleOwnerChange}
+              invalidAddressErrorMessage={invalidAddressErrorMessage}
+              swapFee={swapFee}
+              onSwapFeeChange={setSwapFee}
+              poolType={poolType}
+            />
           )}
           {currentStep === 4 && (
             <section className="flex w-full flex-col gap-4">
@@ -669,120 +627,70 @@ export default function CreatePageContent() {
               />
             </section>
           )}
-
-          {currentStep === 5 && (
+          {/* {currentStep === 5 && (  TODO: instead of using dynamic preview we do the tx as a step.
             <section>
               <Button>View Pool</Button>
               <Button>Back to all Pools</Button>
             </section>
-          )}
-          <NextButton
-            onClick={() => {
-              if (currentStep !== 4) {
-                setCurrentStep(currentStep + 1);
-                setCompletedSteps([...completedSteps, currentStep]);
-              }
-            }}
-            disabled={nextButtonDisabled}
-            isCreatePoolButton={currentStep === 4}
-          />
+          )} */}
+          <ActionButton className="w-fit self-end pt-4">
+            <Button
+              onClick={() => {
+                if (currentStep === LAST_FORM_STEP_NUM) {
+                  // FIXME: these checks belong within each step.
+                  // if (
+                  //   !poolName ||
+                  //   !poolSymbol ||
+                  //   !owner ||
+                  //   !isAddress(owner) ||
+                  //   !(
+                  //     poolCreateTokens.length === initialLiquidityTokens.length
+                  //   ) ||
+                  //   !initialLiquidityTokens.every(
+                  //     (token) =>
+                  //       token.address &&
+                  //       Number(token.amount) > 0 &&
+                  //       !token.exceeding,
+                  //   ) ||
+                  //   (poolType === PoolType.Weighted
+                  //     ? !weights.every((weight) => weight > 0n)
+                  //     : !amplification)
+                  // ) {
+                  setPreviewOpen(true);
+                } else {
+                  setCurrentStep(currentStep + 1);
+                  setCompletedSteps([...completedSteps, currentStep]);
+                }
+              }}
+              disabled={nextButtonDisabled}
+              className={cn(
+                "mt-6 self-end",
+                nextButtonDisabled
+                  ? "cursor-not-allowed opacity-50"
+                  : "opacity-100",
+                currentStep === LAST_FORM_STEP_NUM && "bg-[#e6b434]", // FIXME custom colour
+              )}
+            >
+              {currentStep === LAST_FORM_STEP_NUM ? "Create Pool" : "Next"}
+            </Button>
+          </ActionButton>
         </div>
 
         <PoolCreationSummary
           poolType={poolType}
-          tokens={poolCreateTokens}
+          tokens={initialLiquidityTokens}
+          tokenPrices={tokenPrices}
           swapFee={swapFee}
           ownersAddress={owner}
           name={poolName}
           symbol={poolSymbol}
         />
-
-        {/*
-
-        <section className="flex w-full flex-col gap-4">
-          <InputWithLabel
-            label="Pool Name"
-            variant="black"
-            className="bg-transparent"
-            value={poolName}
-            maxLength={85}
-            onChange={(e) => {
-              setPoolName(e.target.value);
-            }}
-          />
-
-          <InputWithLabel
-            label="Pool Symbol"
-            variant="black"
-            className="bg-transparent"
-            value={poolSymbol}
-            maxLength={85}
-            onChange={(e) => {
-              setPoolSymbol(e.target.value.replace(" ", "-"));
-            }}
-          />
-
-          {(poolType === PoolType.ComposableStable ||
-            poolType === PoolType.MetaStable) && (
-            <InputWithLabel
-              label="Amplification"
-              variant="black"
-              className="bg-transparent"
-              value={amplification}
-              maxLength={4}
-              onChange={(e) => {
-                // NOTE: for some reason max/min dont seem to work in InputWithLabel
-                const value = Number(e.target.value);
-                if (value >= 1 && value <= 5000) {
-                  setAmplification(value);
-                }
-              }}
-              tooltip={
-                <BeraTooltip
-                  size="lg"
-                  wrap={true}
-                  text={`
-                  Controls the pool's sensitivity to imbalances between assets. A higher value causes slippage to occur sooner 
-                  as assets diverge from balance, helping to preserve accurate pricing by discouraging extreme imbalances. 
-                  This is often ideal for stable pairs, as it maintains tighter spreads when token values are close, but 
-                  increases slippage more rapidly for large disparities, supporting the pool's economic stability.`}
-                />
-              }
-            />
-          )}
-        </section>
-
-        <ActionButton>
-          <Button
-            onClick={() => setPreviewOpen(true)}
-            className="w-full"
-            disabled={
-              !poolName ||
-              !poolSymbol ||
-              !owner ||
-              !isAddress(owner) ||
-              !(poolCreateTokens.length === initialLiquidityTokens.length) ||
-              !initialLiquidityTokens.every(
-                (token) =>
-                  token.address && Number(token.amount) > 0 && !token.exceeding,
-              ) ||
-              (poolType === PoolType.Weighted
-                ? !weights.every((weight) => weight > 0n)
-                : !amplification)
-            }
-          >
-            Preview
-          </Button>
-        </ActionButton>
-
-        */}
-
-        {/* <DynamicPoolCreationPreview
+        <DynamicPoolCreationPreview
           open={isPreviewOpen}
           setOpen={setPreviewOpen}
           poolCreateTokens={poolCreateTokens}
           initialLiquidityTokens={initialLiquidityTokens}
-          tokenPrices={tokenPrices} // TODO: it would make more sense to set these inside TokenInput.usdValue
+          tokenPrices={tokenPrices} // TODO (BFE-409): we should bundle TokenInput and Price properly as token.usdValue
           weights={weights}
           poolName={poolName}
           poolSymbol={poolSymbol}
@@ -802,7 +710,7 @@ export default function CreatePageContent() {
           createPoolErrorMessage={createPoolErrorMessage}
           tokensNeedApproval={tokensNeedApproval}
           refreshAllowances={refreshAllowances}
-        /> */}
+        />
       </div>
     </div>
   );

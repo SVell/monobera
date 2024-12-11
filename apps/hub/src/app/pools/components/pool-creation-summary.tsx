@@ -1,9 +1,17 @@
-import { truncateHash, type Token } from "@bera/berajs";
+import { ReactNode, memo, useMemo } from "react";
+import {
+  formatMaxLength,
+  formatUsd,
+  getSafeNumber,
+  truncateHash,
+  wrapNativeToken,
+  type TokenInput,
+} from "@bera/berajs";
+import { SubgraphTokenInformations } from "@bera/berajs/actions";
 import { TokenChip, TokenIcon } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
-import { PoolType } from "@berachain-foundation/berancer-sdk";
+import { InputToken, PoolType } from "@berachain-foundation/berancer-sdk";
 import { Address } from "viem";
-import { ReactNode, memo, useMemo } from "react";
 
 type SummaryRowProps = {
   label: string;
@@ -11,28 +19,45 @@ type SummaryRowProps = {
 };
 
 const SummaryRow = memo(({ label, value }: SummaryRowProps) => (
-  <div className="w-full flex justify-between">
+  <div className="flex w-full justify-between gap-4">
     <div className={cn("w-fit", !value && "opacity-35")}>{label}</div>
     {value ? value : <div className="w-4 self-end opacity-35">--</div>}
   </div>
 ));
 SummaryRow.displayName = "SummaryRow";
 
-type TokenDisplayProps = { token: Token; amount: number };
-const TokenDisplay = memo(({ token, amount }: TokenDisplayProps) => {
+type TokenDisplayProps = {
+  token: TokenInput;
+  tokenPrices?: SubgraphTokenInformations;
+};
+const TokenDisplay = memo(({ token, tokenPrices }: TokenDisplayProps) => {
   if (!token.address) return null;
+  const wrappedToken = wrapNativeToken(token); // NOTE: prices are always for WBERA, never BERA
+  // TODO (BFE-409): we should bundle TokenInput and Price properly as token.usdValue
   return (
-    <TokenChip key={token.address + token.logoURI}>
-      <TokenIcon address={token.address} size="md" />
-      {amount} {token.symbol} {token.usdValue}
-    </TokenChip>
+    <div className="flex flex-row justify-end gap-2">
+      <TokenIcon address={token.address} size="lg" />
+      <div className="font-medium text-foreground">
+        {formatMaxLength(Number(token.amount), 8)}
+      </div>
+      <div className="font-medium text-foreground">{token.symbol}</div>
+      <div className="font-normal text-muted-foreground">
+        {tokenPrices?.[wrappedToken.address] &&
+          `(${formatUsd(
+            tokenPrices[wrappedToken.address] *
+              getSafeNumber(wrappedToken.amount),
+            12,
+          )})`}
+      </div>
+    </div>
   );
 });
 TokenDisplay.displayName = "TokenDisplay";
 
 type PoolCreationSummaryProps = {
   poolType?: PoolType;
-  tokens?: Token[];
+  tokens?: TokenInput[];
+  tokenPrices?: SubgraphTokenInformations;
   swapFee?: number;
   ownersAddress?: Address;
   name?: string;
@@ -43,6 +68,7 @@ const PoolCreationSummary = memo(
   ({
     poolType,
     tokens,
+    tokenPrices,
     swapFee,
     ownersAddress,
     name,
@@ -53,8 +79,8 @@ const PoolCreationSummary = memo(
         {
           label: "Pool Type",
           value: poolType ? (
-            <div className="flex items-center border-2 border-green-600 rounded-full text-[#4ade80] px-2 gap-2">
-              <div className="h-1 w-1 bg-[#4ade80] rounded-full" />
+            <div className="flex items-center gap-2 rounded-full border-2 border-green-600 px-2 text-[#4ade80]">
+              <div className="h-1 w-1 rounded-full bg-[#4ade80]" />
               <span>{poolType}</span>
             </div>
           ) : undefined,
@@ -66,8 +92,8 @@ const PoolCreationSummary = memo(
               {tokens.map((token, index) => (
                 <TokenDisplay
                   key={token.address + index}
+                  tokenPrices={tokenPrices}
                   token={token}
-                  amount={0}
                 />
               ))}
             </div>
@@ -86,10 +112,12 @@ const PoolCreationSummary = memo(
 
     return (
       <div>
-        <h2 className="self-start text-xl font-semibold mb-4">Pool Summary</h2>
-        <section className="rounded-sm border p-4 flex flex-col min-w-[400px] h-fit justify-between gap-y-2">
+        <h2 className="mb-4 self-start text-xl font-semibold">Pool Summary</h2>
+        <section className="flex h-fit min-w-[400px] flex-col justify-between gap-y-2 rounded-sm border p-4">
           {summaryRows.map((row, index) => (
-            <SummaryRow key={row.label} {...row} />
+            <div className="text-right font-medium">
+              <SummaryRow key={row.label} {...row} />
+            </div>
           ))}
         </section>
       </div>

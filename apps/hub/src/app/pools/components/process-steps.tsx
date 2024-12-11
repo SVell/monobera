@@ -33,25 +33,30 @@ const ProcessSteps = ({
           key={index}
           className={cn(
             "relative",
-            completedSteps.includes(index) && "cursor-pointer",
+            completedSteps.includes(index) || completedSteps.includes(index - 1)
+              ? "cursor-pointer"
+              : "cursor-not-allowed",
           )}
           onClick={() => {
-            completedSteps.includes(index) && setCurrentStep(index);
+            // NOTE: we check +1 to allow you to go back to a partially completed step
+            (completedSteps.includes(index) ||
+              completedSteps.includes(index - 1)) &&
+              setCurrentStep(index);
           }}
         >
           {index < titles.length - 1 && (
-            <div className="absolute left-4 top-full w-0.5 h-8 bg-[#373332]" />
+            <div className="absolute left-4 top-full h-8 w-0.5 bg-[#373332]" />
           )}
           <div
             className={cn(
-              "relative rounded-sm shadow-md border w-64 flex overflow-hidden",
+              "relative flex w-64 overflow-hidden rounded-sm border shadow-md",
               selectedStep === index && "bg-[#373332] bg-opacity-55",
             )}
           >
             {selectedStep === index && (
-              <div className="bg-blue-500 w-[4px] flex-shrink-0" />
+              <div className="w-[4px] flex-shrink-0 bg-blue-500" />
             )}
-            <div className="p-4 flex justify-between w-full">
+            <div className="flex w-full justify-between p-4">
               <h3 className="font-normal">{title}</h3>
               {completedSteps.includes(index) && (
                 <Icons.checkCircle color={"#4ade80"} />

@@ -37,7 +37,7 @@ import { formatUnits, parseUnits } from "viem";
 
 import { usePollPoolCreationRelayerApproval } from "~/hooks/usePollPoolCreationRelayerApproval";
 import { getPoolUrl } from "../fetchPools";
-import { OwnershipType } from "./ownership-input";
+import { OwnershipType } from "./parameters-input";
 
 type Props = {
   open: boolean;
@@ -152,7 +152,6 @@ export default function DynamicPoolCreationPreview({
     { label: "Pool Type", value: poolType },
     { label: "Swap Fee", value: `${swapFee}%` },
     { label: "Owner Address", value: formattedOwnerAddress },
-    // TODO (#): we will want to display rate providers here
   ];
 
   if (

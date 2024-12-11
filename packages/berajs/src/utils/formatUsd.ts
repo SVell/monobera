@@ -1,4 +1,4 @@
-export function formatUsd(input: string | number): string {
+export function formatUsd(input: string | number, maxLength?: number): string {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -15,18 +15,25 @@ export function formatUsd(input: string | number): string {
 
     if (isString(input)) {
       num = parseFloat(input);
-      // biome-ignore lint/suspicious/noGlobalIsNan: <explanation>
-      if (isNaN(num)) {
+      if (Number.isNaN(num)) {
         num = 0;
       }
     } else {
       num = input;
-      // biome-ignore lint/suspicious/noGlobalIsNan: <explanation>
-      if (isNaN(num)) {
+      if (Number.isNaN(num)) {
         num = 0;
       }
     }
-    return formatter.format(num);
+
+    const formatted = formatter.format(num);
+
+    // Use exponential formatting only when necessary
+    if (maxLength && formatted.length > maxLength) {
+      const exponentialFormatted = num.toExponential(3);
+      return `${exponentialFormatted} (USD)`;
+    }
+
+    return formatted;
   } catch (e) {
     console.log(e);
     return formatter.format(0);
