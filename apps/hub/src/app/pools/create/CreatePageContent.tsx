@@ -637,25 +637,6 @@ export default function CreatePageContent() {
             <Button
               onClick={() => {
                 if (currentStep === LAST_FORM_STEP_NUM) {
-                  // FIXME: these checks belong within each step.
-                  // if (
-                  //   !poolName ||
-                  //   !poolSymbol ||
-                  //   !owner ||
-                  //   !isAddress(owner) ||
-                  //   !(
-                  //     poolCreateTokens.length === initialLiquidityTokens.length
-                  //   ) ||
-                  //   !initialLiquidityTokens.every(
-                  //     (token) =>
-                  //       token.address &&
-                  //       Number(token.amount) > 0 &&
-                  //       !token.exceeding,
-                  //   ) ||
-                  //   (poolType === PoolType.Weighted
-                  //     ? !weights.every((weight) => weight > 0n)
-                  //     : !amplification)
-                  // ) {
                   setPreviewOpen(true);
                 } else {
                   setCurrentStep(currentStep + 1);
