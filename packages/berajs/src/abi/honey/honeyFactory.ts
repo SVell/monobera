@@ -260,6 +260,11 @@ export const honeyFactoryAbi = [
     type: "error",
   },
   {
+    inputs: [],
+    name: "UnexpectedBasketModeStatus",
+    type: "error",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -1267,6 +1272,11 @@ export const honeyFactoryAbi = [
         name: "receiver",
         type: "address",
       },
+      {
+        internalType: "bool",
+        name: "expectBasketMode",
+        type: "bool",
+      },
     ],
     name: "mint",
     outputs: [
@@ -1462,6 +1472,11 @@ export const honeyFactoryAbi = [
         internalType: "address",
         name: "receiver",
         type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "expectBasketMode",
+        type: "bool",
       },
     ],
     name: "redeem",

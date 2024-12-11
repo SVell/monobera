@@ -3,7 +3,7 @@
 import { truncateHash, useTokens } from "@bera/berajs";
 import { blockExplorerUrl, honeyTokenAddress } from "@bera/config";
 import { type HoneyTxn } from "@bera/graphql";
-import { FormattedNumber, TokenIcon } from "@bera/shared-ui";
+import { FormattedNumber, TokenIcon, Tooltip } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
 import { Icons } from "@bera/ui/icons";
 import {
@@ -17,61 +17,143 @@ import {
 import { formatDistance } from "date-fns";
 import { formatUnits, getAddress } from "viem";
 
-const getTokenDisplay = (event: any, tokenDictionary: any) => {
+const getTokenDisplay = (event: HoneyTxn, tokenDictionary: any) => {
   const honey = tokenDictionary?.[getAddress(honeyTokenAddress)];
-  const collateral = tokenDictionary?.[getAddress(event.collateral)];
+  const collateral1 =
+    tokenDictionary?.[getAddress(event.collateral[0].collateral)];
+  const collateral2 =
+    event.collateral.length > 1
+      ? tokenDictionary?.[getAddress(event.collateral[1]?.collateral)]
+      : null;
 
-  if (event.txnType === "Mint") {
+  if (event.type === "Mint") {
     return (
       <div className="space-evenly flex flex-row items-center">
-        <div className="flex items-center gap-2">
-          <TokenIcon address={collateral?.address} />
-          <FormattedNumber
-            value={formatUnits(
-              BigInt(event.collateralAmount),
-              collateral?.decimals ?? 18,
-            )}
-            compact={false}
-            compactThreshold={999_999}
-          />
-        </div>
-        <Icons.chevronRight className="mx-2" />
-        <div className="flex items-center gap-2">
-          <TokenIcon address={honeyTokenAddress} />
-          <FormattedNumber
-            value={formatUnits(
-              BigInt(event.honeyAmount),
-              honey?.decimals ?? 18,
-            )}
-            compact={false}
-            compactThreshold={999_999}
-          />
-        </div>
+        <Tooltip
+          toolTipTrigger={
+            <div className="flex items-center -me-2">
+              <TokenIcon address={collateral1?.address} />
+              {collateral2 && (
+                <TokenIcon address={collateral2?.address} className="-ms-2" />
+              )}
+              <Icons.chevronRight className="mx-2" />
+              <TokenIcon address={honeyTokenAddress} />
+            </div>
+          }
+          children={
+            <div className="p-1 flex items-center">
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-2">
+                    <TokenIcon address={collateral1?.address} />
+                    <FormattedNumber
+                      value={formatUnits(
+                        BigInt(event.collateral[0].collateralAmount),
+                        collateral1.decimals ?? 18,
+                      )}
+                      compact={false}
+                      compactThreshold={999_999}
+                    />
+                  </div>
+                  {collateral2 && <hr className="w-full my-1" />}
+                  <div className="flex items-center gap-2">
+                    {collateral2 && (
+                      <>
+                        <TokenIcon
+                          address={collateral2?.address}
+                          className="-ms-2"
+                        />
+                        <FormattedNumber
+                          value={formatUnits(
+                            BigInt(event.collateral[1].collateralAmount),
+                            collateral2.decimals ?? 18,
+                          )}
+                          compact={false}
+                          compactThreshold={999_999}
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+                <Icons.chevronRight className="mx-2" size={15} />
+                <TokenIcon address={honeyTokenAddress} />
+                <FormattedNumber
+                  value={formatUnits(
+                    BigInt(event.collateral[0].honeyTxn.honeyAmount),
+                    honey?.decimals ?? 18,
+                  )}
+                  compact={false}
+                  compactThreshold={999_999}
+                />
+              </div>
+            </div>
+          }
+        />
       </div>
     );
   }
   return (
     <div className="space-evenly flex flex-row items-center">
-      <div className="flex items-center gap-2">
-        <TokenIcon address={honeyTokenAddress} />
-        <FormattedNumber
-          value={formatUnits(BigInt(event.honeyAmount), honey?.decimals ?? 18)}
-          compact={false}
-          compactThreshold={999_999}
-        />
-      </div>
-      <Icons.chevronRight className="mx-2" />
-      <div className="flex items-center gap-2">
-        <TokenIcon address={collateral?.address} />
-        <FormattedNumber
-          value={formatUnits(
-            BigInt(event.collateralAmount),
-            collateral?.decimals ?? 18,
-          )}
-          compact={false}
-          compactThreshold={999_999}
-        />
-      </div>
+      <Tooltip
+        toolTipTrigger={
+          <div className="flex items-center reversed -me-2">
+            <TokenIcon address={honeyTokenAddress} />
+            <Icons.chevronRight className="mx-2" />
+            <TokenIcon address={collateral1?.address} />
+            {collateral2 && (
+              <TokenIcon address={collateral2?.address} className="-ms-2" />
+            )}
+          </div>
+        }
+        children={
+          <div className="p-1 flex items-center">
+            <div className="flex items-center gap-2">
+              <TokenIcon address={honeyTokenAddress} />
+              <FormattedNumber
+                value={formatUnits(
+                  BigInt(event.collateral[0].honeyTxn.honeyAmount),
+                  honey?.decimals ?? 18,
+                )}
+                compact={false}
+                compactThreshold={999_999}
+              />
+            </div>
+            <Icons.chevronRight className="mx-2" size={15} />
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-2">
+                <TokenIcon address={collateral1?.address} />
+                <FormattedNumber
+                  value={formatUnits(
+                    BigInt(event.collateral[0].collateralAmount),
+                    collateral1.decimals ?? 18,
+                  )}
+                  compact={false}
+                  compactThreshold={999_999}
+                />
+              </div>
+              {collateral2 && <hr className=" my-1 w-full" />}
+              <div className="flex items-center gap-2">
+                {collateral2 && (
+                  <>
+                    <TokenIcon
+                      address={collateral2?.address}
+                      className="-ms-2"
+                    />
+                    <FormattedNumber
+                      value={formatUnits(
+                        BigInt(event.collateral[1].collateralAmount),
+                        collateral2.decimals ?? 18,
+                      )}
+                      compact={false}
+                      compactThreshold={999_999}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 };
@@ -87,6 +169,7 @@ export const EventTable = ({
   arcade: boolean;
 }) => {
   const { data: tokenData } = useTokens();
+  console.log("tokenData", events);
   return (
     <Table>
       <TableHeader>
@@ -127,28 +210,25 @@ export const EventTable = ({
                 )}
                 key={event.id}
                 onClick={() =>
-                  window.open(
-                    `${blockExplorerUrl}/tx/${event.id.split(":")[2]}`,
-                    "_blank",
-                  )
+                  window.open(`${blockExplorerUrl}/tx/${event.id}`, "_blank")
                 }
               >
                 <TableCell
                   className={cn(
-                    event.txnType === "Mint"
+                    event.type === "Mint"
                       ? "text-success-foreground"
                       : " text-destructive-foreground",
                   )}
                 >
-                  {event.txnType}
+                  {event.type}
                 </TableCell>
                 <TableCell>
                   <FormattedNumber
                     value={formatUnits(
                       BigInt(
-                        event.txnType === "Mint"
-                          ? event.honeyAmount
-                          : event.collateralAmount,
+                        event.type === "Mint"
+                          ? event.collateral[0].honeyTxn.honeyAmount
+                          : event.collateral[0].collateralAmount,
                       ),
                       18,
                     )}
@@ -161,7 +241,7 @@ export const EventTable = ({
                   {getTokenDisplay(event, tokenData?.tokenDictionary)}
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  {truncateHash(event.id.split(":")[2] ?? "")}
+                  {truncateHash(event.id ?? "")}
                 </TableCell>
                 <TableCell
                   className="overflow-hidden truncate whitespace-nowrap text-right "

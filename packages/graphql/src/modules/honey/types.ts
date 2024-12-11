@@ -39,8 +39,14 @@ export interface HoneyTxn {
   timestamp: number;
   from: string;
   to: string;
+  type: string;
+  collateral: HoneyTxnCollateral[];
+}
+
+export interface HoneyTxnCollateral {
   collateral: string;
   collateralAmount: string;
-  honeyAmount: string;
-  txnType: string;
+  honeyTxn: {
+    honeyAmount: string;
+  };
 }

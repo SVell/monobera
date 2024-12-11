@@ -145,6 +145,7 @@ export const usePsm = () => {
             (isMint ? collateral?.decimals : honey?.decimals) ?? 18,
           ),
           account ?? "",
+          false,
         ] as const)
       : undefined;
 

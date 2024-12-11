@@ -1,22 +1,26 @@
 import { gql } from "@apollo/client";
 
 export const GetHoneyTxnByType = gql`
-  query GetHoneyTxnByType($page: Int!, $limit: Int!, $txnType: String!) {
+  query GetHoneyTxnByType($page: Int!, $limit: Int!, $type: String!) {
     honeyTxns(
       skip: $page
       first: $limit
       orderBy: timestamp
       orderDirection: desc
-      where: { txnType: $txnType }
+      where: { type: $type }
     ) {
       id
       timestamp
       from
       to
-      collateral
-      collateralAmount
-      honeyAmount
-      txnType
+      type
+      collateral {
+        collateral
+        collateralAmount
+        honeyTxn {
+          honeyAmount
+        }
+      }
     }
   }
 `;
@@ -33,10 +37,14 @@ export const GetHoneyTxn = gql`
       timestamp
       from
       to
-      collateral
-      collateralAmount
-      honeyAmount
-      txnType
+      type
+      collateral {
+        collateral
+        collateralAmount
+        honeyTxn {
+          honeyAmount
+        }
+      }
     }
   }
 `;
