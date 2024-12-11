@@ -214,10 +214,9 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
                     size="lg"
                     wrap={true}
                     text={`
-                  Controls the pool's sensitivity to imbalances between assets. A higher value causes slippage to occur sooner 
-                  as assets diverge from balance, helping to preserve accurate pricing by discouraging extreme imbalances. 
-                  This is often ideal for stable pairs, as it maintains tighter spreads when token values are close, but 
-                  increases slippage more rapidly for large disparities, supporting the pool's economic stability.`}
+                  The Amplification Factor (A) controls how aggressively the pool reacts to price fluctuations. Higher A values 
+                  maintain tighter spreads for small imbalances but increase slippage during large deviations like depegs. 
+                  Conversely, lower A values permit price changes for smaller deviations, but lower efficiency. `}
                   />
                 }
               />
