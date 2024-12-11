@@ -9,6 +9,7 @@ import { InputWithLabel } from "@bera/ui/input";
 import { PoolType } from "@berachain-foundation/berancer-sdk";
 
 import BeraTooltip from "~/components/bera-tooltip";
+import { Address } from "viem";
 
 export enum OwnershipType {
   Governance = "governance",
@@ -20,7 +21,7 @@ interface OwnershipInputProps {
   ownershipType: OwnershipType;
   owner: string;
   onChangeOwnershipType: (type: OwnershipType) => void;
-  onOwnerChange: (address: string) => void;
+  onOwnerChange: (address: Address) => void;
   invalidAddressErrorMessage: string | null;
   onSwapFeeChange: (fee: number) => void;
   swapFee: number;
@@ -49,7 +50,36 @@ const OwnershipInput: React.FC<OwnershipInputProps> = ({
   }
   return (
     <section className="flex w-full flex-col gap-4">
-      <h3 className="self-start text-3xl font-semibold">Set Swap Fee</h3>
+      <h3 className="self-start text-xl font-semibold">
+        Select a Parameter Preset
+      </h3>
+
+      <div className="flex w-full flex-col gap-6">
+        <Card
+          className={cn(
+            "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
+            ownershipType === OwnershipType.Governance &&
+              "border-info-foreground ",
+          )}
+        >
+          <span className="text-lg font-semibold">USD-Backed Stablecoin</span>
+          <span className="-mt-1 text-sm text-muted-foreground">
+            For coins that are USD-Backed
+          </span>
+        </Card>
+        <Card
+          className={cn(
+            "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
+            ownershipType === OwnershipType.Fixed && "border-info-foreground ",
+          )}
+        >
+          <span className="text-lg font-semibold">Algorithmic Stablecoin</span>
+          <span className="-mt-1 text-sm text-muted-foreground">
+            For coins that are maintained through algorithmic mechanisms
+          </span>
+        </Card>
+      </div>
+      <h3 className="self-start text-xl font-semibold">Set Swap Fee</h3>
       <SwapFeeInput
         initialFee={swapFee}
         onFeeChange={onSwapFeeChange}
@@ -118,7 +148,7 @@ const OwnershipInput: React.FC<OwnershipInputProps> = ({
             value={owner}
             maxLength={42}
             onChange={(e) => {
-              const value = e.target.value;
+              const value = e.target.value as Address;
               onOwnerChange(value);
             }}
           />

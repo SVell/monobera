@@ -9,28 +9,35 @@ const ProcessSteps = ({
   /**
    * Index of the selected step
    */
-  selectedIndex,
+  selectedStep,
   /**
    * Indexes of the completed steps
    */
-  completedIndexes,
+  completedSteps,
   /**
    * Function to set the selected step
    */
   setCurrentStep,
+  currentStep,
 }: {
   titles: string[];
-  selectedIndex: number;
-  completedIndexes: number[];
+  selectedStep: number;
+  completedSteps: number[];
   setCurrentStep: (arg0: number) => void;
+  currentStep: number;
 }) => {
   return (
-    <div className="flex flex-col items-start gap-8 cursor-pointer">
+    <div className={cn("flex flex-col items-start gap-8")}>
       {titles.map((title, index) => (
         <div
           key={index}
-          className="relative"
-          onClick={() => setCurrentStep(index)}
+          className={cn(
+            "relative",
+            completedSteps.includes(index) && "cursor-pointer",
+          )}
+          onClick={() => {
+            completedSteps.includes(index) && setCurrentStep(index);
+          }}
         >
           {index < titles.length - 1 && (
             <div className="absolute left-4 top-full w-0.5 h-8 bg-[#373332]" />
@@ -38,15 +45,15 @@ const ProcessSteps = ({
           <div
             className={cn(
               "relative rounded-sm shadow-md border w-64 flex overflow-hidden",
-              selectedIndex === index && "bg-[#373332] bg-opacity-55",
+              selectedStep === index && "bg-[#373332] bg-opacity-55",
             )}
           >
-            {selectedIndex === index && (
+            {selectedStep === index && (
               <div className="bg-blue-500 w-[4px] flex-shrink-0" />
             )}
             <div className="p-4 flex justify-between w-full">
               <h3 className="font-normal">{title}</h3>
-              {completedIndexes.includes(index) && (
+              {completedSteps.includes(index) && (
                 <Icons.checkCircle color={"#4ade80"} />
               )}
             </div>
