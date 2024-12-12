@@ -66,7 +66,11 @@ export function Header({
           </Link> */}
           {isReady && <BGTStatusBtn isHub={appName === hubName} />}
           {!hideConnectBtn && (
-            <ConnectButton isNavItem={true} isHoney={isHoney} />
+            <ConnectButton
+              isNavItem={true}
+              isHoney={isHoney}
+              disableThemeToggle={hideTheme}
+            />
           )}
           <MobileDropdown navItems={isHoney ? mobileNavItems : navItems} />
         </div>

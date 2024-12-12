@@ -30,11 +30,13 @@ export const ConnectButton = ({
   isNavItem = false,
   isHoney = false,
   isPopover = true,
+  disableThemeToggle = false,
 }: {
   className?: string;
   isNavItem?: boolean;
   isHoney?: boolean;
   isPopover?: boolean;
+  disableThemeToggle?: boolean;
 }) => {
   const { isConnected, isWrongNetwork, isReady } = useBeraJs();
   return (
@@ -58,7 +60,11 @@ export const ConnectButton = ({
         <SwitchNetworkBtn className={className} />
       )}
       {isReady && (
-        <ConnectedWalletPopover isPopover={isPopover} isHoney={isHoney} />
+        <ConnectedWalletPopover
+          isPopover={isPopover}
+          isHoney={isHoney}
+          disableThemeToggle={disableThemeToggle}
+        />
       )}
     </>
   );

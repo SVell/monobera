@@ -9,7 +9,12 @@ export default function Providers({ children }: PropsWithChildren<any>) {
     <BeraWagmi>
       <BeraJsProvider configOverride={undefined}>
         <BlockTimeProvider>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            forcedTheme="dark"
+            themes={["dark"]}
+          >
             {children}
           </ThemeProvider>
         </BlockTimeProvider>

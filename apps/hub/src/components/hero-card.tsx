@@ -76,7 +76,7 @@ export const HeroCards: React.FC = () => {
         width={2100}
         height={100}
       />
-      <div className="z-1 grid w-full auto-rows-[330px] grid-cols-1 justify-around gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="z-1 grid w-full auto-rows-[330px] grid-cols-1 justify-around gap-6 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card, index) => (
           <HeroCard key={index} {...card} />
         ))}

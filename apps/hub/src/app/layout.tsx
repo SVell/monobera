@@ -59,7 +59,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
               <Toaster position="bottom-right" />
             </div>
             <div className="z-10 flex-1">
-              <Header navItems={navItems} appName={hubName} />
+              <Header navItems={navItems} appName={hubName} hideTheme />
               <MainWithBanners
                 // mt-8 should probably be removed
                 className="mt-8"
