@@ -432,22 +432,23 @@ export default function CreatePageContent() {
         <div className="text-sm font-medium">Back to Pools</div>
       </Button>
       <h2 className="self-start text-3xl font-semibold">Create a Pool</h2>
-      <div className="flex w-full flex-row justify-center gap-12">
-        <ProcessSteps
-          titles={[
-            "Pool Type",
-            "Select Tokens",
-            "Deposit Liquidity",
-            "Set Parameters",
-            "Set Info",
-          ]}
-          selectedStep={currentStep}
-          completedSteps={completedSteps}
-          setCurrentStep={setCurrentStep}
-          currentStep={currentStep}
-        />
-
-        <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col justify-center gap-12 xl:flex-row">
+        <div className="flex w-full flex-col xl:w-1/4">
+          <ProcessSteps
+            titles={[
+              "Pool Type",
+              "Select Tokens",
+              "Deposit Liquidity",
+              "Set Parameters",
+              "Set Info",
+            ]}
+            selectedStep={currentStep}
+            completedSteps={completedSteps}
+            setCurrentStep={setCurrentStep}
+            currentStep={currentStep}
+          />
+        </div>
+        <div className="flex w-full flex-col xl:w-3/4">
           {currentStep === 0 && (
             <PoolTypeSelector
               poolType={poolType}
@@ -473,7 +474,6 @@ export default function CreatePageContent() {
                     index={index}
                     onTokenSelection={(selectedToken) => {
                       if (selectedToken) {
-                        // FIXME: how is this needing to be handled??
                         handlePoolTokenChange(index, selectedToken);
                       }
                     }}
@@ -633,7 +633,12 @@ export default function CreatePageContent() {
               <Button>Back to all Pools</Button>
             </section>
           )} */}
-          <ActionButton className="w-fit self-end pt-4">
+          <ActionButton
+            className={cn(
+              "self-end pt-4",
+              LAST_FORM_STEP_NUM ? "w-28" : "w-28",
+            )}
+          >
             <Button
               onClick={() => {
                 if (currentStep === LAST_FORM_STEP_NUM) {

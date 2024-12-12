@@ -20,7 +20,7 @@ type SummaryRowProps = {
 
 const SummaryRow = memo(({ label, value }: SummaryRowProps) => (
   <div className="flex w-full justify-between gap-4">
-    <div className={cn("w-fit", !value && "opacity-35")}>{label}</div>
+    <div className={cn("w-fit text-left", !value && "opacity-35")}>{label}</div>
     {value ? value : <div className="w-4 self-end opacity-35">--</div>}
   </div>
 ));
@@ -35,7 +35,7 @@ const TokenDisplay = memo(({ token, tokenPrices }: TokenDisplayProps) => {
   const wrappedToken = wrapNativeToken(token); // NOTE: prices are always for WBERA, never BERA
   // TODO (BFE-409): we should bundle TokenInput and Price properly as token.usdValue
   return (
-    <div className="flex flex-row justify-end gap-2">
+    <div className="flex flex-row justify-end gap-2 text-base">
       <TokenIcon address={token.address} size="lg" />
       <div className="font-medium text-foreground">
         {formatMaxLength(Number(token.amount), 8)}
@@ -79,7 +79,7 @@ const PoolCreationSummary = memo(
         {
           label: "Pool Type",
           value: poolType ? (
-            <div className="flex items-center gap-2 rounded-full border-2 border-green-600 px-2 text-[#4ade80]">
+            <div className="flex items-center gap-2 rounded-full border-2 border-green-600 px-2 text-sm text-[#4ade80] xl:text-base">
               <div className="h-1 w-1 rounded-full bg-[#4ade80]" />
               <span>{poolType}</span>
             </div>
@@ -113,9 +113,12 @@ const PoolCreationSummary = memo(
     return (
       <div>
         <h2 className="mb-4 self-start text-xl font-semibold">Pool Summary</h2>
-        <section className="flex h-fit min-w-[400px] flex-col justify-between gap-y-2 rounded-sm border p-4">
+        <section className="flex h-fit flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:min-w-[350px] 2xl:min-w-[400px]">
           {summaryRows.map((row, index) => (
-            <div className="text-right font-medium">
+            <div
+              className="text-right font-medium"
+              key={`${row.label}-${index}`}
+            >
               <SummaryRow key={row.label} {...row} />
             </div>
           ))}

@@ -27,7 +27,7 @@ const ProcessSteps = ({
   currentStep: number;
 }) => {
   return (
-    <div className={cn("flex flex-col items-start gap-8")}>
+    <div className="flex flex-row items-start gap-4 overflow-auto py-2 xl:flex-col xl:gap-8 xl:overflow-visible">
       {titles.map((title, index) => (
         <div
           key={index}
@@ -45,11 +45,11 @@ const ProcessSteps = ({
           }}
         >
           {index < titles.length - 1 && (
-            <div className="absolute left-4 top-full h-8 w-0.5 bg-[#373332]" />
+            <div className="absolute left-4 top-full hidden h-8 w-0.5 bg-[#373332] xl:block" />
           )}
           <div
             className={cn(
-              "relative flex w-64 overflow-hidden rounded-sm border shadow-md",
+              "relative flex w-fit overflow-hidden rounded-sm border shadow-md xl:w-48 2xl:w-64",
               selectedStep === index && "bg-[#373332] bg-opacity-55",
             )}
           >
@@ -57,9 +57,9 @@ const ProcessSteps = ({
               <div className="w-[4px] flex-shrink-0 bg-blue-500" />
             )}
             <div className="flex w-full justify-between p-4">
-              <h3 className="font-normal">{title}</h3>
+              <h3 className="text-nowrap font-normal">{title}</h3>
               {completedSteps.includes(index) && (
-                <Icons.checkCircle color={"#4ade80"} />
+                <Icons.checkCircle color={"#4ade80"} /> // FIXME: custom colours need to be set
               )}
             </div>
           </div>
