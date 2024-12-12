@@ -79,9 +79,11 @@ const PoolCreationSummary = memo(
         {
           label: "Pool Type",
           value: poolType ? (
-            <div className="flex items-center gap-2 rounded-full border-2 border-green-600 px-2 text-sm text-[#4ade80] xl:text-base">
-              <div className="h-1 w-1 rounded-full bg-[#4ade80]" />
-              <span>{poolType}</span>
+            <div className="flex items-center gap-2 rounded-full border-2 border-semanticSuccessForeground bg-semanticSuccessBackground px-2 text-sm text-semanticSuccessForeground xl:text-base">
+              <div className="h-1 w-1 rounded-full bg-semanticSuccessForeground" />
+              <span>
+                {poolType === PoolType.ComposableStable ? "Stable" : poolType}
+              </span>
             </div>
           ) : undefined,
         },

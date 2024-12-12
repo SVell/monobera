@@ -268,8 +268,8 @@ export default function CreatePageContent() {
     setInitialLiquidityTokens((prevTokens) => {
       const updatedTokens = [...prevTokens];
       updatedTokens[index] = {
-        ...updatedTokens[index], // Preserve existing properties
-        ...updates, // Apply partial updates
+        ...updatedTokens[index],
+        ...updates,
       };
       return updatedTokens;
     });
@@ -653,13 +653,13 @@ export default function CreatePageContent() {
                 />
               </section>
             )}
-            {/* {currentStep === 5 && (  TODO: instead of using dynamic preview we do the tx as a step.
+            {/* {currentStep === 5 && (  TODO (#BFE-410): instead of using dynamic preview we do the tx & success as a step.
             <section>
               <Button>View Pool</Button>
               <Button>Back to all Pools</Button>
             </section>
           )} */}
-            <ActionButton className="w-28 self-end pt-4">
+            <ActionButton className="w-32 self-end pt-4">
               <Button
                 onClick={() => {
                   if (currentStep === LAST_FORM_STEP_NUM) {
@@ -671,11 +671,11 @@ export default function CreatePageContent() {
                 }}
                 disabled={nextButtonDisabled}
                 className={cn(
-                  "w-28 self-end",
+                  "w-32 self-end pr-4",
                   nextButtonDisabled
                     ? "cursor-not-allowed opacity-50"
                     : "opacity-100",
-                  currentStep === LAST_FORM_STEP_NUM && "bg-[#e6b434]", // FIXME custom colour
+                  currentStep === LAST_FORM_STEP_NUM && "bg-createButton",
                 )}
               >
                 {currentStep === LAST_FORM_STEP_NUM ? "Create Pool" : "Next"}
