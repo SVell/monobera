@@ -157,6 +157,8 @@ export default {
         highlight: "#0284C7",
         semanticSuccessForeground: "#4ADE80",
         semanticSuccessBackground: "#141D10",
+        semanticBlueSuccessForeground: "#38BCF8",
+        semanticBlueSuccessBackground: "#121A1C",
       },
       borderRadius: {
         "2xs": "0.125rem",

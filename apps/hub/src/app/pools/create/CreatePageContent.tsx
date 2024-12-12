@@ -743,7 +743,9 @@ export default function CreatePageContent() {
           </div>
 
           <PoolCreationSummary
+            completedSteps={completedSteps}
             poolType={poolType}
+            ownershipType={ownershipType}
             tokens={initialLiquidityTokens}
             tokenPrices={tokenPrices}
             swapFee={swapFee}

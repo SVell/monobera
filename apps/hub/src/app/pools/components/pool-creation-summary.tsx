@@ -13,6 +13,8 @@ import { cn } from "@bera/ui";
 import { InputToken, PoolType } from "@berachain-foundation/berancer-sdk";
 import { Address } from "viem";
 
+import { OwnershipType } from "./parameters-input";
+
 type SummaryRowProps = {
   label: string;
   value?: ReactNode;
@@ -55,7 +57,9 @@ const TokenDisplay = memo(({ token, tokenPrices }: TokenDisplayProps) => {
 TokenDisplay.displayName = "TokenDisplay";
 
 type PoolCreationSummaryProps = {
+  completedSteps: number[];
   poolType?: PoolType;
+  ownershipType?: OwnershipType;
   tokens?: TokenInput[];
   tokenPrices?: SubgraphTokenInformations;
   swapFee?: number;
@@ -66,7 +70,9 @@ type PoolCreationSummaryProps = {
 
 const PoolCreationSummary = memo(
   ({
+    completedSteps,
     poolType,
+    ownershipType,
     tokens,
     tokenPrices,
     swapFee,
@@ -74,42 +80,73 @@ const PoolCreationSummary = memo(
     name,
     symbol,
   }: PoolCreationSummaryProps) => {
+    function showStep(previewStep: number) {
+      // NOTE: if switched to using an ENUM / Map for steps we could do something more intelligent here.
+      return completedSteps.includes(previewStep);
+    }
+
     const summaryRows = useMemo(
       () => [
         {
           label: "Pool Type",
-          value: poolType ? (
-            <div className="flex items-center gap-2 rounded-full border-2 border-semanticSuccessForeground bg-semanticSuccessBackground px-2 text-sm text-semanticSuccessForeground xl:text-base">
-              <div className="h-1 w-1 rounded-full bg-semanticSuccessForeground" />
-              <span>
-                {poolType === PoolType.ComposableStable ? "Stable" : poolType}
-              </span>
-            </div>
-          ) : undefined,
+          value:
+            showStep(0) && poolType ? (
+              <div
+                className={cn(
+                  "flex items-center gap-2 rounded-full border-2 px-2 text-sm xl:text-base",
+                  poolType === PoolType.ComposableStable &&
+                    "border-semanticSuccessForeground bg-semanticSuccessBackground text-semanticSuccessForeground",
+                  poolType === PoolType.Weighted &&
+                    "border-semanticBlueSuccessForeground bg-semanticBlueSuccessBackground text-semanticBlueSuccessForeground",
+                )}
+              >
+                <div
+                  className={cn(
+                    "h-1 w-1 rounded-full",
+                    poolType === PoolType.ComposableStable &&
+                      "bg-semanticSuccessForeground",
+                    poolType === PoolType.Weighted &&
+                      "bg-semanticBlueSuccessForeground",
+                  )}
+                />
+                <span>
+                  {poolType === PoolType.ComposableStable ? "Stable" : poolType}
+                </span>
+              </div>
+            ) : undefined,
         },
         {
           label: "Tokens",
-          value: tokens?.length ? (
-            <div className="flex flex-col gap-2">
-              {tokens.map((token, index) => (
-                <TokenDisplay
-                  key={token.address + index}
-                  tokenPrices={tokenPrices}
-                  token={token}
-                />
-              ))}
-            </div>
-          ) : undefined,
+          value:
+            showStep(1) && tokens?.length ? (
+              <div className="flex flex-col gap-2">
+                {tokens.map((token, index) => (
+                  <TokenDisplay
+                    key={token.address + index}
+                    tokenPrices={tokenPrices}
+                    token={token}
+                  />
+                ))}
+              </div>
+            ) : undefined,
         },
-        { label: "Swap Fee", value: swapFee && `${swapFee}%` },
+        {
+          label: "Swap Fee",
+          value: showStep(3) && swapFee && `${swapFee}%`,
+        },
         {
           label: "Owners Address",
-          value: ownersAddress && truncateHash(ownersAddress),
+          value:
+            showStep(3) &&
+            `${ownershipType} (${
+              ownersAddress && truncateHash(ownersAddress)
+            })`,
         },
-        { label: "Name", value: name },
-        { label: "Symbol", value: symbol },
+        // NOTE: strangely, in the final step you will see both what you are typing & and the preview at the same time.
+        { label: "Name", value: showStep(3) && name },
+        { label: "Symbol", value: showStep(3) && symbol },
       ],
-      [poolType, tokens, swapFee, ownersAddress, name, symbol],
+      [poolType, tokens, swapFee, ownersAddress, name, symbol, completedSteps],
     );
 
     return (

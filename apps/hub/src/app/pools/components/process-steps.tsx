@@ -59,7 +59,7 @@ const ProcessSteps = ({
             )}
           >
             {selectedStep === index && (
-              <div className="w-1 flex-shrink-0 bg-highlight" />
+              <div className="w-1 flex-shrink-0 bg-info-foreground" />
             )}
             <div className="flex w-full justify-between p-4">
               <h3 className="text-nowrap pr-2 font-normal">{title}</h3>

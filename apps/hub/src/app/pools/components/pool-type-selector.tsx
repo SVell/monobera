@@ -22,7 +22,7 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
           onClick={() => onPoolTypeChange(PoolType.ComposableStable)}
           className={cn(
             "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            poolType === PoolType.ComposableStable && "border-info-foreground ",
+            poolType === PoolType.ComposableStable && "border-info-foreground",
           )}
         >
           <span className="text-lg font-semibold">Stable</span>
@@ -34,7 +34,7 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
           onClick={() => onPoolTypeChange(PoolType.Weighted)}
           className={cn(
             "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            poolType === PoolType.Weighted && "border-info-foreground ",
+            poolType === PoolType.Weighted && "border-info-foreground",
           )}
         >
           <span className="text-lg font-semibold">Weighted</span>
