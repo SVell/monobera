@@ -631,7 +631,7 @@ export default function CreatePageContent() {
                         }
                         price={Number(
                           tokenPrices?.[wrapNativeToken(token)?.address] ?? 0,
-                        )} // TODO (#): this would make more sense as token.usdValue
+                        )} // TODO (BFE-409): this would make more sense as token.usdValue
                         hidePrice={
                           !tokenPrices?.[wrapNativeToken(token)?.address]
                         }
@@ -712,7 +712,7 @@ export default function CreatePageContent() {
                 />
               </section>
             )}
-            {/* {currentStep === 5 && (  TODO (#BFE-410): instead of using dynamic preview we do the tx & success as a step.
+            {/* {currentStep === 5 && (  // TODO (#BFE-410): instead of using dynamic preview we do the tx & success as a step.
             <section>
               <Button>View Pool</Button>
               <Button>Back to all Pools</Button>

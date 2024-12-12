@@ -31,7 +31,7 @@ const ProcessSteps = ({
   currentStep: number;
 }) => {
   function isStepSelectable(index: number) {
-    // NOTE: we check +1 to allow you to go back to a partially completed step
+    // NOTE: we check -1 to allow you to go back to the current (partially-completed) step
     return completedSteps.includes(index) || completedSteps.includes(index - 1);
   }
 
