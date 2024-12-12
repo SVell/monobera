@@ -27,7 +27,7 @@ const ProcessSteps = ({
   currentStep: number;
 }) => {
   return (
-    <div className="flex flex-row items-start gap-4 overflow-auto py-2 xl:flex-col xl:gap-8 xl:overflow-visible">
+    <div className="flex flex-wrap items-start gap-4 overflow-visible py-2 xl:flex-col xl:gap-8">
       {titles.map((title, index) => (
         <div
           key={index}
@@ -57,7 +57,7 @@ const ProcessSteps = ({
               <div className="w-[4px] flex-shrink-0 bg-blue-500" />
             )}
             <div className="flex w-full justify-between p-4">
-              <h3 className="text-nowrap font-normal">{title}</h3>
+              <h3 className="text-nowrap pr-2 font-normal">{title}</h3>
               {completedSteps.includes(index) && (
                 <Icons.checkCircle color={"#4ade80"} /> // FIXME: custom colours need to be set
               )}
