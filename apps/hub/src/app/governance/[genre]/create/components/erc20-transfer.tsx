@@ -74,7 +74,10 @@ export function Erc20Transfer({
 
           setErrors((prev) => ({
             ...prev,
-            to: checkProposalField("address", value),
+            to: checkProposalField({
+              fieldOrType: "address",
+              value,
+            }),
           }));
 
           setAction((prev) => ({

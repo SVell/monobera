@@ -7,6 +7,10 @@ import { DefaultHookOptions, DefaultHookReturnType, Gauge } from "~/types";
 export interface UsePollValidatorInfoResponse
   extends DefaultHookReturnType<Gauge | null> {}
 
+/**
+ *
+ * @deprecated should be refactored to use the new endpoint and onchain data
+ */
 export const useSelectedGauge = (
   id: Address | undefined,
   options?: DefaultHookOptions,

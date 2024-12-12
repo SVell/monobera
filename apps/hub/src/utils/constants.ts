@@ -10,10 +10,43 @@ export enum LOCAL_STORAGE_KEYS {
   CLAIM_REWARDS_RECIPIENT = "CLAIM_REWARDS_RECIPIENT",
 }
 
-export const DEFAULT_DEADLINE = 30; // seconds
-export const DEFAULT_SLIPPAGE = 1; // 0.3%
-export const DEFAULT_SOUND_ENABLED = true; // 1 if true, 0 if false
-export const MAX_INPUT_DEADLINE = 100000; // seconds
+// TODO (BFE-400): this and settings.tsx are defining similar things (mostly for the swap-settings & settings inputs)
+
+/**
+ * Default transaction deadline in seconds.
+ * @type {number}
+ */
+export const DEFAULT_DEADLINE = 30;
+
+/**
+ * Default slippage tolerance percentage.
+ * @type {number}
+ */
+export const DEFAULT_SLIPPAGE = 1;
+
+/**
+ * Maximum allowed input for a custom deadline in seconds.
+ * @type {number}
+ */
+export const MAX_CUSTOM_DEADLINE = 100000;
+
+/**
+ * Minimum allowed input for a custom deadline in seconds.
+ * @type {number}
+ */
+export const MIN_CUSTOM_DEADLINE = 1;
+
+/**
+ * Minimum allowed input for a custom slippage tolerance percentage.
+ * @type {number}
+ */
+export const MIN_CUSTOM_SLIPPAGE = 0.1;
+
+/**
+ * Maximum allowed input for a custom slippage tolerance percentage.
+ * @type {number}
+ */
+export const MAX_CUSTOM_SLIPPAGE = 100;
 
 export enum TRANSACTION_TYPES {
   LEGACY = "legacy",

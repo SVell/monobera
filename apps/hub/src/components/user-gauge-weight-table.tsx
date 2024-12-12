@@ -51,6 +51,7 @@ export default function UserGaugeWeightTable({
           Number(b.unclaimedBgt) - Number(a.unclaimedBgt),
       );
   }, [userVaultInfo, keywords]);
+
   return (
     <div className="w-full ">
       {ModalPortal}

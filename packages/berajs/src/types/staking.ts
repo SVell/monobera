@@ -29,7 +29,7 @@ export type Validator = {
     allTimeHoneyValueBgtDirected?: number;
   };
   active: boolean;
-  activeIncentives: ActiveIncentive[];
+  activeIncentives: RewardVaultIncentive[];
   metadata?: ValidatorInfo;
   votingPower: number;
 };
@@ -66,10 +66,11 @@ export type Vault = {
   productMetadata?: ProductMetadata;
 };
 
-export type ActiveIncentive = {
-  amountLeft: number;
+export type RewardVaultIncentive = {
+  amountRemaining: number;
   id: Address;
   incentiveRate: number;
+  manager: Address;
   token: Token;
   vaultId?: Address;
 };
@@ -91,7 +92,7 @@ export type GaugeInfo = {
 };
 
 export type Gauge = {
-  activeIncentives: ActiveIncentive[];
+  activeIncentives: RewardVaultIncentive[];
   activeIncentivesInHoney: number;
   activeValidators: ValidatorInfo[];
   activeValidatorsCount: number;

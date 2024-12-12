@@ -119,7 +119,7 @@ export const ProposalTimeline = ({
       if (proposal.status !== ProposalStatus.PendingQueue) {
         steps.push({
           title: "Proposal Queued",
-          block: proposal.queueEnd,
+          date: proposal.queueStart,
           isActive: proposal.status === ProposalStatus.InQueue,
         });
 
@@ -137,11 +137,14 @@ export const ProposalTimeline = ({
             isActive: proposal.status === ProposalStatus.Executed,
             bulletClassName: "bg-success-foreground",
           });
-        } else if (proposal.status === ProposalStatus.PendingExecution) {
+        } else if (
+          proposal.status === ProposalStatus.InQueue ||
+          proposal.status === ProposalStatus.PendingExecution
+        ) {
           steps.push({
-            title: "Proposal Executes",
-            date: new Date(0),
-            isActive: true,
+            title: "Proposal Executable",
+            date: proposal.queueEnd,
+            isActive: proposal.status === ProposalStatus.PendingExecution,
           });
         }
       }

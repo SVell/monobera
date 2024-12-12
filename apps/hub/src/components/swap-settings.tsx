@@ -1,5 +1,5 @@
 import React, { KeyboardEvent } from "react";
-import { Tooltip } from "@bera/shared-ui";
+import { SLIPPAGE_DEGEN_VALUE, Tooltip } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
 import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { Icons } from "@bera/ui/icons";
@@ -10,9 +10,11 @@ import { useLocalStorage } from "usehooks-ts";
 import {
   DEFAULT_DEADLINE,
   DEFAULT_SLIPPAGE,
-  DEFAULT_SOUND_ENABLED,
   LOCAL_STORAGE_KEYS,
-  MAX_INPUT_DEADLINE,
+  MAX_CUSTOM_DEADLINE,
+  MAX_CUSTOM_SLIPPAGE,
+  MIN_CUSTOM_DEADLINE,
+  MIN_CUSTOM_SLIPPAGE,
 } from "~/utils/constants";
 
 export enum SELECTION {
@@ -82,15 +84,16 @@ export default function SwapSettings({
           <Input
             type="number"
             step="any"
-            min={0.1}
-            max={100}
-            className="h-[40px] pr-8 text-right"
+            min={MIN_CUSTOM_SLIPPAGE}
+            max={MAX_CUSTOM_SLIPPAGE}
+            className="text-right"
             disabled={slippageToleranceType !== SELECTION.CUSTOM}
-            placeholder="1"
             value={
               slippageToleranceType === SELECTION.AUTO
                 ? DEFAULT_SLIPPAGE
-                : slippageToleranceValue
+                : slippageToleranceType === SELECTION.DEGEN
+                  ? SLIPPAGE_DEGEN_VALUE
+                  : slippageToleranceValue
             }
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) =>
               e.key === "-" && e.preventDefault()
@@ -99,22 +102,21 @@ export default function SwapSettings({
               <p
                 className={cn(
                   "mr-2 self-center text-xs text-foreground",
-                  slippageToleranceType === SELECTION.AUTO && "opacity-50",
+                  (slippageToleranceType === SELECTION.AUTO ||
+                    slippageToleranceType === SELECTION.DEGEN) &&
+                    "opacity-50",
                 )}
               >
                 %
               </p>
             }
-            onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+            onChange={(e: React.FocusEvent<HTMLInputElement>) => {
               const value = parseFloat(e.target.value);
-              if (value > 100) {
-                setSlippageToleranceValue(100);
-              } else if (value < 0.1) {
-                setSlippageToleranceValue(0.1);
-              }
-            }}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSlippageToleranceValue(Number(e.target.value));
+              if (value > MAX_CUSTOM_SLIPPAGE)
+                setSlippageToleranceValue(MAX_CUSTOM_SLIPPAGE);
+              if (value < MIN_CUSTOM_SLIPPAGE)
+                setSlippageToleranceValue(MIN_CUSTOM_SLIPPAGE);
+              setSlippageToleranceValue(value);
             }}
           />
         }
@@ -166,12 +168,9 @@ export default function SwapSettings({
             <Input
               type="number"
               step="any"
-              className={cn(
-                "h-[40px] pl-1 pr-9",
-                deadlineType === SELECTION.INFINITY
-                  ? "text-center"
-                  : "text-right",
-              )}
+              className="h-[40px] text-right"
+              min={MIN_CUSTOM_DEADLINE}
+              max={MAX_CUSTOM_DEADLINE}
               disabled={deadlineType !== SELECTION.CUSTOM}
               placeholder={deadlineType === SELECTION.INFINITY ? "∞" : ""}
               value={
@@ -188,7 +187,9 @@ export default function SwapSettings({
                 <p
                   className={cn(
                     "ml-2 self-center pl-1 text-xs text-foreground",
-                    deadlineType === SELECTION.AUTO && "opacity-50",
+                    (deadlineType === SELECTION.AUTO ||
+                      deadlineType === SELECTION.INFINITY) &&
+                      "opacity-50",
                   )}
                 >
                   sec
@@ -196,8 +197,8 @@ export default function SwapSettings({
               }
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 let value = Number(e.target.value);
-                if (value < 0.1) value = 0.1;
-                if (value > MAX_INPUT_DEADLINE) value = MAX_INPUT_DEADLINE;
+                if (value < MIN_CUSTOM_DEADLINE) value = MIN_CUSTOM_DEADLINE;
+                if (value > MAX_CUSTOM_DEADLINE) value = MAX_CUSTOM_DEADLINE;
                 setDeadlineValue(value);
               }}
             />

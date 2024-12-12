@@ -1,4 +1,8 @@
-import { ActiveIncentive, usePollGauges, type Validator } from "@bera/berajs";
+import {
+  RewardVaultIncentive,
+  usePollGauges,
+  type Validator,
+} from "@bera/berajs";
 import { SimpleTable, useAsyncTable } from "@bera/shared-ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@bera/ui/tabs";
 
@@ -12,7 +16,7 @@ export const getActiveIncentivesArray = (
 ): ActiveIncentiveWithVault[] => {
   if (!validator) return [];
 
-  return validator?.activeIncentives?.map((incentive: ActiveIncentive) => {
+  return validator?.activeIncentives?.map((incentive: RewardVaultIncentive) => {
     const vaultId = incentive.id.slice(0, 42);
     const cuttingBoard = validator?.cuttingBoard.weights.find(
       (cb: any) => cb.receiver.toLowerCase() === vaultId.toLowerCase(),
@@ -20,7 +24,7 @@ export const getActiveIncentivesArray = (
     return {
       cuttingBoard: cuttingBoard,
       token: incentive.token,
-      amountLeft: incentive.amountLeft,
+      amountRemaining: incentive.amountRemaining,
       incentiveRate: incentive.incentiveRate,
     };
   }) as ActiveIncentiveWithVault[];

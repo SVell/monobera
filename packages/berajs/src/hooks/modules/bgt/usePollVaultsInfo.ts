@@ -23,7 +23,10 @@ export const usePollVaultsInfo = (
 ): DefaultHookReturnType<UsePollVaultsInfoRes | undefined> => {
   const { account, config: beraConfig } = useBeraJs();
   const publicClient = usePublicClient();
-  const QUERY_KEY = ["usePollUserVaultsInfo", account, args.vaultAddress];
+  const QUERY_KEY =
+    account && publicClient
+      ? ["usePollUserVaultsInfo", account, args.vaultAddress]
+      : null;
 
   const swrResponse = useSWR<UsePollVaultsInfoRes | undefined>(
     QUERY_KEY,

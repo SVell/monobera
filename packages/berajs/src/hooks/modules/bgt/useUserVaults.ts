@@ -1,13 +1,13 @@
+import { multicallAddress, polEndpointUrl } from "@bera/config";
 import useSWR from "swr";
-
-import POLLING from "~/enum/polling";
-import { DefaultHookOptions, DefaultHookReturnType } from "~/types/global";
-import { useBeraJs } from "~/contexts";
-import { Vault } from "~/types";
-import { polEndpointUrl, multicallAddress } from "@bera/config";
 import { Address, formatUnits } from "viem";
-import { BERA_VAULT_REWARDS_ABI } from "~/abi";
 import { usePublicClient } from "wagmi";
+
+import { BERA_VAULT_REWARDS_ABI } from "~/abi";
+import { useBeraJs } from "~/contexts";
+import POLLING from "~/enum/polling";
+import { Vault } from "~/types";
+import { DefaultHookOptions, DefaultHookReturnType } from "~/types/global";
 
 interface Call {
   abi: any;
@@ -50,21 +50,19 @@ export const useUserVaults = (
     async () => {
       if (!account || !publicClient) return undefined;
 
+      // TODO: remove deprecated endpoint
       const url = `${polEndpointUrl}/user/${account}/vaults`;
       const validatorList = await fetch(url);
       const temp: any = await validatorList.json();
+
       const vaultList: Vault[] = temp.userVaults;
+
       const calls: Call[] = vaultList.map((vault: Vault) => ({
         address: vault.vaultAddress,
         abi: BERA_VAULT_REWARDS_ABI,
         functionName: "earned",
         args: [account],
       }));
-
-      const result = await publicClient.multicall({
-        contracts: calls,
-        multicallAddress: multicallAddress,
-      });
 
       const balanceCalls: Call[] = vaultList.map((vault: Vault) => ({
         address: vault.vaultAddress,
@@ -73,10 +71,16 @@ export const useUserVaults = (
         args: [account],
       }));
 
-      const balanceResult = await publicClient.multicall({
-        contracts: balanceCalls,
-        multicallAddress: multicallAddress,
-      });
+      const [result, balanceResult] = await Promise.all([
+        publicClient.multicall({
+          contracts: calls,
+          multicallAddress: multicallAddress,
+        }),
+        publicClient.multicall({
+          contracts: balanceCalls,
+          multicallAddress: multicallAddress,
+        }),
+      ]);
 
       let total = 0n;
       const userVaults = vaultList.map((vault: Vault, index: number) => {

@@ -6,7 +6,6 @@ import { Input, InputWithLabel } from "@bera/ui/input";
 import { TextArea } from "@bera/ui/text-area";
 import { formatAbiItem } from "abitype";
 import {
-  ChangeEventHandler,
   Dispatch,
   SetStateAction,
   useCallback,
@@ -20,6 +19,7 @@ import {
   ProposalErrorCodes,
   ProposalTypeEnum,
 } from "~/app/governance/types";
+import { AbiInput } from "./abi-input";
 import { checkProposalField } from "~/hooks/useCreateProposal";
 export function CustomAction({
   idx,
@@ -70,14 +70,17 @@ export function CustomAction({
   }, [action.ABI]);
 
   const handleUpdateCallData = useCallback(
-    (idx: number): ChangeEventHandler<HTMLInputElement> =>
-      (event) => {
+    (idx: number): ((v: any) => void) =>
+      (newInput) => {
         const supposedType = abiItems?.inputs[idx].type;
         switch (supposedType) {
           case "address":
             setErrors((e) => {
               const prev = e?.calldata || [];
-              prev[idx] = checkProposalField("address", event.target.value);
+              prev[idx] = checkProposalField({
+                fieldOrType: "address",
+                value: newInput,
+              });
               return {
                 ...e,
                 calldata: prev,
@@ -89,10 +92,10 @@ export function CustomAction({
             try {
               setErrors((e) => {
                 const prev = e?.calldata || [];
-                prev[idx] = checkProposalField(
-                  supposedType as any,
-                  event.target.value,
-                );
+                prev[idx] = checkProposalField({
+                  fieldOrType: supposedType as any,
+                  value: newInput,
+                });
                 return {
                   ...e,
                   calldata: prev,
@@ -109,7 +112,7 @@ export function CustomAction({
 
           const cd = [...(prev.calldata || [])];
 
-          cd[idx] = event.target.value;
+          cd[idx] = newInput;
 
           return {
             ...prev,
@@ -262,13 +265,13 @@ export function CustomAction({
       </div>
       {abiItems?.inputs?.map((input, i) => {
         return (
-          <InputWithLabel
-            label={`Enter ${input.name}`}
-            error={errors.calldata?.[i]}
+          <AbiInput
+            input={input}
+            errors={errors.calldata?.[i]}
+            key={`proposal-calldata--${idx}-${i}-${input.name}`}
             id={`proposal-calldata--${idx}-${i}-${input.name}`}
-            placeholder={input.type}
             value={action.calldata?.[i]}
-            onChange={handleUpdateCallData(i)}
+            onChange={(e) => handleUpdateCallData(i)(e)}
           />
         );
       })}

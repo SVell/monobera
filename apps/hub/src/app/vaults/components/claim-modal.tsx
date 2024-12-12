@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   BERA_VAULT_REWARDS_ABI,
-  RewardVault,
   TransactionActionType,
   truncateHash,
   useBeraJs,

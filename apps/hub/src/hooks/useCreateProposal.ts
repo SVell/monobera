@@ -10,6 +10,7 @@ import {
 import { useTxn } from "@bera/shared-ui";
 import matter from "gray-matter";
 import {
+  AbiParameter,
   Address,
   encodeFunctionData,
   erc20Abi,
@@ -40,8 +41,16 @@ const defaultAction = {
   calldata: [],
 } satisfies SafeProposalAction;
 
+type CheckProposalFieldResultMinimal = ProposalErrorCodes | null;
+
+type CheckProposalFieldResult =
+  | ProposalErrorCodes
+  | null
+  | CheckProposalFieldResultMinimal[]
+  | Record<string, CheckProposalFieldResultMinimal>;
+
 interface CheckProposalField {
-  (
+  (arg: {
     fieldOrType:
       | "address"
       | "abi"
@@ -50,23 +59,30 @@ interface CheckProposalField {
       | `int${string}`
       | "action"
       | "title"
-      | "description",
-    value: any,
-    required?: boolean,
-  ): ProposalErrorCodes | null;
-  (
-    fieldOrType: "forumLink",
-    value: string,
-    base: string,
-  ): ProposalErrorCodes | null;
+      | "forumLink"
+      | "description";
+    value: any;
+    required?: boolean;
+    baseUrl?: string;
+    components?: readonly AbiParameter[];
+  }): CheckProposalFieldResultMinimal;
+  (arg: {
+    fieldOrType: "tuple[]" | "tuple";
+    value: any;
+    required?: boolean;
+    baseUrl?: string;
+    components?: AbiParameter[];
+  }): CheckProposalFieldResult;
 }
-export const checkProposalField: CheckProposalField = (
+
+// @ts-expect-error TODO: this is not typed, will throw if not valid
+export const checkProposalField: CheckProposalField = ({
   fieldOrType,
   value,
-  requiredOrBase,
-) => {
-  const required = typeof requiredOrBase === "boolean" ? requiredOrBase : true;
-
+  required = true,
+  baseUrl,
+  components,
+}) => {
   if (required && !value) {
     return ProposalErrorCodes.REQUIRED;
   }
@@ -118,7 +134,7 @@ export const checkProposalField: CheckProposalField = (
       }
 
       // biome-ignore lint/correctness/noSwitchDeclarations: <explanation>
-      const base = new URL(requiredOrBase as string);
+      const base = new URL(baseUrl as string);
 
       // base.pathname = "/c/";
 
@@ -148,8 +164,51 @@ export const checkProposalField: CheckProposalField = (
       }
       return null;
 
+    case "tuple":
+      if (typeof value === "object" && Array.isArray(components)) {
+        const errors: Record<string, ProposalErrorCodes | null> = {};
+
+        for (const component of components) {
+          errors[component.name!] = checkProposalField({
+            // @ts-expect-error this is not typed, will throw if not valid
+            fieldOrType: component.type,
+            value: value[component.name!],
+          });
+        }
+
+        if (Object.values(errors).every((v) => v === null)) {
+          return null;
+        }
+
+        return errors;
+      }
+
+      console.warn("tuple default", value, components);
+      return null;
+
+    case "tuple[]":
+      if (Array.isArray(value)) {
+        const errors = value.map((v) =>
+          checkProposalField({
+            fieldOrType: "tuple",
+            value: v,
+            components,
+          }),
+        );
+
+        if (errors.every((v) => v === null)) {
+          return null;
+        }
+
+        return errors;
+      }
+
+      console.warn("tuple[] default", value, components);
+      return null;
+
     default:
       console.error(`Invalid field or type: ${fieldOrType}`);
+
       return null;
   }
 };
@@ -159,13 +218,19 @@ export const getBodyErrors = (
   currentTopic: GovernanceTopic,
 ) => {
   const e: CustomProposalErrors = {};
-  e.title = checkProposalField("title", proposal.title);
-  e.description = checkProposalField("description", proposal.description);
-  e.forumLink = checkProposalField(
-    "forumLink",
-    proposal.forumLink,
-    currentTopic.forumLink,
-  );
+  e.title = checkProposalField({
+    fieldOrType: "title",
+    value: proposal.title,
+  });
+  e.description = checkProposalField({
+    fieldOrType: "description",
+    value: proposal.description,
+  });
+  e.forumLink = checkProposalField({
+    fieldOrType: "forumLink",
+    value: proposal.forumLink,
+    baseUrl: currentTopic.forumLink,
+  });
 
   return e;
 };
@@ -187,8 +252,6 @@ export const useCreateProposal = ({
     ...initialData,
     topic: new Set(),
   });
-
-  const router = useRouter();
 
   const { currentTopic } = useGovernance();
 
@@ -231,10 +294,16 @@ export const useCreateProposal = ({
       e.actions = proposal.actions
         .map((action, idx): CustomProposalActionErrors => {
           const errors: CustomProposalActionErrors = {};
-          errors.target = checkProposalField("address", action.target);
+          errors.target = checkProposalField({
+            fieldOrType: "address",
+            value: action.target,
+          });
 
           if (action.type === ProposalTypeEnum.CUSTOM_PROPOSAL) {
-            errors.ABI = checkProposalField("abi", action.ABI);
+            errors.ABI = checkProposalField({
+              fieldOrType: "abi",
+              value: action.ABI,
+            });
             if (!action.functionSignature) {
               errors.functionSignature = ProposalErrorCodes.REQUIRED;
             } else {
@@ -243,16 +312,30 @@ export const useCreateProposal = ({
                   action.functionSignature,
                 );
                 if (parsedSignatureAbi.type !== "function") {
+                  console.error(
+                    "parsedSignatureAbi is not a function",
+                    parsedSignatureAbi,
+                  );
+
                   errors.functionSignature = ProposalErrorCodes.INVALID_ABI;
                 } else {
                   errors.calldata = parsedSignatureAbi.inputs.map(
                     (input, index) => {
                       try {
-                        return checkProposalField(
+                        if ("components" in input) {
+                          return checkProposalField({
+                            // @ts-expect-error this is not typed, will throw if not valid
+                            fieldOrType: input.type,
+                            value: action.calldata?.[index],
+                            components: input.components,
+                          });
+                        }
+
+                        return checkProposalField({
                           // @ts-expect-error this is not typed, will throw if not valid
-                          input.type,
-                          action.calldata?.[index],
-                        );
+                          fieldOrType: input.type,
+                          value: action.calldata?.[index],
+                        });
                       } catch (error) {
                         return null;
                       }
@@ -269,7 +352,10 @@ export const useCreateProposal = ({
               }
             }
           } else if (action.type === ProposalTypeEnum.UPDATE_REWARDS_GAUGE) {
-            errors.vault = checkProposalField("address", action.vault);
+            errors.vault = checkProposalField({
+              fieldOrType: "address",
+              value: action.vault,
+            });
             errors.isFriend = null; //checkProposalField("bool", action.isFriend);
             if (!errors.vault) {
               actions[idx] = encodeFunctionData({
@@ -283,8 +369,14 @@ export const useCreateProposal = ({
               });
             }
           } else if (action.type === ProposalTypeEnum.ERC20_TRANSFER) {
-            errors.amount = checkProposalField("uint256", action.amount);
-            errors.to = checkProposalField("address", action.to);
+            errors.amount = checkProposalField({
+              fieldOrType: "uint256",
+              value: action.amount,
+            });
+            errors.to = checkProposalField({
+              fieldOrType: "address",
+              value: action.to,
+            });
             if (!errors.amount && !errors.to) {
               actions[idx] = encodeFunctionData({
                 abi: erc20Abi,

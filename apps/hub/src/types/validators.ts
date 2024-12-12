@@ -1,6 +1,9 @@
-import { type ActiveIncentive, type CuttingBoardWeight } from "@bera/berajs";
+import {
+  type CuttingBoardWeight,
+  type RewardVaultIncentive,
+} from "@bera/berajs";
 
-export interface ActiveIncentiveWithVault extends ActiveIncentive {
+export interface ActiveIncentiveWithVault extends RewardVaultIncentive {
   // TODO: this should be required
   cuttingBoard?: CuttingBoardWeight;
 }

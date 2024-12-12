@@ -1,5 +1,5 @@
 import React from "react";
-import { ActiveIncentive, useTokenHoneyPrice } from "@bera/berajs";
+import { RewardVaultIncentive, useTokenHoneyPrice } from "@bera/berajs";
 import {
   DataTableColumnHeader,
   FormattedNumber,
@@ -10,7 +10,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { type ActiveIncentiveWithVault } from "~/types/validators";
 import { GaugeHeaderWidget } from "~/components/gauge-header-widget";
 
-export const gauge_incentives_columns: ColumnDef<ActiveIncentive>[] = [
+export const gauge_incentives_columns: ColumnDef<RewardVaultIncentive>[] = [
   {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Incentive Breakdown" />
@@ -71,12 +71,12 @@ export const gauge_incentives_columns: ColumnDef<ActiveIncentive>[] = [
       return (
         <div className="flex flex-col gap-1">
           <FormattedNumber
-            value={row.original.amountLeft}
+            value={row.original.amountRemaining}
             symbol={row.original.token.symbol}
           />
           <span className="text-xs text-muted-foreground">
             <FormattedNumber
-              value={row.original.amountLeft * parseFloat(price ?? "0")}
+              value={row.original.amountRemaining * parseFloat(price ?? "0")}
               symbol="USD"
             />
           </span>
@@ -160,11 +160,14 @@ export const validator_gauge_columns: ColumnDef<ActiveIncentiveWithVault>[] = [
       });
       return (
         <div className="flex flex-col gap-1">
-          <FormattedNumber value={row.original.amountLeft} compact={false} />
+          <FormattedNumber
+            value={row.original.amountRemaining}
+            compact={false}
+          />
           <div className="text-xs text-muted-foreground">
             $
             <FormattedNumber
-              value={row.original.amountLeft * parseFloat(price ?? "0")}
+              value={row.original.amountRemaining * parseFloat(price ?? "0")}
               compact={false}
             />
           </div>

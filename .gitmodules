@@ -6,4 +6,4 @@
 	url = https://github.com/berachain/berancer-sdk.git
 [submodule "secrets"]
 	path = secrets
-	url = https://github.com/berachain/internal-dapps-env.git
+	url = git@github.com:berachain/internal-dapps-env.git

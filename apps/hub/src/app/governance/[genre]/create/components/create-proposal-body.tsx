@@ -33,13 +33,19 @@ export const CreateProposalBody = ({
   const handleNext = useCallback(() => {
     const e: CustomProposalErrors = {};
 
-    e.title = checkProposalField("title", proposal.title);
-    e.description = checkProposalField("description", proposal.description);
-    e.forumLink = checkProposalField(
-      "forumLink",
-      proposal.forumLink,
-      currentTopic.forumLink,
-    );
+    e.title = checkProposalField({
+      fieldOrType: "title",
+      value: proposal.title,
+    });
+    e.description = checkProposalField({
+      fieldOrType: "description",
+      value: proposal.description,
+    });
+    e.forumLink = checkProposalField({
+      fieldOrType: "forumLink",
+      value: proposal.forumLink,
+      baseUrl: currentTopic.forumLink,
+    });
 
     setErrors(e);
 
@@ -114,11 +120,11 @@ export const CreateProposalBody = ({
           }));
           setErrors((errs) => ({
             ...errs,
-            forumLink: checkProposalField(
-              "forumLink",
-              e.target.value,
-              currentTopic.forumLink,
-            ),
+            forumLink: checkProposalField({
+              fieldOrType: "forumLink",
+              value: e.target.value,
+              baseUrl: currentTopic.forumLink,
+            }),
           }));
         }}
       />

@@ -15,7 +15,7 @@ export type UseMultipleTokenInformationResponse = DefaultHookReturnType<
 >;
 
 export type useMultipleTokenInformationArgs = {
-  addresses: string[] | readonly string[];
+  addresses: string[] | readonly string[] | undefined;
 };
 export const useMultipleTokenInformation = (
   args: useMultipleTokenInformationArgs,
@@ -31,7 +31,7 @@ export const useMultipleTokenInformation = (
     QUERY_KEY,
     async () => {
       return Promise.all(
-        args.addresses.map(async (address) => {
+        args.addresses!.map(async (address) => {
           if (!address || !isAddress(address, { strict: false })) {
             throw new Error("Invalid address");
           }

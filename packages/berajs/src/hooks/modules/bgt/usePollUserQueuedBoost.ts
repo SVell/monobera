@@ -19,18 +19,15 @@ export const usePollUserQueuedBoost = (
   options?: DefaultHookOptions,
 ): UsePollValidatorInfoResponse => {
   const publicClient = usePublicClient();
-  const { account, isConnected, config: beraConfig } = useBeraJs();
+  const { account, config: beraConfig } = useBeraJs();
   const config = options?.beraConfigOverride ?? beraConfig;
   const { validatorInfoList } = usePollValidatorInfo();
   const validatorAddressList = validatorInfoList.map(
     (validator) => validator.coinbase,
   );
-  const QUERY_KEY = [
-    account,
-    isConnected,
-    validatorAddressList,
-    "usePollUserQueuedBoost",
-  ];
+  const QUERY_KEY = account
+    ? [account, validatorAddressList, "usePollUserQueuedBoost"]
+    : null;
 
   const swrResponse = useSWR<any>(
     QUERY_KEY,

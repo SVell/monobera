@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Delegate",
   description: "Delegate, Redelegate, or Undelegate your BGT",
 };
+
 export default function Page() {
   return <Incentivize />;
 }

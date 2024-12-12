@@ -1,7 +1,5 @@
 import {
-  BERA_VAULT_REWARDS_ABI,
   Gauge,
-  TransactionActionType,
   useBeraJs,
   usePollVaultsInfo,
   useTokenHoneyPrice,

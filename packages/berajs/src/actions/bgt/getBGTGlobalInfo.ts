@@ -1,4 +1,4 @@
-import type { ActiveIncentive, BeraConfig, Validator } from "~/types";
+import type { BeraConfig, RewardVaultIncentive, Validator } from "~/types";
 
 export interface GlobalInfo {
   bgtInfo: {
@@ -9,8 +9,8 @@ export interface GlobalInfo {
   };
   incentiveCount: number;
   sumAllIncentivesInHoney: string;
-  top3Incentives: { activeIncentives: ActiveIncentive[] };
-  top3Vaults: { vaults: ActiveIncentive[]; total: number };
+  top3Incentives: { activeIncentives: RewardVaultIncentive[] };
+  top3Vaults: { vaults: RewardVaultIncentive[]; total: number };
   top3EmittingValidators: {
     validators: { validator: Validator; stakedVotingPower: number }[];
   };

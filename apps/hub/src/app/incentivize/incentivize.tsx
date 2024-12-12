@@ -7,7 +7,7 @@ import {
   TransactionActionType,
   truncateHash,
   usePollAllowance,
-  usePollIncentivesInfo,
+  useRewardVaultIncentives,
   useSelectedGauge,
   useTokenInformation,
   type Token,
@@ -78,8 +78,12 @@ export const Incentivize = () => {
     token: token,
   });
 
-  const { data: incentive, isLoading: isIncentiveLoading } =
-    usePollIncentivesInfo(token?.address ?? "0x", gauge ?? "0x");
+  const { data: incentives, isLoading: isIncentiveLoading } =
+    useRewardVaultIncentives({
+      address: gauge ?? "0x",
+    });
+
+  const incentive = incentives?.find((i) => i.token === token?.address);
 
   const {
     write,
@@ -219,10 +223,7 @@ export const Incentivize = () => {
           <div className="text-right text-xs font-semibold text-muted-foreground">
             Minimum Incentive Rate:{" "}
             <FormattedNumber
-              value={formatUnits(
-                incentive?.minIncentiveRate,
-                token?.decimals ?? 18,
-              )}
+              value={incentive?.minIncentiveRate}
               compact
               symbol={token?.symbol ?? ""}
             />
@@ -230,8 +231,7 @@ export const Incentivize = () => {
         )}
       </div>
 
-      {parseUnits(incentiveRate, token?.decimals ?? 18) <
-        (incentive?.minIncentiveRate ?? 0n) &&
+      {incentiveRate < (incentive?.minIncentiveRate ?? "0") &&
         incentiveRate !== "" &&
         incentiveRate !== "0" && (
           <Alert variant="destructive">Minimum incentive rate not meet</Alert>

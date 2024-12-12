@@ -19,7 +19,7 @@ export const StatusAction = ({
   const status = proposal.status;
 
   const { data: proposalTimelockState } = useProposalTimelockState({
-    proposalTimelockId: proposal.timelockId,
+    proposalTimelockId: proposal.timelock?.id,
     timelockAddress: governanceTimelockAddress,
   });
 
@@ -36,7 +36,7 @@ export const StatusAction = ({
         status === ProposalStatus.InQueue && (
           <CancelButton
             proposal={proposal}
-            proposalTimelockId={proposal.timelockId}
+            proposalTimelockId={proposal.timelock?.id}
           />
         )
       )}
