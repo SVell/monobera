@@ -231,7 +231,7 @@ export function TokenInput({
             }}
             onChange={(e: any) => {
               const inputValue = e.target.value;
-              const filteredValue = formatInputTokenValue(inputValue); // FIXME: you can type in a huge number this way.
+              const filteredValue = formatInputTokenValue(inputValue); // TODO (#BFE-411): you can type in a huge number this way.
               const [_, decimalPart = ""] = filteredValue.split(".");
               if (decimalPart.length > _maxDecimal) return;
               setAmount?.(filteredValue);

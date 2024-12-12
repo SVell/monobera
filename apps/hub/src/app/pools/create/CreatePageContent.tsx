@@ -74,19 +74,79 @@ export enum ParameterPreset {
   ALGORITHMIC = "Algorithmic Stablecoin",
 }
 
-// FIXME docstrings here.
+/**
+ * Default pool amplification factor (responsiveness to price fluctuations) for USD-backed stablecoins.
+ * @constant {number}
+ */
 const DEFAULT_USD_BACKED_AMPLIFICATION = 2500;
+
+/**
+ * Default pool amplification factor (responsiveness to price fluctuations) for algorithmic stablecoins.
+ * @constant {number}
+ */
 const DEFAULT_ALGORITHMIC_AMPLIFICATION = 200;
+
+/**
+ * Default swap fee for pools is 0.1 %.
+ * NOTE: this will change depending on the pool type (weighted/stable).
+ * @constant {number}
+ */
 const DEFAULT_SWAP_FEE = 0.1;
+
+/**
+ * Default pool type for pools is a composable stable pool, which can be referred to as a 'stable pool'.
+ * @constant {PoolType}
+ */
 const DEFAULT_POOL_TYPE = PoolType.ComposableStable;
+
+/**
+ * Default amplification factor for pools is a higher value for USD-backed stablecoin pools (max 5k).
+ * @constant {number}
+ */
 const DEFAULT_AMPLIFICATION = DEFAULT_USD_BACKED_AMPLIFICATION;
+
+/**
+ * Default owner for pools is fixed type, which is the 0x0 address.
+ * @constant {Address}
+ */
 const DEFAULT_OWNER = ZERO_ADDRESS;
+
+/**
+ * Default ownership type for pools is Fixed which yields the 0x0 owner address.
+ * @constant {OwnershipType}
+ */
 const DEFAULT_OWNERSHIP_TYPE = OwnershipType.Fixed;
+
+/**
+ * Default tokens for pools is two empty tokens.
+ * NOTE: if in the future we streamline the token selection process, we might consider tying this closer to TokenInputs
+ * @constant {Token[]}
+ */
 const DEFAULT_TOKENS = [emptyToken, emptyToken];
+
+/**
+ * Default liquidity for pools is two empty tokens.
+ * @constant {TokenInputType[]}
+ */
 const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
+
+/**
+ * Default weights for pools is an event split since we default to two tokens.
+ * @constant {bigint[]}
+ */
 const DEFAULT_WEIGHTS = [500000000000000000n, 500000000000000000n];
+
+/**
+ * Default parameter preset for pools is USD-backed stablecoin preset.
+ * @constant {ParameterPreset}
+ */
 const DEFAULT_PARAMETER_PRESET = ParameterPreset.USDBACKED;
-const LAST_FORM_STEP_NUM = 4; // FIXME enum?
+
+/**
+ * Last form step number.
+ * @constant {number}
+ */
+const LAST_FORM_STEP_NUM = 4; // NOTE: in the future we might consider making this more dynamic/strongly typed via enums.
 
 export default function CreatePageContent() {
   const router = useRouter();
@@ -462,7 +522,6 @@ export default function CreatePageContent() {
         <div className="flex w-full flex-col gap-12 xl:flex-row">
           <ProcessSteps
             titles={[
-              // FIXME: we should use a stepwise enum here
               "Pool Type",
               "Select Tokens",
               "Deposit Liquidity",
