@@ -22,7 +22,7 @@ export function SwapFeeInput({
     const rawValue = value.replace("%", ""); // NOTE: we need to remove '%' for parsing the actual value
     const parsedValue = parseFloat(rawValue);
 
-    if (!Number(parsedValue)) {
+    if (Number(parsedValue)) {
       setFee(parsedValue);
       if (parsedValue >= 0.00001 && parsedValue <= 10) {
         setIsInvalid(false);
