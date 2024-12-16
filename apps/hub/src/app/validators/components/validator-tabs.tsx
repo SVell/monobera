@@ -1,5 +1,9 @@
-import { useState } from "react";
-import { useBeraJs, type Validator } from "@bera/berajs";
+import { useEffect, useState } from "react";
+import {
+  useBeraJs,
+  useValidatorByOperator,
+  type Validator,
+} from "@bera/berajs";
 import {
   Select,
   SelectContent,
@@ -13,28 +17,48 @@ import { ValidatorOverview } from "../validator/validator-overview";
 import { ValidatorPolData } from "../validator/validator-pol-data";
 import { ValidatorAnalytics } from "./validator-analytics";
 import { ValidatorConfiguration } from "./validator-configuration";
-import { ValidatorEvents } from "./validator-events";
+
+// import { ValidatorEvents } from "./validator-events";
+
+type ValidatorTabValue = "overview" | "configuration" | "analytics" | "events";
 
 export const ValidatorTabs = ({ validator }: { validator: Validator }) => {
   const { account } = useBeraJs();
+  const { data } = useValidatorByOperator(account ?? "0x");
   const isValidatorWallet =
-    account?.toLowerCase() === validator.operator.toLowerCase();
+    data?.validators[0]?.publicKey === validator.coinbase;
+
   const [dayRange, setDayRange] = useState("30");
+  const [activeTab, setActiveTab] = useState<ValidatorTabValue>("overview");
+
+  useEffect(() => {
+    if (activeTab === "configuration" && !isValidatorWallet) {
+      setActiveTab("overview");
+    }
+  }, [isValidatorWallet, activeTab]);
 
   return (
-    <Tabs className="mt-4" defaultValue="overview">
+    <Tabs
+      className="mt-4"
+      value={activeTab}
+      onValueChange={(value: string) =>
+        setActiveTab(value as ValidatorTabValue)
+      }
+      defaultValue="overview"
+    >
       <div className="mb-6 flex w-full flex-col justify-between gap-6 sm:flex-row">
         <TabsList variant="ghost">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          {/* TODO: Uncomment this when we have a working contract for configuration */}
-          {/* {isValidatorWallet && (
+          {isValidatorWallet && (
             <TabsTrigger value="configuration">Configuration</TabsTrigger>
-          )} */}
+          )}
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           {/* <TabsTrigger value="events">Events</TabsTrigger> */}
         </TabsList>
         <TabsContent value="analytics">
-          <Select onValueChange={(value: string) => setDayRange(value)}>
+          <Select
+            onValueChange={(value: "30" | "60" | "90") => setDayRange(value)}
+          >
             <SelectTrigger className="flex w-[120px] items-center justify-between rounded-md border border-border">
               <SelectValue placeholder={"30 Days"} defaultValue={"30"} />
             </SelectTrigger>
@@ -67,7 +91,9 @@ export const ValidatorTabs = ({ validator }: { validator: Validator }) => {
         <ValidatorPolData validator={validator} />
       </TabsContent>
       <TabsContent value="configuration">
-        <ValidatorConfiguration validatorAddress={validator.coinbase} />
+        <ValidatorConfiguration
+          validatorPublicKey={data?.validators[0]?.publicKey ?? "0x"}
+        />
       </TabsContent>
       <TabsContent value="analytics">
         <ValidatorAnalytics

@@ -2,8 +2,15 @@
   "name": "monobera",
   "private": true,
   "engines": {
-    "node": ">=v18.18.0",
+    "node": ">=v20.17.0",
     "pnpm": ">=9"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "<19",
+      "react-dom": "<19",
+      "@types/react": "<19"
+    }
   },
   "packageManager": "pnpm@9.1.4",
   "scripts": {
@@ -45,7 +52,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.5.3",
-    "@types/mixpanel-browser": "^2.49.0",
     "jscpd": "^3.5.10",
     "knip": "^5.7.0",
     "next": "^14.2.11",

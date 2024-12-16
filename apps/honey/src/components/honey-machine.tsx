@@ -2,19 +2,20 @@
 
 import { useEffect, useState } from "react";
 import {
-  honeyFactoryAbi,
+  Token,
   TransactionActionType,
+  honeyFactoryAbi,
   truncateHash,
 } from "@bera/berajs";
 import { honeyFactoryAddress } from "@bera/config";
 import {
   ConnectButton,
+  Identicon,
   SSRSpinner,
   Spinner,
   TokenInput,
   useTxn,
 } from "@bera/shared-ui";
-import { Identicon } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
 import { Tabs, TabsList, TabsTrigger } from "@bera/ui/tabs";
 import {
@@ -24,7 +25,7 @@ import {
   useRive,
   useStateMachineInput,
 } from "@rive-app/react-canvas";
-import { parseUnits, erc20Abi } from "viem";
+import { erc20Abi, parseUnits } from "viem";
 
 import { LoadingBee } from "~/components/loadingBee";
 import { usePsm } from "~/hooks/usePsm";
@@ -61,6 +62,7 @@ export function HoneyMachine() {
     setSelectedFrom,
     setSelectedTo,
     setFromAmount,
+    setChangedAsset,
     setToAmount,
     setIsTyping,
   } = usePsm();
@@ -104,7 +106,7 @@ export function HoneyMachine() {
 
   const { write } = useTxn({
     message: needsApproval
-      ? `Approve ${selectedFrom?.symbol}`
+      ? `Approve ${selectedFrom?.[0]?.symbol}`
       : isMint
         ? `Mint ${toAmount} HONEY`
         : `Redeem ${fromAmount} HONEY`,
@@ -134,7 +136,7 @@ export function HoneyMachine() {
       } else {
         if (userReady.value) userReady.value = false;
         if (buttonState) buttonState.value = 0;
-        setFromAmount(undefined);
+        setFromAmount({});
       }
     }
   }, [isReady, userReady]);
@@ -195,14 +197,14 @@ export function HoneyMachine() {
 
   const performApproval = () => {
     write({
-      address: selectedFrom?.address as `0x${string}`,
+      address: selectedFrom?.[0]?.address as `0x${string}`,
       abi: erc20Abi as unknown as (typeof erc20Abi)[],
       functionName: "approve",
       params: [
         honeyFactoryAddress,
         parseUnits(
           `${fromAmount ?? "0"}` as `${number}`,
-          selectedFrom?.decimals ?? 18,
+          selectedFrom?.[0]?.decimals ?? 18,
         ),
       ],
     });
@@ -295,18 +297,26 @@ export function HoneyMachine() {
               <ul className="relative">
                 <div className="rounded-t-md border-2 border-b-0 border-foreground bg-muted">
                   <TokenInput
-                    selected={selectedFrom}
-                    selectedTokens={[selectedFrom, selectedTo]}
-                    onTokenSelection={setSelectedFrom}
-                    amount={fromAmount}
-                    balance={fromBalance?.formattedBalance}
-                    selectable={selectedFrom?.address !== honey?.address}
+                    selected={selectedFrom?.[0]}
+                    selectedTokens={selectedFrom}
+                    onTokenSelection={(amount) => {
+                      setSelectedFrom((prevAmount: Token[]) =>
+                        amount && prevAmount ? [amount, prevAmount[1]] : [],
+                      );
+                    }}
+                    amount={fromAmount[selectedFrom?.[0]?.address!]}
+                    balance={fromBalance?.[0]}
+                    selectable={selectedFrom?.[0]?.address !== honey?.address}
                     customTokenList={collateralList}
                     showExceeding
                     setIsTyping={setIsTyping}
                     setAmount={(amount) => {
+                      setChangedAsset(selectedFrom?.[0]?.address);
                       setGivenIn(true);
-                      setFromAmount(amount);
+                      setFromAmount((prevAmount) => ({
+                        ...prevAmount,
+                        [selectedFrom?.[0]?.address!]: amount,
+                      }));
                     }}
                   />
                 </div>
@@ -315,18 +325,26 @@ export function HoneyMachine() {
                 )}
                 <div className="rounded-b-md border-2 border-foreground bg-muted">
                   <TokenInput
-                    selected={selectedTo}
-                    selectedTokens={[selectedFrom, selectedTo]}
-                    onTokenSelection={setSelectedTo}
-                    amount={toAmount}
-                    setAmount={(amount) => {
-                      setGivenIn(false);
-                      setToAmount(amount);
+                    selected={selectedTo?.[1]}
+                    selectedTokens={selectedTo}
+                    onTokenSelection={(amount) => {
+                      setSelectedTo((prevAmount: Token[]) =>
+                        amount && prevAmount ? [amount, prevAmount[1]] : [],
+                      );
                     }}
-                    selectable={selectedTo?.address !== honey?.address}
+                    amount={toAmount[selectedTo?.[1]?.address!]}
+                    setAmount={(amount) => {
+                      setChangedAsset(selectedTo?.[1]?.address);
+                      setGivenIn(false);
+                      setFromAmount((prevAmount) => ({
+                        ...prevAmount,
+                        [selectedTo?.[1]?.address!]: amount,
+                      }));
+                    }}
+                    selectable={selectedTo?.[0]?.address !== honey?.address}
                     customTokenList={collateralList}
                     hideMax
-                    balance={toBalance?.formattedBalance}
+                    balance={toBalance?.[0]}
                     setIsTyping={setIsTyping}
                   />
                 </div>

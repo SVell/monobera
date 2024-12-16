@@ -4,15 +4,15 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@apollo/client";
+import { honeyAbi } from "@bera/berajs";
 import { cloudinaryUrl, honeyTokenAddress, hubUrl } from "@bera/config";
 import { GetGlobalData } from "@bera/graphql";
 import { FormattedNumber } from "@bera/shared-ui";
 import { Icons } from "@bera/ui/icons";
+import { formatEther } from "viem";
 import { useReadContract } from "wagmi";
 
 import DataCard from "./data-card";
-import { honeyAbi } from "@bera/berajs";
-import { formatEther } from "viem";
 
 export default function Data({ arcade }: { arcade: boolean }) {
   const { loading, data } = useQuery(GetGlobalData);
@@ -92,15 +92,15 @@ export default function Data({ arcade }: { arcade: boolean }) {
                 compactThreshold={9_999_999_999}
               />
             }
-            icon={<Icons.candleStick />}
             arcade={arcade}
+            icon={<Icons.candleStick className="h-5 w-5" />}
             isLoading={loading}
           />
           <DataCard
             title="Honey Price"
             value="$1.00"
-            icon={<Icons.honey className="h-6 w-6" />}
             arcade={arcade}
+            icon={<Icons.honey className="h-5 w-5" />}
             isLoading={loading}
           />
         </div>

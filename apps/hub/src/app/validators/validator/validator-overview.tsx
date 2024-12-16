@@ -80,16 +80,16 @@ export const ValidatorOverview = ({ validator }: { validator: Validator }) => {
 
   const { data: tokenHoneyPrices } = useTokenHoneyPrices({
     tokenAddresses: activeIncentivesTokens.map(
-      (t: Token) => t.address,
+      (t: Token) => t?.address,
     ) as Address[],
   });
 
   const returnPerBgt: number = activeIncentivesArray?.reduce(
     (acc: number, ab: ActiveIncentiveWithVault) => {
       const tokenPrice = parseFloat(
-        tokenHoneyPrices?.[ab.token.address] ?? "0",
+        tokenHoneyPrices?.[ab?.token.address] ?? "0",
       );
-      return acc + ab.incentiveRate * tokenPrice;
+      return acc + ab?.incentiveRate * tokenPrice;
     },
     0,
   );

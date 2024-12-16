@@ -1,3 +1,4 @@
+import { isArray } from "lodash";
 import useSWR, { mutate } from "swr";
 import { Address } from "viem";
 import { usePublicClient } from "wagmi";
@@ -35,7 +36,10 @@ export const usePollAllowance = (
   const method = "allowance";
 
   const QUERY_KEY =
-    publicClient && args.token?.address !== ADDRESS_ZERO
+    publicClient &&
+    args.token &&
+    !isArray(args.token) &&
+    args.token.address !== ADDRESS_ZERO
       ? [
           account,
           args.token?.address.toLowerCase(),

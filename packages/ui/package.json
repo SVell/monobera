@@ -43,7 +43,7 @@
     "chartjs-plugin-annotation": "^3.0.1",
     "class-variance-authority": "^0.6.0",
     "clsx": "^1.2.1",
-    "cmdk": "^0.2.0",
+    "cmdk": "^1.0.4",
     "faker": "5.5.3",
     "lucide-react": "^0.263.0",
     "react-chartjs-2": "^5.2.0",

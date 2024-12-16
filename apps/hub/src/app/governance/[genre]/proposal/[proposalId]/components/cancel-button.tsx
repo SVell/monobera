@@ -2,7 +2,7 @@ import {
   GOVERNANCE_ABI,
   governanceTimelockAbi,
   useBeraJs,
-  useCancellerRole,
+  useIsCanceller,
   useProposalState,
 } from "@bera/berajs";
 import { governanceTimelockAddress } from "@bera/config";
@@ -33,7 +33,7 @@ export const CancelButton = ({
   proposal: ProposalSelectionFragment;
   proposalTimelockId?: Address;
 }) => {
-  const { data: cancellerRole } = useCancellerRole();
+  const { account } = useBeraJs();
   const { governorAddress } = useGovernance();
 
   const {
@@ -45,7 +45,7 @@ export const CancelButton = ({
     governorAddress,
   });
 
-  const { account } = useBeraJs();
+  const { data: isCanceller } = useIsCanceller({ account });
 
   const { write, ModalPortal } = useTxn({
     message: "Cancelling proposal",
@@ -63,10 +63,14 @@ export const CancelButton = ({
 
   const canCancel =
     !isCanceledOnChain &&
-    ((proposal.status === ProposalStatus.PendingExecution &&
-      account === cancellerRole) ||
-      (proposal.status === ProposalStatus.Pending &&
-        account?.toLowerCase() === proposal.proposer));
+    account &&
+    (([ProposalStatus.InQueue, ProposalStatus.PendingExecution].includes(
+      proposal.status,
+    ) &&
+      isCanceller) ||
+      (proposal.status && account?.toLowerCase() === proposal.proposer));
+
+  console.log({ isCanceller, canCancel, proposal });
 
   return (
     <>

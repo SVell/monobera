@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
 import {
   ADDRESS_ZERO,
@@ -15,6 +16,7 @@ import {
 import { balancerVaultAddress, cloudinaryUrl } from "@bera/config";
 import {
   ActionButton,
+  AddLiquiditySuccess,
   ApproveButton,
   PreviewToken,
   Spinner,
@@ -23,31 +25,30 @@ import {
   TokenList,
   TxnPreview,
   getRewardsVaultUrl,
+  useAnalytics,
   useSlippage,
   useTxn,
 } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
 import { Button } from "@bera/ui/button";
-import { Switch } from "@bera/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@bera/ui/card";
 import { Icons } from "@bera/ui/icons";
-import { Address, formatEther } from "viem";
-
-import { SettingsPopover } from "~/components/settings-popover";
 import { Skeleton } from "@bera/ui/skeleton";
-import { AddLiquiditySuccess } from "@bera/shared-ui";
-import Link from "next/link";
-import useMultipleTokenApprovalsWithSlippage from "~/hooks/useMultipleTokenApprovalsWithSlippage";
+import { Switch } from "@bera/ui/switch";
+import { beraToken, wBeraToken } from "@bera/wagmi";
 import {
   AddLiquidityKind,
   vaultV2Abi,
 } from "@berachain-foundation/berancer-sdk";
-import { AddLiquidityDetails } from "./AddLiquidiyDetails";
-import { getPoolUrl } from "../../fetchPools";
-import { beraToken, wBeraToken } from "@bera/wagmi";
-import { useAddLiquidity } from "./useAddLiquidity";
-import AddLiquidityError from "./AddLiquidityError";
+import { Address, formatEther, formatUnits } from "viem";
+
+import { SettingsPopover } from "~/components/settings-popover";
 import { usePool } from "~/b-sdk/usePool";
+import useMultipleTokenApprovalsWithSlippage from "~/hooks/useMultipleTokenApprovalsWithSlippage";
+import { getPoolUrl } from "../../fetchPools";
+import AddLiquidityError from "./AddLiquidityError";
+import { AddLiquidityDetails } from "./AddLiquidiyDetails";
+import { useAddLiquidity } from "./useAddLiquidity";
 
 interface IAddLiquidityContent {
   poolId: string;
@@ -128,11 +129,35 @@ export default function AddLiquidityContent({ poolId }: IAddLiquidityContent) {
     setInput([]);
   };
   const { refresh } = usePollWalletBalances();
+  const { captureException, track } = useAnalytics();
   const { write, ModalPortal } = useTxn({
     message: `Add liquidity to ${pool?.name}`,
     onSuccess: async () => {
+      try {
+        track("pool_deposit", {
+          poolId: pool?.id,
+          poolName: pool?.name,
+          tokensIn: queryOutput?.amountsIn.map((a) =>
+            pool?.tokens
+              ? pool.tokens.find(
+                  (t) =>
+                    t.address.toLowerCase() === a.token.address.toLowerCase(),
+                )?.symbol
+              : a.token.address,
+          ),
+          amountsIn: queryOutput?.amountsIn.map((a) =>
+            formatUnits(a.amount, a.token.decimals),
+          ),
+        });
+      } catch (e) {
+        captureException(e);
+      }
       reset();
       refresh();
+    },
+    onError: (e) => {
+      track("pool_deposit_failed");
+      captureException(e);
     },
     CustomSuccessModal: pool?.address ? AddLiquiditySuccess : undefined,
     customSuccessModalProps: pool?.address
@@ -165,7 +190,7 @@ export default function AddLiquidityContent({ poolId }: IAddLiquidityContent) {
   return (
     <div className="mt-16 flex w-full flex-col items-center justify-center gap-4">
       {ModalPortal}
-      <Card className="mx-6 w-full items-center bg-background p-4 sm:mx-0 sm:w-[480px] flex flex-col">
+      <Card className="mx-6 flex w-full flex-col items-center bg-background p-4 sm:mx-0 sm:w-[480px]">
         {!pool && isLoading ? (
           <Skeleton className="h-8 w-40 self-center" />
         ) : (

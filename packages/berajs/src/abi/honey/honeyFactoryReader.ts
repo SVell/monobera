@@ -1,709 +1,820 @@
 export const honeyFactoryReaderAbi = [
   {
+    inputs: [],
+    stateMutability: "nonpayable",
     type: "constructor",
+  },
+  {
     inputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "DEFAULT_ADMIN_ROLE",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "UPGRADE_INTERFACE_VERSION",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "string",
-        internalType: "string",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getRoleAdmin",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "grantRole",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "account",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "hasRole",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "account",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "honeyFactory",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "contract HoneyFactory",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "initialize",
-    inputs: [
-      {
-        name: "admin",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "honeyFactory_",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "previewHoneyToRedeem",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "exactAmount",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "previewMint",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "amount",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "honeyAmount",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "previewRedeem",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "honeyAmount",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "previewRedeemBasketMode",
-    inputs: [
-      {
-        name: "honeyAmount",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "res",
-        type: "uint256[]",
-        internalType: "uint256[]",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "previewRequiredCollateral",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "exactHoneyAmount",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "res",
-        type: "uint256[]",
-        internalType: "uint256[]",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "proxiableUUID",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "renounceRole",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "callerConfirmation",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "revokeRole",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "account",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "supportsInterface",
-    inputs: [
-      {
-        name: "interfaceId",
-        type: "bytes4",
-        internalType: "bytes4",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "upgradeToAndCall",
-    inputs: [
-      {
-        name: "newImplementation",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "data",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
-    outputs: [],
-    stateMutability: "payable",
-  },
-  {
-    type: "event",
-    name: "Initialized",
-    inputs: [
-      {
-        name: "version",
-        type: "uint64",
-        indexed: false,
-        internalType: "uint64",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "RoleAdminChanged",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        indexed: true,
-        internalType: "bytes32",
-      },
-      {
-        name: "previousAdminRole",
-        type: "bytes32",
-        indexed: true,
-        internalType: "bytes32",
-      },
-      {
-        name: "newAdminRole",
-        type: "bytes32",
-        indexed: true,
-        internalType: "bytes32",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "RoleGranted",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        indexed: true,
-        internalType: "bytes32",
-      },
-      {
-        name: "account",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-      {
-        name: "sender",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "RoleRevoked",
-    inputs: [
-      {
-        name: "role",
-        type: "bytes32",
-        indexed: true,
-        internalType: "bytes32",
-      },
-      {
-        name: "account",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-      {
-        name: "sender",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "Upgraded",
-    inputs: [
-      {
-        name: "implementation",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "error",
     name: "AccessControlBadConfirmation",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
-    name: "AccessControlUnauthorizedAccount",
     inputs: [
       {
+        internalType: "address",
         name: "account",
         type: "address",
-        internalType: "address",
       },
       {
+        internalType: "bytes32",
         name: "neededRole",
         type: "bytes32",
-        internalType: "bytes32",
       },
     ],
+    name: "AccessControlUnauthorizedAccount",
+    type: "error",
   },
   {
-    type: "error",
-    name: "AddressEmptyCode",
     inputs: [
       {
+        internalType: "address",
         name: "target",
         type: "address",
-        internalType: "address",
       },
     ],
+    name: "AddressEmptyCode",
+    type: "error",
   },
   {
-    type: "error",
-    name: "AmountOutOfRange",
     inputs: [],
+    name: "AmountOutOfRange",
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
     name: "AssetIsBadCollateral",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
     name: "AssetIsNotBadCollateral",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
     name: "AssetNotRegistered",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    type: "error",
   },
   {
-    type: "error",
-    name: "ERC1967InvalidImplementation",
     inputs: [
       {
+        internalType: "address",
         name: "implementation",
         type: "address",
-        internalType: "address",
       },
     ],
+    name: "ERC1967InvalidImplementation",
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "ERC1967NonPayable",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "ExceedGlobalCap",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "ExceedRelativeCap",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "FailedCall",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
-    name: "InsufficientAssets",
     inputs: [
       {
+        internalType: "uint256",
         name: "assets",
         type: "uint256",
-        internalType: "uint256",
       },
       {
+        internalType: "uint256",
         name: "shares",
         type: "uint256",
-        internalType: "uint256",
       },
     ],
+    name: "InsufficientAssets",
+    type: "error",
   },
   {
-    type: "error",
-    name: "InsufficientRecapitalizeAmount",
     inputs: [
       {
+        internalType: "uint256",
         name: "amount",
         type: "uint256",
-        internalType: "uint256",
       },
     ],
+    name: "InsufficientRecapitalizeAmount",
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "InvalidInitialization",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "LiquidationDisabled",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "LiquidationWithReferenceCollateral",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
-    name: "MismatchedOwner",
     inputs: [
       {
+        internalType: "address",
         name: "owner",
         type: "address",
-        internalType: "address",
       },
       {
+        internalType: "address",
         name: "expectedOwner",
         type: "address",
-        internalType: "address",
       },
     ],
+    name: "MismatchedOwner",
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "NotFactory",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "NotInitializing",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
-    name: "NotPegged",
     inputs: [
       {
+        internalType: "address",
         name: "asset",
         type: "address",
-        internalType: "address",
       },
     ],
+    name: "NotPegged",
+    type: "error",
   },
   {
-    type: "error",
-    name: "OverOneHundredPercentRate",
     inputs: [
       {
+        internalType: "uint256",
         name: "rate",
         type: "uint256",
-        internalType: "uint256",
       },
     ],
+    name: "OverOneHundredPercentRate",
+    type: "error",
   },
   {
-    type: "error",
-    name: "RecapitalizeNotNeeded",
     inputs: [
       {
+        internalType: "address",
         name: "asset",
         type: "address",
-        internalType: "address",
       },
     ],
+    name: "RecapitalizeNotNeeded",
+    type: "error",
   },
   {
-    type: "error",
-    name: "UUPSUnauthorizedCallContext",
     inputs: [],
+    name: "UUPSUnauthorizedCallContext",
+    type: "error",
   },
   {
-    type: "error",
-    name: "UUPSUnsupportedProxiableUUID",
     inputs: [
       {
+        internalType: "bytes32",
         name: "slot",
         type: "bytes32",
-        internalType: "bytes32",
       },
     ],
+    name: "UUPSUnsupportedProxiableUUID",
+    type: "error",
   },
   {
-    type: "error",
-    name: "UnauthorizedCaller",
     inputs: [
       {
+        internalType: "address",
         name: "caller",
         type: "address",
-        internalType: "address",
       },
       {
+        internalType: "address",
         name: "expectedCaller",
         type: "address",
-        internalType: "address",
       },
     ],
+    name: "UnauthorizedCaller",
+    type: "error",
   },
   {
-    type: "error",
-    name: "UnderNinetyEightPercentRate",
     inputs: [
       {
+        internalType: "uint256",
         name: "rate",
         type: "uint256",
-        internalType: "uint256",
       },
     ],
+    name: "UnderNinetyEightPercentRate",
+    type: "error",
   },
   {
+    inputs: [],
+    name: "UnexpectedBasketModeStatus",
     type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
     name: "VaultAlreadyRegistered",
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "VaultPaused",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "ZeroAddress",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
+    inputs: [],
     name: "ZeroAmount",
-    inputs: [],
+    type: "error",
   },
   {
-    type: "error",
-    name: "ZeroWeight",
     inputs: [
       {
+        internalType: "address",
         name: "asset",
         type: "address",
-        internalType: "address",
       },
     ],
+    name: "ZeroWeight",
+    type: "error",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint64",
+        name: "version",
+        type: "uint64",
+      },
+    ],
+    name: "Initialized",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "previousAdminRole",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "newAdminRole",
+        type: "bytes32",
+      },
+    ],
+    name: "RoleAdminChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+    ],
+    name: "RoleGranted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+    ],
+    name: "RoleRevoked",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "implementation",
+        type: "address",
+      },
+    ],
+    name: "Upgraded",
+    type: "event",
+  },
+  {
+    inputs: [],
+    name: "DEFAULT_ADMIN_ROLE",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "UPGRADE_INTERFACE_VERSION",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+    ],
+    name: "getRoleAdmin",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "grantRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "hasRole",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "honeyFactory",
+    outputs: [
+      {
+        internalType: "contract HoneyFactory",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "admin",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "honeyFactory_",
+        type: "address",
+      },
+    ],
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "exactAmount",
+        type: "uint256",
+      },
+    ],
+    name: "previewHoneyToRedeem",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "previewMint",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "honeyAmount",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "honey",
+        type: "uint256",
+      },
+    ],
+    name: "previewMintCollaterals",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "collaterals",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "previewMintHoney",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "collaterals",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256",
+        name: "honey",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "honeyAmount",
+        type: "uint256",
+      },
+    ],
+    name: "previewRedeem",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "honeyAmount",
+        type: "uint256",
+      },
+    ],
+    name: "previewRedeemBasketMode",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "res",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "honey",
+        type: "uint256",
+      },
+    ],
+    name: "previewRedeemCollaterals",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "collaterals",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "previewRedeemHoney",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "collaterals",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256",
+        name: "honey",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "exactHoneyAmount",
+        type: "uint256",
+      },
+    ],
+    name: "previewRequiredCollateral",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "res",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "proxiableUUID",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "callerConfirmation",
+        type: "address",
+      },
+    ],
+    name: "renounceRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "revokeRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes4",
+        name: "interfaceId",
+        type: "bytes4",
+      },
+    ],
+    name: "supportsInterface",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "upgradeToAndCall",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
   },
 ] as const;

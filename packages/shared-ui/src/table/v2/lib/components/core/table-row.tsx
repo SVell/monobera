@@ -10,6 +10,8 @@ export interface TableRowProps<TData> {
   flexTable?: boolean;
   onRowClick?: (row: any) => void;
   onRowHover?: (row: any) => void;
+  lastRowBorder?: boolean;
+  lastRow?: boolean;
 }
 
 export const TableRow: <TData>(
@@ -22,11 +24,16 @@ export const TableRow: <TData>(
   className,
   children,
   flexTable,
+  lastRowBorder,
+  lastRow,
 }) => {
   return (
     <TableRowComponent
       key={row.id}
-      style={{ borderBottomWidth: "1px", ...(style ?? {}) }}
+      style={{
+        borderBottomWidth: !lastRowBorder && lastRow ? "0px" : "1px",
+        ...(style ?? {}),
+      }}
       onClick={() => onRowClick?.(row as any)}
       onMouseOver={() => onRowHover?.(row as any)}
       data-state={row.getIsSelected() && "selected"}

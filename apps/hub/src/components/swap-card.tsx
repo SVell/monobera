@@ -205,10 +205,18 @@ export function SwapCard({
     actionType: TransactionActionType.SWAP,
     message: `Swap ${selectedFrom?.symbol} to ${selectedTo?.symbol}`,
     onSuccess: () => {
-      track("swap_token_success", {
-        tokenFrom: selectedFrom?.symbol,
-        tokenTo: selectedTo?.symbol,
-      });
+      if (!selectedFrom?.symbol || !selectedTo?.symbol) {
+        captureException(new Error("swap_with_unknown_symbols"));
+      } else if (!fromAmount || !toAmount) {
+        captureException(new Error("swap_with_unknown_amounts"));
+      } else {
+        track("swap", {
+          tokenFrom: selectedFrom.symbol,
+          tokenTo: selectedTo.symbol,
+          fromAmount: fromAmount,
+          toAmount: toAmount,
+        });
+      }
       setFromAmount(undefined);
       setSwapAmount("");
       setToAmount(undefined);
@@ -220,11 +228,11 @@ export function SwapCard({
       setOpenPreview(false);
     },
     onError: (e: Error | undefined) => {
-      track("swap_token_failed", {
+      track("swap_failed", {
         tokenFrom: selectedFrom?.symbol,
         tokenTo: selectedTo?.symbol,
       });
-      captureException(new Error("swap_token_failed"), {
+      captureException(new Error("swap_failed"), {
         data: {
           tokenFrom: selectedFrom?.symbol,
           tokenTo: selectedTo?.symbol,
@@ -289,7 +297,15 @@ export function SwapCard({
   } = useTxn({
     message: "Redeeming BGT for BERA",
     actionType: TransactionActionType.REDEEM_BGT,
+    onError: () => {
+      captureException("redeem_error");
+    },
     onSuccess: () => {
+      try {
+        track("redeem", { fromAmount: fromAmount, toAmount: toAmount });
+      } catch (e) {
+        captureException(e);
+      }
       refreshBalance();
       setFromAmount("");
       setToAmount("");

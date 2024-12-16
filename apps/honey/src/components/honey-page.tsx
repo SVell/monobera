@@ -1,39 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-import Hero from "~/components/hero";
 import { HoneyMachine } from "~/components/honey-machine";
-import { SwapCard } from "~/components/swap-card";
+import Hero from "./hero";
+import { SwapCard } from "./swap-card";
 
-export default function HoneyPage({ arcade = false }: { arcade: boolean }) {
-  useEffect(() => {
-    if (window?.innerWidth) {
-      if (window.innerWidth < 1280 && arcade) {
-        router.push("/?mode=pro");
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (arcade && window?.innerWidth < 1280) {
-        router.push("/?mode=pro");
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [arcade]);
-
-  const router = useRouter();
-
-  if (arcade && typeof window !== "undefined" && window?.innerWidth < 1280) {
-    router.push("/?mode=pro");
-  }
-
+export default function HoneyPage({ arcade = false }: { arcade?: boolean }) {
   return (
     <section>
       {arcade ? (

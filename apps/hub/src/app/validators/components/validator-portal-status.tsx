@@ -1,12 +1,12 @@
 import React from "react";
-import { truncateHash, useBeraJs, useSelectedValidator } from "@bera/berajs";
+import { truncateHash, useBeraJs, useValidatorByOperator } from "@bera/berajs";
 import { ActionButton } from "@bera/shared-ui";
 import { Icons } from "@bera/ui/icons";
 
 export const ValidatorPortalStatus = () => {
   const { account, isReady } = useBeraJs();
-  const { data: validator } = useSelectedValidator(account ?? "0x");
-  if (validator) return <></>;
+  const { data: validator } = useValidatorByOperator(account ?? "0x");
+  if (validator?.validators[0]?.publicKey) return <></>;
 
   return (
     <div className="flex w-full gap-6">

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { notFound } from "next/navigation";
-import { useSelectedValidator, useValidator } from "@bera/berajs";
+import { useValidator } from "@bera/berajs";
 import { type Address } from "viem";
 
 import { ValidatorTabs } from "../components/validator-tabs";

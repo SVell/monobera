@@ -1,4 +1,6 @@
 import "../styles/globals.css";
+import { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { IBM_Plex_Sans } from "next/font/google";
 import Script from "next/script";
 import { hubName, hubUrl } from "@bera/config";
@@ -15,7 +17,6 @@ import { Toaster } from "react-hot-toast";
 
 import Providers from "./Providers";
 import { navItems } from "./config";
-import { Metadata } from "next";
 
 const fontSans = IBM_Plex_Sans({
   weight: ["400", "500", "600", "700"],
@@ -30,6 +31,9 @@ export const metadata: Metadata = {
     default: hubName,
   },
 };
+const PostHogPageView = dynamic(() => import("./PostHogPageView"), {
+  ssr: false,
+});
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
@@ -48,11 +52,16 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');`,
         }}
       />
-      <body
-        className={cn("min-h-screen font-sans antialiased", fontSans.variable)}
-      >
-        <TermOfUseModal />
-        <Providers>
+      <Providers>
+        <body
+          className={cn(
+            "min-h-screen font-sans antialiased",
+            fontSans.variable,
+          )}
+        >
+          <TermOfUseModal />
+
+          <PostHogPageView />
           {/* Note: This div previously had overflow-hidden, but it was removed as it interferes with sticky elements */}
           <div className="relative flex min-h-screen w-full flex-col ">
             <div className="z-[100]">
@@ -74,8 +83,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           </div>
           <TailwindIndicator />
           <Analytics />
-        </Providers>
-      </body>
+        </body>
+      </Providers>
     </html>
   );
 }

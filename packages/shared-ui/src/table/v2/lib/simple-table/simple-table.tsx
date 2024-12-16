@@ -26,6 +26,7 @@ export type SimpleTableProps<TData> = TableBodyProps<TData> & {
   mutedBackgroundOnHead?: boolean;
   minWidth?: number;
   variant?: string;
+  lastRowBorder?: boolean;
 };
 
 export function SimpleTable<TData>({
@@ -42,6 +43,7 @@ export function SimpleTable<TData>({
   onRowClick,
   onRowHover,
   variant = "",
+  lastRowBorder = true,
   ...props
 }: SimpleTableProps<TData>) {
   const minWidth =
@@ -99,7 +101,7 @@ export function SimpleTable<TData>({
           tableBodyRef={tableBodyRef}
         >
           {rows.length > 0 ? (
-            rows.map((row) => {
+            rows.map((row, index) => {
               return (
                 <TableRow
                   row={row}
@@ -107,6 +109,8 @@ export function SimpleTable<TData>({
                   flexTable={flexTable}
                   onRowHover={onRowHover}
                   onRowClick={onRowClick}
+                  lastRowBorder={lastRowBorder}
+                  lastRow={index === rows.length - 1}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

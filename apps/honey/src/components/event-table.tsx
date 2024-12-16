@@ -49,7 +49,7 @@ const getTokenDisplay = (event: HoneyTxn, tokenDictionary: any) => {
                     <FormattedNumber
                       value={formatUnits(
                         BigInt(event.collateral[0].collateralAmount),
-                        collateral1.decimals ?? 18,
+                        collateral1?.decimals ?? 18,
                       )}
                       compact={false}
                       compactThreshold={999_999}
@@ -66,7 +66,7 @@ const getTokenDisplay = (event: HoneyTxn, tokenDictionary: any) => {
                         <FormattedNumber
                           value={formatUnits(
                             BigInt(event.collateral[1].collateralAmount),
-                            collateral2.decimals ?? 18,
+                            collateral2?.decimals ?? 18,
                           )}
                           compact={false}
                           compactThreshold={999_999}
@@ -125,7 +125,7 @@ const getTokenDisplay = (event: HoneyTxn, tokenDictionary: any) => {
                 <FormattedNumber
                   value={formatUnits(
                     BigInt(event.collateral[0].collateralAmount),
-                    collateral1.decimals ?? 18,
+                    collateral1?.decimals ?? 18,
                   )}
                   compact={false}
                   compactThreshold={999_999}
@@ -169,15 +169,15 @@ export const EventTable = ({
   arcade: boolean;
 }) => {
   const { data: tokenData } = useTokens();
-  console.log("tokenData", events);
   return (
     <Table>
       <TableHeader>
         <TableRow
-          className={cn(
-            arcade &&
-              "border-b border-blue-300 bg-blue-100 text-blue-600 hover:bg-blue-100",
-          )}
+          className={
+            arcade
+              ? "border-b border-blue-300 bg-blue-100 text-blue-600 hover:bg-blue-100"
+              : ""
+          }
         >
           <TableHead className={cn(arcade && "text-blue-600")}>
             Action

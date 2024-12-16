@@ -32,17 +32,11 @@ export const StatusAction = ({
       {status === ProposalStatus.PendingExecution ||
       proposalTimelockState === "ready" ? (
         <ExecuteButton proposal={proposal} title={proposal.title || ""} />
-      ) : (
-        status === ProposalStatus.InQueue && (
-          <CancelButton
-            proposal={proposal}
-            proposalTimelockId={proposal.timelock?.id}
-          />
-        )
-      )}
-      {status === ProposalStatus.Pending && (
-        <CancelButton proposal={proposal} />
-      )}
+      ) : null}
+      <CancelButton
+        proposal={proposal}
+        proposalTimelockId={proposal.timelock?.id}
+      />
       {status === ProposalStatus.Active && (
         <VoteDialog
           proposal={proposal}

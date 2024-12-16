@@ -1,23 +1,34 @@
 import useSWR from "swr";
 import { usePublicClient } from "wagmi";
 
-import { HoneyPreviewMethod, getHoneyPreview } from "~/actions";
+import {
+  HoneyPreviewMethod,
+  HoneyPreviewResult,
+  getHoneyPreview,
+} from "~/actions";
 import { useBeraJs } from "~/contexts";
 import POLLING from "~/enum/polling";
 import { DefaultHookOptions, DefaultHookReturnType, Token } from "~/types";
 
 export interface UsePollHoneyPreviewArgs {
   collateral: Token | undefined;
+  collateralList: Token[] | undefined;
   amount: string;
   mint: boolean; // true mint, false redeem
   given_in: boolean; // true given in, false given out
 }
 
 export interface UsePollHoneyPreviewResponse
-  extends DefaultHookReturnType<string | undefined> {}
+  extends DefaultHookReturnType<HoneyPreviewResult | undefined> {}
 
 export const usePollHoneyPreview = (
-  { collateral, amount, mint, given_in }: UsePollHoneyPreviewArgs,
+  {
+    collateral,
+    collateralList,
+    amount,
+    mint,
+    given_in,
+  }: UsePollHoneyPreviewArgs,
   options?: DefaultHookOptions,
 ): UsePollHoneyPreviewResponse => {
   const publicClient = usePublicClient();
@@ -30,8 +41,8 @@ export const usePollHoneyPreview = (
       : HoneyPreviewMethod.HoneyToRedeem;
 
   const QUERY_KEY =
-    collateral && Number(amount) && given_in
-      ? [method, collateral?.address, amount, mint, given_in]
+    collateral && Number(amount)
+      ? [method, collateral?.address, amount, mint, given_in.toString()]
       : null;
   const { config: beraConfig } = useBeraJs();
   const config = options?.beraConfigOverride ?? beraConfig;
@@ -48,6 +59,7 @@ export const usePollHoneyPreview = (
         client: publicClient,
         config,
         collateral,
+        collateralList,
         amount,
         method,
       });
@@ -57,6 +69,7 @@ export const usePollHoneyPreview = (
       refreshInterval: options?.opts?.refreshInterval ?? POLLING.FAST,
     },
   );
+
   return {
     ...swrResponse,
     refresh: () => void swrResponse.mutate(),

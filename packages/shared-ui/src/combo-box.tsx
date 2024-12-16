@@ -16,15 +16,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "@bera/ui/popover";
 
 export function Combobox({
   items,
+  selectedItems,
   onSelect,
   className,
+  value,
+  disabled,
 }: {
   items: { value: string; label: string }[];
+  selectedItems: string[];
   onSelect: (value: string) => void;
   className?: string;
+  value: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
   const [buttonWidth, setButtonWidth] = React.useState(0);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
@@ -41,6 +46,7 @@ export function Combobox({
   }, [updateButtonWidth]);
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (disabled) return;
     if (newOpen) {
       updateButtonWidth();
     }
@@ -56,16 +62,21 @@ export function Combobox({
           aria-expanded={open}
           size="sm"
           ref={buttonRef}
+          disabled={disabled}
           className={cn(
-            "w-full justify-between rounded-md border border-border p-3 font-semibold text-foreground",
+            "w-full min-w-[100px] justify-between rounded-sm text-sm border border-border p-2 text-foreground font-medium",
             className,
           )}
         >
-          <span className="font-regular">
-            {value
-              ? items.find((item) => item.value === value)?.label
-              : "Select item..."}
-          </span>
+          {value ? (
+            <span className="text-foreground truncate">
+              {items.find((item) => item.value === value)?.label}
+            </span>
+          ) : (
+            <span className="text-muted-foreground truncate">
+              Select Item...
+            </span>
+          )}
           <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -79,8 +90,10 @@ export function Combobox({
                 <CommandItem
                   key={item.value}
                   value={item.value}
+                  className="cursor-pointer"
+                  keywords={[item.label]}
+                  disabled={selectedItems.includes(item.value)}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
                     setOpen(false);
                     onSelect(currentValue); // Call the onSelect function
                   }}

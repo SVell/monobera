@@ -68,7 +68,6 @@ export function computeActualStatus(
   /*
    * If the proposal state is not provided, we need to compute it from subgraph data.
    */
-
   if (proposal.status === ProposalStatus.InQueue) {
     if (proposal.queueEnd < Date.now() / 1000) {
       return ProposalStatus.PendingExecution;

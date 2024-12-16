@@ -192,7 +192,7 @@ query GetGauges {
   globalRewardAllocations(first: 1) {
     ...GlobalRewardAllocation
   }
-  vaults(first: 1000, where: { stakingTokenAmount_gt: "0" }) {
+  vaults(first: 1000, where: { isWhitelisted: true }) {
     ...VaultWithStakingToken
   }
 }
@@ -217,5 +217,11 @@ query GetGlobalCuttingBoard {
 query GetRewardVault($stakingToken: String) {
   vaults(first: 1, where: { stakingToken: $stakingToken }) {
     ...VaultWithStakingToken
+  }
+}
+
+query GetValidatorByOperator($operator: Bytes = "") {
+  validators(where: {operator: $operator}) {
+    publicKey
   }
 }

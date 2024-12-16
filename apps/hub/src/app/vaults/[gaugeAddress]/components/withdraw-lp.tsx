@@ -7,7 +7,12 @@ import {
   TransactionActionType,
   usePollVaultsInfo,
 } from "@bera/berajs";
-import { ActionButton, TokenInput, useTxn } from "@bera/shared-ui";
+import {
+  ActionButton,
+  TokenInput,
+  useAnalytics,
+  useTxn,
+} from "@bera/shared-ui";
 import { Button } from "@bera/ui/button";
 import { Slider } from "@bera/ui/slider";
 import BigNumber from "bignumber.js";
@@ -31,10 +36,27 @@ export const WithdrawLP = ({
     BigNumber(withdrawAmount).gt(0) &&
     BigNumber(withdrawAmount).lte(data?.balance ?? "0");
 
+  const { captureException, track } = useAnalytics();
   const { write, ModalPortal } = useTxn({
-    message: "Withdraw LP Tokens",
+    message: "Withdraw LP Tokens", // aka unstake
     actionType: TransactionActionType.WITHDRAW_LIQUIDITY,
-    onSuccess: () => refresh(),
+    onSuccess: () => {
+      try {
+        track("unstake", {
+          quantity: withdrawAmount,
+          token: lpToken.symbol,
+          vault: rewardVault.address,
+        });
+      } catch (e) {
+        captureException(e);
+      }
+
+      refresh();
+    },
+    onError: (e: Error | undefined) => {
+      track("unstake_failed");
+      captureException(e);
+    },
   });
 
   return (

@@ -16,6 +16,7 @@ import { Button } from "@bera/ui/button";
 import { Card } from "@bera/ui/card";
 import { Icons } from "@bera/ui/icons";
 import { Input } from "@bera/ui/input";
+import { track } from "@vercel/analytics/react";
 import BigNumber from "bignumber.js";
 import { parseUnits } from "viem";
 
@@ -27,7 +28,11 @@ export default function Redeem() {
   const { write, ModalPortal } = useTxn({
     message: `Redeem ${redeemAmount} BERA`,
     actionType: TransactionActionType.REDEEM_BERA,
+    onError: () => {
+      track("swap_redeem_error");
+    },
     onSuccess: () => {
+      track("swap_redeem", { quantity: redeemAmount });
       refresh();
     },
   });
