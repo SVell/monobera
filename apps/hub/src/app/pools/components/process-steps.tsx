@@ -1,6 +1,11 @@
 import { cn } from "@bera/ui";
 import { Icons } from "@bera/ui/icons";
 
+export interface VerifiedSteps {
+  steps: boolean[];
+  errors: (string | null)[];
+}
+
 const ProcessSteps = ({
   /**
    * Array of titles for each step
@@ -23,8 +28,8 @@ const ProcessSteps = ({
    */
   setCurrentStep,
   /**
-   * Array of booleans indicating if the selections / etc of each step is verified good (true) or not (false)
-   * @type {boolean[]}
+   * Object containing the verification status of each step
+   * @type {VerifiedSteps}
    */
   verifiedSteps,
 }: {
@@ -32,7 +37,7 @@ const ProcessSteps = ({
   selectedStep: number;
   completedSteps: number[];
   setCurrentStep: (arg0: number) => void;
-  verifiedSteps: boolean[];
+  verifiedSteps: VerifiedSteps;
 }) => {
   function isStepSelectable(index: number) {
     // NOTE: we check -1 to allow you to go back to the current (partially-completed) step
@@ -44,6 +49,7 @@ const ProcessSteps = ({
       {titles.map((title, index) => (
         <div
           key={index}
+          title={(isStepSelectable(index) && verifiedSteps.errors[index]) || ""}
           className={cn(
             "relative",
             isStepSelectable(index) ? "cursor-pointer" : "cursor-not-allowed",
@@ -68,7 +74,7 @@ const ProcessSteps = ({
             <div className="flex w-full justify-between p-4">
               <h3 className="text-nowrap pr-2 font-normal">{title}</h3>
               {completedSteps.includes(index) &&
-                (verifiedSteps[index] ? (
+                (verifiedSteps.steps[index] ? (
                   <Icons.checkCircle className="text-semanticSuccessForeground" />
                 ) : (
                   <Icons.xCircle className="text-destructive-foreground" />

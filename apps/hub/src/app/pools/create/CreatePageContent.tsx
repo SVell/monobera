@@ -51,7 +51,7 @@ import DynamicPoolCreationPreview from "../components/dynamic-pool-create-previe
 import ParametersInput, { OwnershipType } from "../components/parameters-input";
 import PoolCreationSummary from "../components/pool-creation-summary";
 import PoolTypeSelector from "../components/pool-type-selector";
-import ProcessSteps from "../components/process-steps";
+import ProcessSteps, { VerifiedSteps } from "../components/process-steps";
 import { getPoolUrl } from "../fetchPools";
 
 const emptyTokenInput: TokenInputType = {
@@ -181,6 +181,8 @@ export default function CreatePageContent() {
   const [parameterPreset, setParameterPreset] = useState<ParameterPreset>(
     DEFAULT_PARAMETER_PRESET,
   );
+
+  const isLastStep = currentStep === LAST_FORM_STEP_NUM;
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
     useSubgraphTokenInformations({
@@ -425,52 +427,110 @@ export default function CreatePageContent() {
     poolType,
   });
 
-  const getStepVerification = (): boolean[] => {
-    // So we can show a checkmark for steps that are completed
-    return [
-      // Step 0: Pool type (always complete)
+  const getStepVerification = (): {
+    steps: boolean[];
+    errors: (string | null)[];
+  } => {
+    const errors: (string | null)[] = Array(5).fill(null); // Initialize errors with null
+
+    const steps = [
+      // Step 0: Pool type (always complete, impossible to fail)
       true,
 
       // Step 1: Select tokens
-      !(
-        poolCreateTokens.some((token) => token.address.length === 0) ||
-        (poolType === PoolType.Weighted &&
-          weights.some((weight) => weight === 0n))
-      ),
+      (() => {
+        const hasEmptyToken = poolCreateTokens.some(
+          (token) => token.address.length === 0,
+        );
+        const hasZeroWeight =
+          poolType === PoolType.Weighted &&
+          weights.some((weight) => weight === 0n);
+
+        if (hasEmptyToken) {
+          errors[1] = "All token slots must have a valid token selected.";
+          return false;
+        }
+
+        if (hasZeroWeight) {
+          errors[1] = "Weights must be greater than 0 for Weighted Pools.";
+          return false;
+        }
+
+        return true;
+      })(),
 
       // Step 2: Deposit liquidity
-      !(
-        (
-          initialLiquidityTokens.some(
+      (() => {
+        const isValid =
+          !initialLiquidityTokens.some(
             (token) =>
               !token.amount ||
               Number(token.amount) <= 0 ||
               token.amount === "" ||
               token.exceeding,
-          ) || poolCreateTokens.length !== initialLiquidityTokens.length
-        ) // NOTE: this should never be possible.
-      ),
+          ) && poolCreateTokens.length === initialLiquidityTokens.length;
+        if (!isValid)
+          errors[2] = "Ensure all tokens have valid liquidity amounts.";
+        return isValid;
+      })(),
 
       // Step 3: Set parameters
-      !(
-        !owner ||
-        (ownershipType === OwnershipType.Custom && !isAddress(owner)) ||
-        (poolType === PoolType.ComposableStable && !amplification)
-      ),
+      (() => {
+        if (!owner) {
+          errors[3] = "Owner address is required.";
+          return false;
+        }
+
+        if (ownershipType === OwnershipType.Custom && !isAddress(owner)) {
+          errors[3] = "Custom owner address is invalid.";
+          return false;
+        }
+
+        if (poolType === PoolType.ComposableStable && !amplification) {
+          errors[3] = "Amplification factor is required for stable pools.";
+          return false;
+        }
+
+        return true;
+      })(),
 
       // Step 4: Set info
-      !(!poolName || !poolSymbol),
+      (() => {
+        if (!poolName) {
+          errors[4] = "Pool name cannot be empty.";
+          return false;
+        }
+
+        if (!poolSymbol) {
+          errors[4] = "Pool symbol cannot be empty.";
+          return false;
+        }
+
+        return true;
+      })(),
     ];
+
+    return { steps, errors };
   };
 
-  const [verifiedSteps, setVerifiedSteps] = useState<boolean[]>(
+  const [verifiedSteps, setVerifiedSteps] = useState<VerifiedSteps>(
     getStepVerification(),
   );
+  const isVerificationFailure = verifiedSteps.steps.some((step) => !step);
+  const [finalStepErrorMessage, setFinalStepErrorMessage] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     const verifiedSteps = getStepVerification();
-    setNextButtonDisabled(!verifiedSteps[currentStep]);
+    setNextButtonDisabled(!verifiedSteps.steps[currentStep]);
     setVerifiedSteps(verifiedSteps);
+    setFinalStepErrorMessage(
+      verifiedSteps.errors
+        .filter((error) => error !== null)
+        .map((error) => `• ${error}`)
+        .join("\n") || null,
+    );
   }, [
     poolType,
     poolCreateTokens,
@@ -722,10 +782,21 @@ export default function CreatePageContent() {
               <Button>Back to all Pools</Button>
             </section>
           )} */}
+            {isLastStep && isVerificationFailure && (
+              <div className="pt-4">
+                <Alert variant="destructive">
+                  <AlertTitle>Cannot Create Pool</AlertTitle>
+                  <AlertDescription className="whitespace-pre-line">
+                    {finalStepErrorMessage}
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
             <ActionButton className="w-32 self-end pt-4">
               <Button
                 onClick={() => {
-                  if (currentStep === LAST_FORM_STEP_NUM) {
+                  if (isLastStep) {
                     setPreviewOpen(true);
                   } else {
                     setCurrentStep(currentStep + 1);
@@ -733,9 +804,7 @@ export default function CreatePageContent() {
                   }
                 }}
                 disabled={
-                  currentStep === LAST_FORM_STEP_NUM
-                    ? verifiedSteps.some((v) => !v)
-                    : nextButtonDisabled
+                  isLastStep ? isVerificationFailure : nextButtonDisabled
                 }
                 className={cn(
                   "w-32 self-end pr-4",
@@ -744,7 +813,7 @@ export default function CreatePageContent() {
                     : "opacity-100",
                 )}
               >
-                {currentStep === LAST_FORM_STEP_NUM ? "Create Pool" : "Next"}
+                {isLastStep ? "Create Pool" : "Next"}
               </Button>
             </ActionButton>
           </div>
