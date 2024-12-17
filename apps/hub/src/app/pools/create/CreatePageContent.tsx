@@ -737,7 +737,6 @@ export default function CreatePageContent() {
                   nextButtonDisabled
                     ? "cursor-not-allowed opacity-50"
                     : "opacity-100",
-                  currentStep === LAST_FORM_STEP_NUM && "bg-createButton",
                 )}
               >
                 {currentStep === LAST_FORM_STEP_NUM ? "Create Pool" : "Next"}
