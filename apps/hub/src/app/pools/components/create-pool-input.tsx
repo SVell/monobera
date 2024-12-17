@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { type Token } from "@bera/berajs";
+import { truncateDecimal, type Token } from "@bera/berajs";
 import {
   beraTokenAddress,
   bgtTokenAddress,
@@ -85,20 +85,21 @@ export default function CreatePoolInput({
           onTokenSelection(selectedToken)
         }
         selectedTokens={selectedTokens}
-        btnClassName="border-none"
+        btnClassName="border-none overflow-clip"
       />
 
       {/* Weight Input */}
       <div className="ml-auto flex items-center gap-2">
         {displayWeight && (
-          <div className="flex w-64 items-center gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-gray-400">%</span>
             <InputWithLabel
               variant="black"
               type="text"
-              value={rawInput}
+              title={rawInput}
+              value={truncateDecimal(rawInput, 3)}
               onChange={handleWeightChange}
-              className="w-48 rounded-md border bg-transparent text-center text-white"
+              className="w-24 rounded-md border bg-transparent text-center text-white"
             />
 
             <button
