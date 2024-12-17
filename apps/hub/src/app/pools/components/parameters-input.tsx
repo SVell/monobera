@@ -129,7 +129,7 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
         </div>
       </div>
 
-      <div className="flex w-full flex-row gap-6">
+      <div className="flex w-full flex-row gap-6 xl:flex-col xl:gap-3 2xl:flex-row 2xl:gap-6">
         <Card
           onClick={() => onChangeOwnershipType(OwnershipType.Governance)}
           className={cn(
