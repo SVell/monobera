@@ -152,7 +152,7 @@ const PoolCreationSummary = memo(
     return (
       <div>
         <h2 className="mb-4 self-start text-xl font-semibold">Pool Summary</h2>
-        <section className="flex h-fit flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:min-w-[300px] xl:text-sm 2xl:min-w-[400px] 2xl:text-base">
+        <section className="flex h-fit flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:min-w-[350px] xl:text-sm 2xl:min-w-[400px] 2xl:text-base">
           {summaryRows.map((row, index) => (
             <div
               className="text-right font-medium"

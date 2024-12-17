@@ -9,6 +9,7 @@ import {
   useCreatePool,
   useLiquidityMismatch,
   useSubgraphTokenInformations,
+  useTokens,
   wBeraToken,
   wrapNativeToken,
   wrapNativeTokens,
@@ -183,6 +184,42 @@ export default function CreatePageContent() {
   );
 
   const isLastStep = currentStep === LAST_FORM_STEP_NUM;
+
+  const { data: tokens } = useTokens();
+  const [
+    stablePoolWithNonStableTokensWarning,
+    setStablePoolWithNonStableTokensWarning,
+  ] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tokenList = tokens?.tokenList ?? [];
+
+    if (poolType !== "ComposableStable") {
+      setStablePoolWithNonStableTokensWarning(null);
+      return;
+    }
+    if (tokenList.length === 0 || !poolCreateTokens) {
+      return;
+    }
+
+    const nonStableTokens = poolCreateTokens.filter((token) => {
+      if (!token?.address) return false;
+      const tokenFromList = tokenList.find(
+        (t) => t.address.toLowerCase() === token.address.toLowerCase(),
+      );
+      return !tokenFromList?.tags?.includes("stablecoin");
+    });
+
+    if (nonStableTokens.length > 0) {
+      setStablePoolWithNonStableTokensWarning(
+        `The following token(s) are not stable: ${nonStableTokens
+          .map((t) => t.symbol)
+          .join(", ")}. Did you mean to create a weighted pool instead?`,
+      );
+    } else {
+      setStablePoolWithNonStableTokensWarning(null);
+    }
+  }, [tokens?.tokenList, poolCreateTokens, poolType]);
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
     useSubgraphTokenInformations({
@@ -541,6 +578,7 @@ export default function CreatePageContent() {
     ownershipType,
     currentStep,
     initialLiquidityTokens,
+    stablePoolWithNonStableTokensWarning,
   ]);
 
   return (
@@ -791,6 +829,18 @@ export default function CreatePageContent() {
                   </AlertDescription>
                 </Alert>
               </div>
+            )}
+            {stablePoolWithNonStableTokensWarning && (
+              <Alert
+                variant="warning"
+                className="my-4 cursor-pointer"
+                onClick={() => setCurrentStep(0)}
+              >
+                <AlertTitle>Warning</AlertTitle>
+                <AlertDescription>
+                  {stablePoolWithNonStableTokensWarning}
+                </AlertDescription>
+              </Alert>
             )}
 
             <ActionButton className="w-32 self-end pt-4">
