@@ -37,7 +37,7 @@ const TokenDisplay = memo(({ token, tokenPrices }: TokenDisplayProps) => {
   const wrappedToken = wrapNativeToken(token); // NOTE: prices are always for WBERA, never BERA
   // TODO (BFE-409): we should bundle TokenInput and Price properly as token.usdValue
   return (
-    <div className="flex flex-row justify-end gap-2 text-base">
+    <div className="flex flex-row justify-end gap-2 text-base xl:text-sm 2xl:text-base">
       <TokenIcon address={token.address} size="lg" />
       <div className="font-medium text-foreground">
         {formatMaxLength(Number(token.amount), 8)}
@@ -93,7 +93,7 @@ const PoolCreationSummary = memo(
             showStep(0) && poolType ? (
               <div
                 className={cn(
-                  "flex items-center gap-2 rounded-full border-2 px-2 text-sm xl:text-base",
+                  "flex items-center gap-2 rounded-full border-2 px-2 text-base xl:text-sm 2xl:text-base",
                   poolType === PoolType.ComposableStable &&
                     "border-semanticSuccessForeground bg-semanticSuccessBackground text-semanticSuccessForeground",
                   poolType === PoolType.Weighted &&
@@ -152,7 +152,7 @@ const PoolCreationSummary = memo(
     return (
       <div>
         <h2 className="mb-4 self-start text-xl font-semibold">Pool Summary</h2>
-        <section className="flex h-fit flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:min-w-[350px] 2xl:min-w-[400px]">
+        <section className="flex h-fit flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:min-w-[300px] xl:text-sm 2xl:min-w-[400px] 2xl:text-base">
           {summaryRows.map((row, index) => (
             <div
               className="text-right font-medium"

@@ -89,22 +89,22 @@ export default function CreatePoolInput({
       />
 
       {/* Weight Input */}
-      <div className="ml-auto flex items-center">
+      <div className="ml-auto flex items-center gap-2">
         {displayWeight && (
-          <div className="ml-auto flex items-center gap-1">
+          <div className="flex w-64 items-center gap-2">
             <span className="text-sm text-gray-400">%</span>
             <InputWithLabel
               variant="black"
               type="text"
               value={rawInput}
               onChange={handleWeightChange}
-              className="w-52 rounded-md border bg-transparent text-center text-white"
+              className="w-48 rounded-md border bg-transparent text-center text-white"
             />
 
             <button
               type="button"
               onClick={() => onLockToggle(index)}
-              className="ml-2 mr-6"
+              className="ml-2"
             >
               {locked ? (
                 <Icons.lock className="h-4 w-4" />
