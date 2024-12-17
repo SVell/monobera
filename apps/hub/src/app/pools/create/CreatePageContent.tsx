@@ -425,58 +425,59 @@ export default function CreatePageContent() {
     poolType,
   });
 
-  const isNextButtonDisabled = (): boolean => {
-    switch (currentStep) {
-      // Pool type
-      case 0:
-        return false;
-      // Select tokens
-      case 1:
-        if (
-          poolCreateTokens.some((token) => token.address.length === 0) ||
-          (poolType === PoolType.Weighted &&
-            weights.some((weight) => weight === 0n))
-        ) {
-          return true;
-        }
-        return false;
-      // Deposit liquidity
-      case 2:
-        if (
+  const getStepVerification = (): boolean[] => {
+    // So we can show a checkmark for steps that are completed
+    return [
+      // Step 0: Pool type (always complete)
+      true,
+
+      // Step 1: Select tokens
+      !(
+        poolCreateTokens.some((token) => token.address.length === 0) ||
+        (poolType === PoolType.Weighted &&
+          weights.some((weight) => weight === 0n))
+      ),
+
+      // Step 2: Deposit liquidity
+      !(
+        (
           initialLiquidityTokens.some(
             (token) =>
               !token.amount ||
               Number(token.amount) <= 0 ||
               token.amount === "" ||
               token.exceeding,
-          ) ||
-          poolCreateTokens.length !== initialLiquidityTokens.length // NOTE: this should never be possible.
-        ) {
-          return true;
-        }
-        return false;
-      // Set parameters
-      case 3:
-        return (
-          !owner ||
-          (ownershipType === OwnershipType.Custom && !isAddress(owner)) ||
-          (poolType === PoolType.ComposableStable && !amplification)
-        );
-      // Set info
-      case 4:
-        return !poolName || !poolSymbol;
-      default:
-        return false;
-    }
+          ) || poolCreateTokens.length !== initialLiquidityTokens.length
+        ) // NOTE: this should never be possible.
+      ),
+
+      // Step 3: Set parameters
+      !(
+        !owner ||
+        (ownershipType === OwnershipType.Custom && !isAddress(owner)) ||
+        (poolType === PoolType.ComposableStable && !amplification)
+      ),
+
+      // Step 4: Set info
+      !(!poolName || !poolSymbol),
+    ];
   };
 
+  const [verifiedSteps, setVerifiedSteps] = useState<boolean[]>(
+    getStepVerification(),
+  );
+
   useEffect(() => {
-    setNextButtonDisabled(isNextButtonDisabled());
+    const verifiedSteps = getStepVerification();
+    setNextButtonDisabled(!verifiedSteps[currentStep]);
+    setVerifiedSteps(verifiedSteps);
   }, [
+    poolType,
     poolCreateTokens,
     poolName,
     poolSymbol,
     owner,
+    weights,
     ownershipType,
     currentStep,
     initialLiquidityTokens,
@@ -534,7 +535,7 @@ export default function CreatePageContent() {
             selectedStep={currentStep}
             completedSteps={completedSteps}
             setCurrentStep={setCurrentStep}
-            currentStep={currentStep}
+            verifiedSteps={verifiedSteps}
           />
           <div className="flex w-full flex-col">
             {currentStep === 0 && (
@@ -731,7 +732,11 @@ export default function CreatePageContent() {
                     setCompletedSteps([...completedSteps, currentStep]);
                   }
                 }}
-                disabled={nextButtonDisabled}
+                disabled={
+                  currentStep === LAST_FORM_STEP_NUM
+                    ? verifiedSteps.some((v) => !v)
+                    : nextButtonDisabled
+                }
                 className={cn(
                   "w-32 self-end pr-4",
                   nextButtonDisabled

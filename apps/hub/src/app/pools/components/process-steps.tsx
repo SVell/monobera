@@ -22,13 +22,17 @@ const ProcessSteps = ({
    * @type {(arg0: number) => void}
    */
   setCurrentStep,
-  currentStep,
+  /**
+   * Array of booleans indicating if the selections / etc of each step is verified good (true) or not (false)
+   * @type {boolean[]}
+   */
+  verifiedSteps,
 }: {
   titles: string[];
   selectedStep: number;
   completedSteps: number[];
   setCurrentStep: (arg0: number) => void;
-  currentStep: number;
+  verifiedSteps: boolean[];
 }) => {
   function isStepSelectable(index: number) {
     // NOTE: we check -1 to allow you to go back to the current (partially-completed) step
@@ -63,9 +67,12 @@ const ProcessSteps = ({
             )}
             <div className="flex w-full justify-between p-4">
               <h3 className="text-nowrap pr-2 font-normal">{title}</h3>
-              {completedSteps.includes(index) && (
-                <Icons.checkCircle className="text-semanticSuccessForeground" />
-              )}
+              {completedSteps.includes(index) &&
+                (verifiedSteps[index] ? (
+                  <Icons.checkCircle className="text-semanticSuccessForeground" />
+                ) : (
+                  <Icons.xCircle className="text-destructive-foreground" />
+                ))}
             </div>
           </div>
         </div>
