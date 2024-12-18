@@ -126,9 +126,9 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
           <BeraTooltip
             size="lg"
             wrap
-            text={`The owner of the pool can make changes such as setting the swap fee. 
-                   Use address 0x0000...0000 to fix the fee or allow governance by using 
-                   the delegated address.`}
+            text={`The owner of the pool can make changes, such as setting the swap fee. 
+              Ownership by the null address will fix the fee, while ownership by a delegated 
+              address will allow governance to modify the fee.`}
           />
         </div>
       </div>

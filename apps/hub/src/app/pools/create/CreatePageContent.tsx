@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Oracle,
+  OracleMode,
   balancerComposableStablePoolFactoryV6,
   balancerPoolCreationHelperAbi,
   useBeraJs,
@@ -49,26 +51,12 @@ import { usePoolWeights } from "~/b-sdk/usePoolWeights";
 import useMultipleTokenApprovalsWithSlippage from "~/hooks/useMultipleTokenApprovalsWithSlippage";
 import CreatePoolInput from "../components/create-pool-input";
 import DynamicPoolCreationPreview from "../components/dynamic-pool-create-preview";
+import OracleInput from "../components/oracle-input";
 import ParametersInput, { OwnershipType } from "../components/parameters-input";
 import PoolCreationSummary from "../components/pool-creation-summary";
 import PoolTypeSelector from "../components/pool-type-selector";
 import ProcessSteps, { VerifiedSteps } from "../components/process-steps";
 import { getPoolUrl } from "../fetchPools";
-
-const emptyTokenInput: TokenInputType = {
-  address: "" as `0x${string}`,
-  amount: "0",
-  decimals: 18,
-  exceeding: false,
-  name: "",
-  symbol: "",
-};
-const emptyToken: Token = {
-  address: "" as `0x${string}`,
-  decimals: 18,
-  name: "",
-  symbol: "",
-};
 
 export enum ParameterPreset {
   USDBACKED = "USD-Backed Stablecoin",
@@ -112,19 +100,6 @@ const DEFAULT_OWNER = ZERO_ADDRESS;
 const DEFAULT_OWNERSHIP_TYPE = OwnershipType.Fixed;
 
 /**
- * Default tokens for pools is two empty tokens.
- * NOTE: if in the future we streamline the token selection process, we might consider tying this closer to TokenInputs
- * @constant {Token[]}
- */
-const DEFAULT_TOKENS = [emptyToken, emptyToken];
-
-/**
- * Default liquidity for pools is two empty tokens.
- * @constant {TokenInputType[]}
- */
-const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
-
-/**
  * Default weights for pools is an event split since we default to two tokens.
  * @constant {bigint[]}
  */
@@ -141,6 +116,53 @@ const DEFAULT_PARAMETER_PRESET = ParameterPreset.USDBACKED;
  * @constant {number}
  */
 const LAST_FORM_STEP_NUM = 4; // NOTE: in the future we might consider making this more dynamic/strongly typed via enums.
+
+const emptyTokenInput: TokenInputType = {
+  address: "" as `0x${string}`,
+  amount: "0",
+  decimals: 18,
+  exceeding: false,
+  name: "",
+  symbol: "",
+};
+const emptyToken: Token = {
+  address: "" as `0x${string}`,
+  decimals: 18,
+  name: "",
+  symbol: "",
+};
+
+/**
+ * Default tokens for pools is two empty tokens.
+ * NOTE: if in the future we streamline the token selection process, we might consider tying this closer to TokenInputs
+ * @constant {Token[]}
+ */
+const DEFAULT_TOKENS = [emptyToken, emptyToken];
+
+/**
+ * Default liquidity for pools is two empty tokens.
+ * @constant {TokenInputType[]}
+ */
+const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
+
+/**
+ * If a rate provider (oracle) is provided, this is the default update interval in seconds (using block.timestamp internally).
+ * @constant {number}
+ */
+const DEFAULT_ORACLE_CACHE_DURATION = 100;
+
+const emptyOracle: Oracle = {
+  mode: OracleMode.None,
+  address: ZERO_ADDRESS,
+  tokenAddress: "",
+  cacheDuration: DEFAULT_ORACLE_CACHE_DURATION, // NOTE: even if we dont use an oracle, we pass a safe value for this to pool create
+};
+
+/**
+ * Default oracles for pools is two empty oracles.
+ * @constant {Oracle[]}
+ */
+const DEFAULT_ORACLES: Oracle[] = [emptyOracle, emptyOracle];
 
 export default function CreatePageContent() {
   const router = useRouter();
@@ -174,7 +196,7 @@ export default function CreatePageContent() {
   const [parameterPreset, setParameterPreset] = useState<ParameterPreset>(
     DEFAULT_PARAMETER_PRESET,
   );
-
+  const [oracles, setOracles] = useState<Oracle[]>(DEFAULT_ORACLES);
   const isLastStep = currentStep === LAST_FORM_STEP_NUM;
 
   const { data: tokens } = useTokens();
@@ -270,6 +292,14 @@ export default function CreatePageContent() {
     }
   }
 
+  const onOracleChange = (index: number, updates: Partial<Oracle>) => {
+    setOracles((prevOracles) => {
+      const updatedOracles = [...prevOracles];
+      updatedOracles[index] = { ...prevOracles[index], ...updates };
+      return updatedOracles;
+    });
+  };
+
   const handleOwnershipTypeChange = (type: OwnershipType) => {
     setOwnerShipType(type);
     setOwner(
@@ -330,6 +360,7 @@ export default function CreatePageContent() {
         emptyTokenInput,
       ]);
       addWeight();
+      setOracles((prevOracles) => [...prevOracles, emptyOracle]);
     }
   };
 
@@ -342,6 +373,7 @@ export default function CreatePageContent() {
         prevTokens.filter((_, i) => i !== index),
       );
       removeWeight(index);
+      setOracles((prevOracles) => prevOracles.filter((_, i) => i !== index));
     }
   };
 
@@ -394,6 +426,7 @@ export default function CreatePageContent() {
     poolSymbol,
     owner,
     amplification,
+    oracles,
   });
 
   // Synchronize the generated pool name and symbol with state
@@ -486,6 +519,11 @@ export default function CreatePageContent() {
           poolType === PoolType.Weighted &&
           weights.some((weight) => weight === 0n);
 
+        const hasUnsetCustomOracles = oracles.some(
+          (oracle) =>
+            oracle.mode === OracleMode.Custom && !isAddress(oracle.address),
+        );
+
         if (hasEmptyToken) {
           errors[1] = "All token slots must have a valid token selected.";
           return false;
@@ -493,6 +531,12 @@ export default function CreatePageContent() {
 
         if (hasZeroWeight) {
           errors[1] = "Weights must be greater than 0 for Weighted Pools.";
+          return false;
+        }
+
+        if (hasUnsetCustomOracles) {
+          errors[1] =
+            "All rate-providing token oracles must have a valid address.";
           return false;
         }
 
@@ -582,6 +626,7 @@ export default function CreatePageContent() {
     currentStep,
     initialLiquidityTokens,
     stablePoolWithNonStableTokensWarning,
+    oracles,
   ]);
 
   return (
@@ -668,10 +713,30 @@ export default function CreatePageContent() {
                         }
                       }}
                       onWeightChange={handleWeightChange}
+                      onOracleChange={onOracleChange}
                       onLockToggle={toggleLock}
                       onRemoveToken={handleRemoveToken}
+                      poolType={poolType}
+                      oracle={oracles[index]}
                     />
                   ))}
+                  {
+                    <div className="flex w-full flex-col gap-6 pt-4">
+                      {oracles.map(
+                        (oracle, index) =>
+                          oracle.mode === OracleMode.Custom &&
+                          poolCreateTokens[index].symbol && (
+                            <OracleInput
+                              key={`oracle-${index}`}
+                              oracle={oracle}
+                              token={poolCreateTokens[index]}
+                              index={index}
+                              onOracleChange={onOracleChange}
+                            />
+                          ),
+                      )}
+                    </div>
+                  }
                 </div>
 
                 {poolCreateTokens.length < maxTokensLength && (
