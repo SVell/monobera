@@ -109,7 +109,16 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
           </div>
         </>
       )}
-      <h3 className="self-start text-xl font-semibold">Set Swap Fee</h3>
+      <div className="flex items-center gap-1">
+        <h3 className="self-start text-xl font-semibold">Set Swap Fee</h3>
+        <div className="pt-[-1]">
+          <BeraTooltip
+            size="lg"
+            wrap
+            text="Half of the swap fee goes to the liquidity providers, the other half goes to the protocol."
+          />
+        </div>
+      </div>
       <SwapFeeInput
         initialFee={swapFee}
         onFeeChange={onSwapFeeChange}
