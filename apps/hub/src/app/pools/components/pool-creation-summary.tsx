@@ -138,8 +138,9 @@ const PoolCreationSummary = memo(
           label: "Owners Address",
           value:
             showStep(3) &&
-            `${ownershipType} (${
-              ownersAddress && truncateHash(ownersAddress.toUpperCase())
+            `${ownershipType?.toUpperCase()} (${
+              ownersAddress &&
+              truncateHash(ownersAddress, undefined, undefined, true)
             })`,
         },
         // NOTE: strangely, in the final step you will see both what you are typing & and the preview at the same time.

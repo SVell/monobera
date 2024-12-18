@@ -7,6 +7,7 @@ import {
   balancerVaultAbi,
   formatUsd,
   getSafeNumber,
+  truncateHash,
   useBeraJs,
   wrapNativeToken,
   type Token,
@@ -141,10 +142,9 @@ export default function DynamicPoolCreationPreview({
     }
   }, [isRelayerApprovalError]);
 
-  const formattedOwnerAddress = `${ownerAddress.slice(
-    0,
-    6,
-  )}...${ownerAddress.slice(-4)} (${ownershipType})`;
+  const formattedOwnerAddress = `${ownershipType?.toUpperCase()} (${
+    ownerAddress && truncateHash(ownerAddress, undefined, undefined, true)
+  })`;
 
   const poolDetails = [
     { label: "Pool Name", value: poolName },

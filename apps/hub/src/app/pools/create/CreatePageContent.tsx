@@ -88,13 +88,6 @@ const DEFAULT_USD_BACKED_AMPLIFICATION = 2500;
 const DEFAULT_ALGORITHMIC_AMPLIFICATION = 200;
 
 /**
- * Default swap fee for pools is 0.1 %.
- * NOTE: this will change depending on the pool type (weighted/stable).
- * @constant {number}
- */
-const DEFAULT_SWAP_FEE = 0.1;
-
-/**
  * Default pool type for pools is a composable stable pool, which can be referred to as a 'stable pool'.
  * @constant {PoolType}
  */
@@ -162,7 +155,6 @@ export default function CreatePageContent() {
     useState<TokenInputType[]>(DEFAULT_LIQUIDITY);
 
   const [poolType, setPoolType] = useState<PoolType>(DEFAULT_POOL_TYPE);
-  const [swapFee, setSwapFee] = useState<number>(DEFAULT_SWAP_FEE);
   const [poolName, setPoolName] = useState<string>("");
   const [poolSymbol, setPoolSymbol] = useState<string>("");
   const [amplification, setAmplification] = useState<number>(
@@ -190,6 +182,17 @@ export default function CreatePageContent() {
     stablePoolWithNonStableTokensWarning,
     setStablePoolWithNonStableTokensWarning,
   ] = useState<string | null>(null);
+
+  let predefinedFees = [0.3, 0.5, 1];
+  let initialFee = 0.3;
+  if (
+    poolType === PoolType.ComposableStable ||
+    poolType === PoolType.MetaStable
+  ) {
+    predefinedFees = [0.01, 0.05, 0.1];
+    initialFee = 0.01;
+  }
+  const [swapFee, setSwapFee] = useState<number>(initialFee);
 
   useEffect(() => {
     const tokenList = tokens?.tokenList ?? [];
@@ -441,7 +444,7 @@ export default function CreatePageContent() {
       setpoolCreateTokens(DEFAULT_TOKENS);
       setInitialLiquidityTokens(DEFAULT_LIQUIDITY);
       setPoolType(DEFAULT_POOL_TYPE);
-      setSwapFee(DEFAULT_SWAP_FEE);
+      setSwapFee(initialFee);
       setPoolName("");
       setPoolSymbol("");
       setAmplification(DEFAULT_AMPLIFICATION);
@@ -784,9 +787,10 @@ export default function CreatePageContent() {
                 onChangeOwnershipType={handleOwnershipTypeChange}
                 onOwnerChange={handleOwnerChange}
                 invalidAddressErrorMessage={invalidAddressErrorMessage}
-                swapFee={swapFee}
                 onSwapFeeChange={setSwapFee}
                 poolType={poolType}
+                swapFee={swapFee}
+                predefinedFees={predefinedFees}
               />
             )}
             {currentStep === 4 && (

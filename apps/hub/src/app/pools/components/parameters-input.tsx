@@ -37,6 +37,7 @@ interface OwnershipInputProps {
   invalidAddressErrorMessage: string | null;
   onSwapFeeChange: (fee: number) => void;
   swapFee: number;
+  predefinedFees: number[];
   poolType: PoolType;
 }
 
@@ -50,20 +51,14 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
   onChangeOwnershipType,
   onOwnerChange,
   invalidAddressErrorMessage,
-  swapFee,
   onSwapFeeChange,
   poolType,
+  swapFee,
+  predefinedFees,
 }) => {
   // NOTE: Balancer support more types of ownership than the ones we are supporting here: Delegated, Fixed and Custom.
   // ... you can still create Pools with those types of ownership from the contract, but we are not supporting them in the UI.
 
-  let predefinedFees = [0.3, 0.5, 1];
-  if (
-    poolType === PoolType.ComposableStable ||
-    poolType === PoolType.MetaStable
-  ) {
-    predefinedFees = [0.01, 0.05, 0.1];
-  }
   return (
     <section className="flex w-full flex-col gap-4">
       {poolType === PoolType.ComposableStable && (
