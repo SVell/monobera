@@ -722,19 +722,20 @@ export default function CreatePageContent() {
                   ))}
                   {
                     <div className="flex w-full flex-col gap-6 pt-4">
-                      {oracles.map(
-                        (oracle, index) =>
-                          oracle.mode === OracleMode.Custom &&
-                          poolCreateTokens[index].symbol && (
-                            <OracleInput
-                              key={`oracle-${index}`}
-                              oracle={oracle}
-                              token={poolCreateTokens[index]}
-                              index={index}
-                              onOracleChange={onOracleChange}
-                            />
-                          ),
-                      )}
+                      {poolType === PoolType.ComposableStable &&
+                        oracles.map(
+                          (oracle, index) =>
+                            oracle.mode === OracleMode.Custom &&
+                            poolCreateTokens[index].symbol && (
+                              <OracleInput
+                                key={`oracle-${index}`}
+                                oracle={oracle}
+                                token={poolCreateTokens[index]}
+                                index={index}
+                                onOracleChange={onOracleChange}
+                              />
+                            ),
+                        )}
                     </div>
                   }
                 </div>
