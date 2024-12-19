@@ -1,7 +1,8 @@
-import { Address, PublicClient, formatUnits, parseUnits } from "viem";
+import { Address, PublicClient, parseUnits } from "viem";
 
-import { honeyFactoryAbi, honeyFactoryReaderAbi } from "~/abi";
+import { honeyFactoryReaderAbi } from "~/abi";
 import { BeraConfig, Token } from "~/types";
+import { getHoneyCollaterals } from "~/actions/honey";
 
 export enum HoneyPreviewMethod {
   Mint = "previewMintHoney",
@@ -82,16 +83,10 @@ export const getHoneyPreview = async ({
       };
     }
 
-    const collaterals = await Promise.all(
-      formattedResult.collaterals.map((collateral, idx) =>
-        client.readContract({
-          address: config.contracts!.honeyFactoryAddress!,
-          abi: honeyFactoryAbi,
-          functionName: "registeredAssets",
-          args: [BigInt(idx)],
-        }),
-      ),
-    );
+    const collateralList = await getHoneyCollaterals({
+      client: client,
+      config,
+    });
 
     // ======= TEMP FIX ==========
     /**
@@ -99,15 +94,18 @@ export const getHoneyPreview = async ({
      * of the array disregarding the collateral order inside the contracts.
      * [TODO] when the smart contract are updated we need to remove this fix
      */
-    const collIdx = collaterals.indexOf(collateral.address);
-    if (collIdx !== 0 && formattedResult.collaterals[collIdx] === BigInt(0)) {
+    const collIdx = collateralList.indexOf(collateral.address);
+    if (
+      (collIdx !== 0 && formattedResult.collaterals[collIdx] === BigInt(0)) ||
+      !formattedResult.collaterals[collIdx]
+    ) {
       const tempValue = formattedResult.collaterals[0];
       formattedResult.collaterals[0] = formattedResult.collaterals[collIdx];
       formattedResult.collaterals[collIdx] = tempValue;
     }
     // ==========================
 
-    const amountsWithAddress: Record<Address, bigint> = collaterals.reduce(
+    const amountsWithAddress: Record<Address, bigint> = collateralList.reduce(
       (agg, key, idx) => {
         if (
           key === collateral.address &&

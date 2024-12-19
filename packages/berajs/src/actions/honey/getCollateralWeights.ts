@@ -3,6 +3,7 @@ import { PublicClient } from "viem";
 import { Address } from "viem";
 import { BeraConfig } from "~/types";
 import { honeyFactoryAbi } from "~/abi";
+import { getHoneyCollaterals } from "~/actions/honey";
 
 /**
  * Arguments for the getCollateralWeights function.
@@ -27,26 +28,10 @@ export const getCollateralWeights = async ({
     if (!config.contracts?.honeyFactoryAddress)
       throw new Error("missing contract address honeyFactoryAddress");
 
-    // Get the total number of registered collateral assets
-    const amountOfCollaterals = await client.readContract({
-      address: config.contracts!.honeyFactoryAddress,
-      abi: honeyFactoryAbi,
-      functionName: "numRegisteredAssets",
+    const collateralList = await getHoneyCollaterals({
+      client: client,
+      config,
     });
-
-    // Create an array of promises to fetch each registered asset's address
-    const promiseList: Promise<Address>[] = [];
-    for (let i = 0; i < amountOfCollaterals; i++) {
-      promiseList.push(
-        client.readContract({
-          address: config.contracts!.honeyFactoryAddress,
-          abi: honeyFactoryAbi,
-          functionName: "registeredAssets",
-          args: [BigInt(i)],
-        }),
-      );
-    }
-    const collateralList = await Promise.all(promiseList);
 
     // Fetch the weights for all collateral assets
     const collateralWeights = await client.readContract({

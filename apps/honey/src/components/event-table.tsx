@@ -225,11 +225,7 @@ export const EventTable = ({
                 <TableCell>
                   <FormattedNumber
                     value={formatUnits(
-                      BigInt(
-                        event.type === "Mint"
-                          ? event.collateral[0].honeyTxn.honeyAmount
-                          : event.collateral[0].collateralAmount,
-                      ),
+                      BigInt(event.collateral[0].honeyTxn.honeyAmount),
                       18,
                     )}
                     symbol="USD"

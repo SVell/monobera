@@ -12,7 +12,10 @@ import { DefaultHookOptions, DefaultHookReturnType } from "~/types";
 
 export interface UseCollateralsRatesResponse
   extends DefaultHookReturnType<CollateralRatesMap | undefined> {
-  getCollateralRate: (collateral: string) => CollateralRates | undefined;
+  getCollateralRate: (
+    collateral: string,
+    isBasketMode: boolean,
+  ) => CollateralRates | undefined;
 }
 
 export const useCollateralsRates = (
@@ -43,8 +46,13 @@ export const useCollateralsRates = (
     { ...options?.opts },
   );
 
-  const getCollateralRate = (collateral: string): CollateralRates | undefined =>
-    swrResponse.data?.[getAddress(collateral)];
+  const getCollateralRate = (
+    collateral: string,
+    isBasketMode: boolean,
+  ): CollateralRates | undefined =>
+    isBasketMode
+      ? swrResponse.data?.basket
+      : swrResponse.data?.single[getAddress(collateral)];
 
   return {
     ...swrResponse,
