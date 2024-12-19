@@ -49,7 +49,7 @@ const OracleInput: React.FC<OracleInputProps> = ({
       <h3 className="font-bold">{token.symbol}</h3>
 
       <InputWithLabel
-        label="Oracle Address"
+        label="Rate Provider Address"
         variant="black"
         value={rawAddress}
         onChange={(e) => handleAddressChange(e.target.value)}
