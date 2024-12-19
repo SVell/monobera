@@ -118,3 +118,13 @@ query GetPoolHistoricalData($poolId: String!, $chain: GqlChain!) {
     ...PoolHistoricalData
   }
 }
+
+query GetTokenCurrentPrices($chains: [GqlChain!]!, $addressIn: [String!]) {
+  tokenGetCurrentPrices(chains: $chains, addressIn: $addressIn) {
+    address
+    chain
+    price
+    updatedAt
+    updatedBy
+  }
+}

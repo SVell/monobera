@@ -16,6 +16,7 @@ export * from "./tokens/useTokenHoneyPrices";
 export * from "./tokens/usePollWalletBalances";
 export * from "./tokens/useSubgraphTokenInformations";
 export * from "./tokens/useMultipleTokenInformation";
+export * from "./tokens/useTokenCurrentPrices";
 export * from "./usePollEstimateFeesPerGas";
 export * from "./tokens/useSubgraphTokenInformation";
 export * from "./tokens/useStakingTokenInformation";
