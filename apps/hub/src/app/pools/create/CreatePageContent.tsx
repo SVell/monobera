@@ -199,11 +199,8 @@ export default function CreatePageContent() {
   const [oracles, setOracles] = useState<Oracle[]>(DEFAULT_ORACLES);
   const isLastStep = currentStep === LAST_FORM_STEP_NUM;
 
-  const { data: tokens } = useTokens();
-  const [
-    stablePoolWithNonStableTokensWarning,
-    setStablePoolWithNonStableTokensWarning,
-  ] = useState<string | null>(null);
+  // const { data: bexTokenPrices, isLoading: isLoadingBexTokenPrices } =
+  //   useTokenCurrentPrices();
 
   let predefinedFees = [0.3, 0.5, 1];
   let initialFee = 0.3;
@@ -625,7 +622,6 @@ export default function CreatePageContent() {
     ownershipType,
     currentStep,
     initialLiquidityTokens,
-    stablePoolWithNonStableTokensWarning,
     oracles,
   ]);
 
@@ -899,18 +895,6 @@ export default function CreatePageContent() {
                   </AlertDescription>
                 </Alert>
               </div>
-            )}
-            {stablePoolWithNonStableTokensWarning && (
-              <Alert
-                variant="warning"
-                className="my-4 cursor-pointer"
-                onClick={() => setCurrentStep(0)}
-              >
-                <AlertTitle>Warning</AlertTitle>
-                <AlertDescription>
-                  {stablePoolWithNonStableTokensWarning}
-                </AlertDescription>
-              </Alert>
             )}
 
             <ActionButton className="w-32 self-end pt-4">
