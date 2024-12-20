@@ -755,23 +755,6 @@ export default function CreatePageContent() {
                     </AlertDescription>
                   </Alert>
                 )}
-                {liquidityMismatchInfo.message && (
-                  <Alert
-                    variant="warning"
-                    className={cn(
-                      "my-4",
-                      liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
-                    )}
-                    onClick={() =>
-                      liquidityMismatchInfo.suggestWeighted && setCurrentStep(0)
-                    }
-                  >
-                    <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
-                    <AlertDescription>
-                      {liquidityMismatchInfo.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
               </section>
             )}
             {currentStep === 2 && (
@@ -824,25 +807,6 @@ export default function CreatePageContent() {
                       />
                     ))}
                   </ul>
-                  {!weightsError && liquidityMismatchInfo.message && (
-                    <Alert
-                      variant="warning"
-                      className={cn(
-                        "my-4",
-                        liquidityMismatchInfo.suggestWeighted &&
-                          "cursor-pointer",
-                      )}
-                      onClick={() =>
-                        liquidityMismatchInfo.suggestWeighted &&
-                        setCurrentStep(0)
-                      }
-                    >
-                      <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
-                      <AlertDescription>
-                        {liquidityMismatchInfo.message}
-                      </AlertDescription>
-                    </Alert>
-                  )}
                 </div>
               </section>
             )}
@@ -896,6 +860,29 @@ export default function CreatePageContent() {
               <Button>Back to all Pools</Button>
             </section>
           )} */}
+
+            {liquidityMismatchInfo.message &&
+              (currentStep === 1 || currentStep === 2) && (
+                <Alert
+                  variant="warning"
+                  className={cn(
+                    "my-4",
+                    liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
+                  )}
+                  onClick={() => {
+                    if (liquidityMismatchInfo.suggestWeighted) {
+                      setCurrentStep(0);
+                      // setPoolType(PoolType.Weighted);
+                    }
+                  }}
+                >
+                  <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
+                  <AlertDescription>
+                    {liquidityMismatchInfo.message}
+                  </AlertDescription>
+                </Alert>
+              )}
+
             {isLastStep && isVerificationFailure && (
               <div className="pt-4">
                 <Alert variant="destructive">
