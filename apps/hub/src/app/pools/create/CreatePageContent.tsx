@@ -297,7 +297,7 @@ export default function CreatePageContent() {
 
   // handle max/min tokens per https://docs.balancer.fi/concepts/pools/more/configuration.html
   const minTokensLength = 2; // i.e. for meta/stable/weighted it's 2
-  const maxTokensLength = poolType === PoolType.Weighted ? 8 : 2; // i.e. for Weighted it's 8, for ComposableStable it's 2
+  const maxTokensLength = poolType === PoolType.Weighted ? 2 : 5; // NOTE: yes weighted supports more but this is what UI will support for now.
 
   // check for token approvals
   const { needsApproval: tokensNeedApproval, refresh: refreshAllowances } =
