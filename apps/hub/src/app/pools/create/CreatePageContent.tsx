@@ -211,6 +211,10 @@ export default function CreatePageContent() {
   const [swapFeeIsInvalid, setSwapFeeIsInvalid] = useState<boolean>(false);
   const [swapFee, setSwapFee] = useState<number>(initialFee);
 
+  useEffect(() => {
+    setSwapFee(initialFee);
+  }, [poolType]);
+
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
     useSubgraphTokenInformations({
       tokenAddresses: poolCreateTokens
