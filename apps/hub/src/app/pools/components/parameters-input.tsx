@@ -1,6 +1,5 @@
 "use client";
 
-import { on } from "events";
 import React from "react";
 import { SwapFeeInput } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
@@ -18,6 +17,7 @@ import { Address } from "viem";
 
 import BeraTooltip from "~/components/bera-tooltip";
 import { ParameterPreset } from "../create/CreatePageContent";
+import { AmplificationInput } from "./amplification-parameter";
 
 export enum OwnershipType {
   Governance = "governance",
@@ -28,6 +28,7 @@ export enum OwnershipType {
 interface OwnershipInputProps {
   amplification: number;
   onAmplificationChange: (value: number) => void;
+  onInvalidAmplification: (isInvalid: boolean) => void;
   parameterPreset: ParameterPreset;
   onChangeParameterPresetType: (type: ParameterPreset) => void;
   ownershipType: OwnershipType;
@@ -45,6 +46,7 @@ interface OwnershipInputProps {
 const ParametersInput: React.FC<OwnershipInputProps> = ({
   amplification,
   onAmplificationChange,
+  onInvalidAmplification,
   parameterPreset,
   onChangeParameterPresetType,
   ownershipType,
@@ -204,29 +206,12 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
           <AccordionItem value="item-1">
             <AccordionTrigger>Advanced</AccordionTrigger>
             <AccordionContent>
-              <InputWithLabel
-                label="Amplification"
-                variant="black"
-                className="bg-transparent"
-                value={amplification}
-                maxLength={4}
-                onChange={(e) => {
-                  // NOTE: for some reason max/min dont seem to work in InputWithLabel
-                  const value = Number(e.target.value);
-                  if (value >= 1 && value <= 5000) {
-                    onAmplificationChange(value);
-                  }
-                }}
-                tooltip={
-                  <BeraTooltip
-                    size="lg"
-                    wrap={true}
-                    text={`
-                  The Amplification Factor (A) controls how aggressively the pool reacts to price fluctuations. Higher A values 
-                  maintain tighter spreads for small imbalances but increase slippage during large deviations like depegs. 
-                  Conversely, lower A values permit price changes for smaller deviations, but lower efficiency. `}
-                  />
-                }
+              <AmplificationInput
+                initialAmplification={amplification}
+                onAmplificationChange={onAmplificationChange}
+                onInvalidAmplification={onInvalidAmplification}
+                minAmplification={1}
+                maxAmplification={5000}
               />
             </AccordionContent>
           </AccordionItem>

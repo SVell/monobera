@@ -48,7 +48,6 @@ import { Address, decodeEventLog, isAddress, zeroAddress } from "viem";
 import { usePublicClient } from "wagmi";
 
 import { isBera, isBeratoken } from "~/utils/isBeraToken";
-import BeraTooltip from "~/components/bera-tooltip";
 import { usePoolWeights } from "~/b-sdk/usePoolWeights";
 import useMultipleTokenApprovalsWithSlippage from "~/hooks/useMultipleTokenApprovalsWithSlippage";
 import CreatePoolInput from "../components/create-pool-input";
@@ -184,6 +183,8 @@ export default function CreatePageContent() {
   const [amplification, setAmplification] = useState<number>(
     DEFAULT_AMPLIFICATION,
   ); // NOTE: min is 1 max is 5000
+  const [amplificationInvalid, setAmplificationInvalid] =
+    useState<boolean>(false);
   const [owner, setOwner] = useState<Address>(DEFAULT_OWNER);
   const [ownershipType, setOwnerShipType] = useState<OwnershipType>(
     DEFAULT_OWNERSHIP_TYPE,
@@ -546,6 +547,11 @@ export default function CreatePageContent() {
           return false;
         }
 
+        if (amplificationInvalid) {
+          errors[3] = "Amplification factor is invalid.";
+          return false;
+        }
+
         return true;
       })(),
 
@@ -844,6 +850,7 @@ export default function CreatePageContent() {
               <ParametersInput
                 amplification={amplification}
                 onAmplificationChange={setAmplification}
+                onInvalidAmplification={setAmplificationInvalid}
                 parameterPreset={parameterPreset}
                 onChangeParameterPresetType={handleParameterPresetChange}
                 ownershipType={ownershipType}
