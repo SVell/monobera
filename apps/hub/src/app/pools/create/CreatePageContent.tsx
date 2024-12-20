@@ -862,7 +862,7 @@ export default function CreatePageContent() {
           )} */}
 
             {liquidityMismatchInfo.message &&
-              (currentStep === 1 || currentStep === 2) && (
+              (completedSteps.includes(1) || completedSteps.includes(2)) && (
                 <Alert
                   variant="warning"
                   className={cn(
