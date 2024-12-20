@@ -11,6 +11,7 @@ import {
   useCreatePool,
   useLiquidityMismatch,
   useSubgraphTokenInformations,
+  useTokenCurrentPrices,
   useTokens,
   wBeraToken,
   wrapNativeToken,
@@ -18,6 +19,7 @@ import {
   type Token,
   type TokenInput as TokenInputType,
 } from "@bera/berajs";
+import { getTokenCurrentPrices } from "@bera/berajs/actions";
 import {
   balancerDelegatedOwnershipAddress,
   balancerVaultAddress,
@@ -199,8 +201,8 @@ export default function CreatePageContent() {
   const [oracles, setOracles] = useState<Oracle[]>(DEFAULT_ORACLES);
   const isLastStep = currentStep === LAST_FORM_STEP_NUM;
 
-  // const { data: bexTokenPrices, isLoading: isLoadingBexTokenPrices } =
-  //   useTokenCurrentPrices();
+  const { data: bexTokenPrices, isLoading: isLoadingBexTokenPrices } =
+    useTokenCurrentPrices();
 
   let predefinedFees = [0.3, 0.5, 1];
   let initialFee = 0.3;
@@ -212,36 +214,6 @@ export default function CreatePageContent() {
     initialFee = 0.01;
   }
   const [swapFee, setSwapFee] = useState<number>(initialFee);
-
-  useEffect(() => {
-    const tokenList = tokens?.tokenList ?? [];
-
-    if (poolType !== "ComposableStable") {
-      setStablePoolWithNonStableTokensWarning(null);
-      return;
-    }
-    if (tokenList.length === 0 || !poolCreateTokens) {
-      return;
-    }
-
-    const nonStableTokens = poolCreateTokens.filter((token) => {
-      if (!token?.address) return false;
-      const tokenFromList = tokenList.find(
-        (t) => t.address.toLowerCase() === token.address.toLowerCase(),
-      );
-      return !tokenFromList?.tags?.includes("stablecoin");
-    });
-
-    if (nonStableTokens.length > 0) {
-      setStablePoolWithNonStableTokensWarning(
-        `The following token(s) are not stable: ${nonStableTokens
-          .map((t) => t.symbol)
-          .join(", ")}. Did you mean to create a weighted pool instead?`,
-      );
-    } else {
-      setStablePoolWithNonStableTokensWarning(null);
-    }
-  }, [tokens?.tokenList, poolCreateTokens, poolType]);
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
     useSubgraphTokenInformations({
@@ -489,12 +461,14 @@ export default function CreatePageContent() {
 
   // Determine if there are any liquidity mismatches in the pool (supply imbalances in terms of pool weights)
   const liquidityMismatchInfo = useLiquidityMismatch({
-    tokenPrices,
-    isLoadingTokenPrices,
+    currentStep,
+    tokenPrices: bexTokenPrices,
+    isLoadingTokenPrices: isLoadingBexTokenPrices,
     tokens: initialLiquidityTokens,
     weights,
     weightsError,
     poolType,
+    oracles,
   });
 
   const getStepVerification = (): {
@@ -775,6 +749,23 @@ export default function CreatePageContent() {
                     </AlertDescription>
                   </Alert>
                 )}
+                {liquidityMismatchInfo.message && (
+                  <Alert
+                    variant="warning"
+                    className={cn(
+                      "my-4",
+                      liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
+                    )}
+                    onClick={() =>
+                      liquidityMismatchInfo.suggestWeighted && setCurrentStep(0)
+                    }
+                  >
+                    <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
+                    <AlertDescription>
+                      {liquidityMismatchInfo.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
               </section>
             )}
             {currentStep === 2 && (
@@ -828,7 +819,18 @@ export default function CreatePageContent() {
                     ))}
                   </ul>
                   {!weightsError && liquidityMismatchInfo.message && (
-                    <Alert variant="warning" className="my-4">
+                    <Alert
+                      variant="warning"
+                      className={cn(
+                        "my-4",
+                        liquidityMismatchInfo.suggestWeighted &&
+                          "cursor-pointer",
+                      )}
+                      onClick={() =>
+                        liquidityMismatchInfo.suggestWeighted &&
+                        setCurrentStep(0)
+                      }
+                    >
                       <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
                       <AlertDescription>
                         {liquidityMismatchInfo.message}
