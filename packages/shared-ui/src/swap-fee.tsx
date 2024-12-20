@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { cn } from "@bera/ui";
+import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { Input } from "@bera/ui/input";
 
 import { PoolType } from "../../b-sdk/dist/index.mjs";
@@ -97,7 +98,7 @@ export function SwapFeeInput({
   useEffect(() => {
     setWarnMessage(
       poolType === PoolType.Weighted && fee < predefinedFees[0]
-        ? `It is not recommended to set the fee below ${predefinedFees[0]}% for weighted pools`
+        ? `It is not recommended to set the swap fee to below ${predefinedFees[0]}% for weighted pools`
         : null,
     );
   }, [poolType, fee]);
@@ -143,17 +144,19 @@ export function SwapFeeInput({
       </section>
 
       {isInvalid && (
-        <div className="mt-2 rounded-md border border-destructive-foreground p-2 text-sm text-destructive-foreground">
-          <i className="mr-2">⚠️</i>
-          Invalid fee. Ensure the entered fee is between 0.00001% and 10%.
-        </div>
+        <Alert variant="destructive" className="mt-2">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Invalid fee. Ensure the entered fee is between 0.00001% and 10%.
+          </AlertDescription>
+        </Alert>
       )}
 
       {warnMessage && (
-        <div className="mt-2 rounded-md border border-warning-foreground p-2 text-sm text-warning-foreground">
-          <i className="mr-2">⚠️</i>
-          {warnMessage}
-        </div>
+        <Alert variant="warning" className="mt-2">
+          <AlertTitle>Warning</AlertTitle>
+          <AlertDescription>{warnMessage}</AlertDescription>
+        </Alert>
       )}
     </>
   );
