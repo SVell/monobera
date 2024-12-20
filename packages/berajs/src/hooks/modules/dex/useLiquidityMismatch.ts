@@ -99,8 +99,8 @@ export const useLiquidityMismatch = ({
       return;
     }
 
-    // Step 1 - During token selection we check for a deviation in the quote prices of the tokens selected.
-    if (currentStep === 1) {
+    // Step 1 - During token selection we check for a deviation in the quote prices of the tokens selected (for stable pools).
+    if (currentStep === 1 && poolType === PoolType.ComposableStable) {
       const normalizedUSDPrices = tokenUSDPrices.map(
         (priceUSD) => priceUSD! / tokenUSDPrices[0]!, // always normalize on the first token's price
       );
