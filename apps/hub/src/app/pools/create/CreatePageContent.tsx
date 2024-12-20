@@ -207,8 +207,8 @@ export default function CreatePageContent() {
 
   const predefinedFees =
     poolType === PoolType.ComposableStable ? [0.01, 0.05, 0.1] : [0.3, 0.5, 1];
-  const initialFee = poolType === PoolType.ComposableStable ? 0.3 : 0.01;
-  const [swapFeeIsInvalid, setSwapFeeIsInvalid] = useState<boolean>(true);
+  const initialFee = poolType === PoolType.ComposableStable ? 0.01 : 0.3;
+  const [swapFeeIsInvalid, setSwapFeeIsInvalid] = useState<boolean>(false);
   const [swapFee, setSwapFee] = useState<number>(initialFee);
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
