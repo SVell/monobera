@@ -57,7 +57,6 @@ export default function CreatePoolInput({
   const [rawInput, setRawInput] = useState(
     weight ? formatUnits(weight < 0n ? 0n : weight, 16) : "0",
   );
-  const [openOracleSelector, setOpenOracleSelector] = useState(false);
 
   // Make sure that the input values are updated when the weight changes
   useEffect(() => {
