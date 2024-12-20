@@ -204,15 +204,10 @@ export default function CreatePageContent() {
   const { data: bexTokenPrices, isLoading: isLoadingBexTokenPrices } =
     useTokenCurrentPrices();
 
-  let predefinedFees = [0.3, 0.5, 1];
-  let initialFee = 0.3;
-  if (
-    poolType === PoolType.ComposableStable ||
-    poolType === PoolType.MetaStable
-  ) {
-    predefinedFees = [0.01, 0.05, 0.1];
-    initialFee = 0.01;
-  }
+  const predefinedFees =
+    poolType === PoolType.ComposableStable ? [0.01, 0.05, 0.1] : [0.3, 0.5, 1];
+  const initialFee = poolType === PoolType.ComposableStable ? 0.3 : 0.01;
+  const [swapFeeIsInvalid, setSwapFeeIsInvalid] = useState<boolean>(true);
   const [swapFee, setSwapFee] = useState<number>(initialFee);
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
@@ -546,6 +541,11 @@ export default function CreatePageContent() {
           return false;
         }
 
+        if (swapFeeIsInvalid) {
+          errors[3] = "Swap fee is invalid.";
+          return false;
+        }
+
         return true;
       })(),
 
@@ -854,6 +854,7 @@ export default function CreatePageContent() {
                 onSwapFeeChange={setSwapFee}
                 poolType={poolType}
                 swapFee={swapFee}
+                onInvalidSwapFee={setSwapFeeIsInvalid}
                 predefinedFees={predefinedFees}
               />
             )}
