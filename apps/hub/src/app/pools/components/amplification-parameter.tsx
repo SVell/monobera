@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { cn } from "@bera/ui";
 import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { InputWithLabel } from "@bera/ui/input";
 
@@ -71,6 +72,10 @@ export const AmplificationInput: React.FC<AmplificationInputProps> = ({
       <div className="flex flex-col gap-4">
         <InputWithLabel
           label="Amplification Factor"
+          className={cn({
+            "border-destructive-foreground text-destructive-foreground":
+              isInvalid,
+          })}
           variant="black"
           value={rawAmplification}
           onChange={(e) => handleAmplificationChange(e.target.value)}
