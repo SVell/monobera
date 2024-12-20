@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { SwapFeeInput } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
 import {
   Accordion,
@@ -18,6 +17,7 @@ import { Address } from "viem";
 import BeraTooltip from "~/components/bera-tooltip";
 import { ParameterPreset } from "../create/CreatePageContent";
 import { AmplificationInput } from "./amplification-parameter";
+import { SwapFeeInput } from "./swap-fee";
 
 export enum OwnershipType {
   Governance = "governance",

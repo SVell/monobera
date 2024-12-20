@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@bera/ui";
 import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { Input } from "@bera/ui/input";
-
-import { PoolType } from "../../b-sdk/dist/index.mjs";
+import { PoolType } from "@berachain-foundation/berancer-sdk";
 
 interface SwapFeeInputProps {
   poolType: PoolType;
