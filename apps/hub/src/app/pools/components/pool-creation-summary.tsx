@@ -138,7 +138,7 @@ const PoolCreationSummary = memo(
           label: "Owners Address",
           value:
             showStep(3) &&
-            `${ownershipType?.toUpperCase()} (${
+            `${ownershipType} (${
               ownersAddress &&
               truncateHash(ownersAddress, undefined, undefined, true)
             })`,

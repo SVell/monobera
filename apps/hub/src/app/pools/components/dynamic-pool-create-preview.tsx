@@ -142,7 +142,7 @@ export default function DynamicPoolCreationPreview({
     }
   }, [isRelayerApprovalError]);
 
-  const formattedOwnerAddress = `${ownershipType?.toUpperCase()} (${
+  const formattedOwnerAddress = `${ownershipType} (${
     ownerAddress && truncateHash(ownerAddress, undefined, undefined, true)
   })`;
 
