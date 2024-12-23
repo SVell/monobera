@@ -79,7 +79,6 @@ export const useLiquidityMismatch = ({
       const tokenPriceUSD =
         tokenPrices[token.address.toLowerCase()]?.price ?? 0;
       if (!tokenPriceUSD || tokenPriceUSD === 0) {
-        console.warn("Token BEX API price is missing for", token);
         tokenUSDAmounts.push(0);
         return null;
       }

@@ -4,6 +4,7 @@ import {
   TokenCurrentPriceMap,
   getTokenCurrentPrices,
 } from "~/actions/shared/getTokenCurrentPrices";
+import POLLING from "~/enum/polling";
 import { DefaultHookReturnType } from "~/types/global";
 
 export const useTokenCurrentPrices = (): DefaultHookReturnType<
@@ -16,11 +17,13 @@ export const useTokenCurrentPrices = (): DefaultHookReturnType<
     async () => {
       return await getTokenCurrentPrices();
     },
+    {
+      refreshInterval: POLLING.SLOW,
+    },
   );
 
   return {
     ...swrResponse,
     refresh: () => void swrResponse.mutate(),
-    // FIXME we should probably have a polling rate so this expires?
   };
 };

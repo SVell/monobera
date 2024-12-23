@@ -1,6 +1,14 @@
-import { balancerApiChainName, balancerApiUrl } from "@bera/config";
+import { balancerApiChainName } from "@bera/config";
+import { bexApiGraphqlClient } from "@bera/graphql";
+import {
+  GetTokenCurrentPricesDocument,
+  GetTokenCurrentPricesQuery,
+  GetTokenCurrentPricesQueryVariables,
+  GqlChain,
+} from "@bera/graphql/dex/api";
+import { getAddress } from "viem";
 
-// FIXME there is a serious issue with the apollo client and the way it's formatting the chain variable here. so I'm hardcoding this for now.
+import { getSafeNumber, handleNativeBera } from "~/utils";
 
 interface TokenPriceInfo {
   price: number;
@@ -13,101 +21,40 @@ export const getTokenCurrentPrices = async (): Promise<
   TokenCurrentPriceMap | undefined
 > => {
   try {
-    const response = await fetch(balancerApiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await bexApiGraphqlClient.query<
+      GetTokenCurrentPricesQuery,
+      GetTokenCurrentPricesQueryVariables
+    >({
+      query: GetTokenCurrentPricesDocument,
+      variables: {
+        chains: [balancerApiChainName as GqlChain],
       },
-      body: JSON.stringify({
-        query:
-          "query GetTokenCurrentPrices($chains: [GqlChain!]!) {\n  tokenGetCurrentPrices(chains: $chains) {\n    address\n    price\n    chain\n    updatedAt\n  }\n}\n",
-        variables: {
-          chains: ["CARTIO"],
-        },
-      }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
+    const tokenCurrentPriceMap: TokenCurrentPriceMap =
+      res.data?.tokenGetCurrentPrices.reduce<TokenCurrentPriceMap>(
+        (map, tokenInformation) => {
+          if (!tokenInformation.price || !tokenInformation.address) {
+            return map;
+          }
 
-    const result = await response.json();
+          const formattedAddress = getAddress(
+            handleNativeBera(tokenInformation.address),
+          ).toLowerCase();
 
-    if (result.errors) {
-      console.error("GraphQL Errors:", result.errors);
-      throw new Error("GraphQL query failed.");
-    }
+          map[formattedAddress] = {
+            price: getSafeNumber(tokenInformation.price.toString()),
+            chain: tokenInformation.chain,
+            updatedAt: tokenInformation.updatedAt,
+          };
 
-    const pricesArray = result.data.tokenGetCurrentPrices;
-
-    if (!pricesArray || !Array.isArray(pricesArray)) {
-      throw new Error("Unexpected response format.");
-    }
-
-    const tokenCurrentPriceMap: TokenCurrentPriceMap = pricesArray.reduce(
-      (map, { address, ...info }: { address: string } & TokenPriceInfo) => {
-        map[address] = info;
-        return map;
-      },
-      {} as TokenCurrentPriceMap,
-    );
+          return map;
+        },
+        {},
+      ) || {};
     return tokenCurrentPriceMap;
-  } catch (error) {
-    console.error("Failed to fetch token prices:", error);
+  } catch (e) {
+    console.error("Failed to fetch token prices:", e);
+    return undefined;
   }
 };
-
-// import { gql } from "@apollo/client";
-// import { bexSubgraphClient } from "@bera/graphql";
-// import {
-//   GetTokenCurrentPrices,
-//   GetTokenCurrentPricesDocument,
-//   GetTokenCurrentPricesQuery,
-//   GetTokenCurrentPricesQueryVariables,
-//   GqlChain,
-// } from "@bera/graphql/dex/api";
-// import { getAddress } from "viem";
-
-// import { getSafeNumber, handleNativeBera } from "~/utils";
-
-// interface FetchCurrentTokenPricesArgs {
-//     chains: GqlChain | GqlChain[];
-//   }
-// export interface CurrentTokenPrices {
-//     [key: string]: number; // aka Token.USDValue
-//   }
-// export const getTokenCurrentPrices = async (): Promise<
-//   CurrentTokenPrices | undefined
-// > => {
-//   try {
-//     const res = await bexSubgraphClient.query<
-//       GetTokenCurrentPricesQuery,
-//       GetTokenCurrentPricesQueryVariables
-//     >({
-//       query: GetTokenCurrentPricesDocument,
-//       variables: {
-//         chains: [balancerApiChainName as GqlChain],
-//       },
-//     });
-
-//     const results = res.data?.tokenGetCurrentPrices.reduce<CurrentTokenPrices>(
-//       (allPrices, tokenInformation) => {
-//         if (!tokenInformation.price) return allPrices; // Skip tokens without a price
-
-//         const formattedAddress = getAddress(
-//           handleNativeBera(tokenInformation.address).toLowerCase(),
-//         );
-
-//         return {
-//           ...allPrices,
-//           [formattedAddress]: getSafeNumber(tokenInformation.price.toString()),
-//         };
-//       },
-//       {},
-//     );
-//     console.log("Token Prices:", results);
-//   } catch (e) {
-//     console.error("$$$$$ Failed to fetch token prices:", e);
-//     return undefined;
-//   }
-// };

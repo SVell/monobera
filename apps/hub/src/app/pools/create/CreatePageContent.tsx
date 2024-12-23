@@ -649,7 +649,7 @@ export default function CreatePageContent() {
       </Button>
       <h2 className="self-start text-3xl font-semibold">Create a Pool</h2>
       <div className="flex w-full flex-col justify-center xl:flex-row">
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <ProcessSteps
             titles={[
               "Pool Type",
