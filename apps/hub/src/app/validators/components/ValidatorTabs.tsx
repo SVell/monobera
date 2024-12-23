@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import {
   useBeraJs,
   useValidatorByOperator,
-  type Validator,
+  useValidatorQueuedOperatorAddress,
 } from "@bera/berajs";
+import { ApiValidatorFragment } from "@bera/graphql/pol/api";
 import {
   Select,
   SelectContent,
@@ -12,13 +13,12 @@ import {
   SelectValue,
 } from "@bera/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@bera/ui/tabs";
+import { Address } from "viem";
 
 import { ValidatorOverview } from "../validator/components/ValidatorOverview";
 import { ValidatorPolData } from "../validator/components/ValidatorPolData";
 import { ValidatorAnalytics } from "./validator-analytics";
 import { ValidatorConfiguration } from "./validator-configuration";
-import { ApiValidatorFragment } from "@bera/graphql/pol/api";
-import { Address } from "viem";
 
 // import { ValidatorEvents } from "./validator-events";
 
@@ -26,18 +26,29 @@ type ValidatorTabValue = "overview" | "configuration" | "analytics" | "events";
 
 export const ValidatorTabs = ({
   validator,
-}: { validator: ApiValidatorFragment }) => {
+}: {
+  validator: ApiValidatorFragment;
+}) => {
   const { account } = useBeraJs();
-  const { data } = useValidatorByOperator(account ?? "0x");
+  const { data: validatorByOperator } = useValidatorByOperator(account ?? "0x");
+  const { data: queuedOperator } = useValidatorQueuedOperatorAddress(
+    validator.pubkey as Address,
+  );
+
+  const isQueuedOperatorWallet =
+    queuedOperator && queuedOperator[1] === account;
   const isValidatorWallet =
-    data?.validators[0]?.publicKey?.toLowerCase() ===
+    validatorByOperator?.validators[0]?.publicKey?.toLowerCase() ===
     validator.pubkey.toLowerCase();
 
   const [dayRange, setDayRange] = useState("30");
   const [activeTab, setActiveTab] = useState<ValidatorTabValue>("overview");
 
   useEffect(() => {
-    if (activeTab === "configuration" && !isValidatorWallet) {
+    if (
+      activeTab === "configuration" &&
+      !(isValidatorWallet || isQueuedOperatorWallet)
+    ) {
       setActiveTab("overview");
     }
   }, [isValidatorWallet, activeTab]);
@@ -54,7 +65,7 @@ export const ValidatorTabs = ({
       <div className="mb-6 flex w-full flex-col justify-between gap-6 sm:flex-row">
         <TabsList variant="ghost">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          {isValidatorWallet && (
+          {(isValidatorWallet || isQueuedOperatorWallet) && (
             <TabsTrigger value="configuration">Configuration</TabsTrigger>
           )}
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -97,7 +108,9 @@ export const ValidatorTabs = ({
       </TabsContent>
       <TabsContent value="configuration">
         <ValidatorConfiguration
-          validatorPublicKey={data?.validators[0]?.publicKey ?? "0x"}
+          isQueuedOperatorWallet={isQueuedOperatorWallet ?? false}
+          isValidatorWallet={isValidatorWallet ?? false}
+          validatorPublicKey={validator.pubkey as Address}
         />
       </TabsContent>
       <TabsContent value="analytics">

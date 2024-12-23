@@ -4,6 +4,7 @@ import { usePublicClient, useSendTransaction, useWriteContract } from "wagmi";
 import { getErrorMessage, getRevertReason } from "~/utils/errorMessages";
 import { ActionEnum, initialState, reducer } from "~/utils/stateReducer";
 import { useBeraJs } from "~/contexts";
+import { DEFAULT_METAMASK_GAS_LIMIT } from "~/utils";
 import { usePollTransactionCount } from "../usePollTransactionCount";
 import {
   type IContractWrite,
@@ -45,33 +46,82 @@ const useBeraContractWrite = ({
       params,
       value = 0n,
       data,
-      gasLimit = 2000000n,
+      gasLimit,
+      ...rest
     }: IContractWrite): Promise<void> => {
       dispatch({ type: ActionEnum.LOADING });
       onLoading?.();
       let receipt: Awaited<ReturnType<typeof sendTransactionAsync>>;
-      if (!publicClient) return;
+      if (!publicClient || !account) return;
       try {
+        // Get the next nonce for the account
+        const nonce = await publicClient.getTransactionCount({
+          address: account,
+          blockTag: "pending",
+        });
+
         if (data) {
+          // Add gas estimation for direct transactions
+          const estimatedGas =
+            gasLimit ??
+            (await publicClient
+              .estimateGas({
+                account,
+                to: address,
+                data,
+                value,
+              })
+              .catch(() => DEFAULT_METAMASK_GAS_LIMIT));
+
           receipt = await sendTransactionAsync({
             data,
             to: address,
             value,
-            gas: gasLimit,
+            gas: estimatedGas,
+            nonce: nonce,
           });
         } else {
+          // Run simulation and gas estimation in parallel
           // TODO: figure out clean way to early detect errors and effectively show them on the UI
-          const { request } = await publicClient.simulateContract({
-            address: address,
-            abi: abi,
-            functionName: functionName,
-            args: params,
-            value: value,
-            account: account,
-          });
+          const [simulationResult, gasEstimateResult] =
+            await Promise.allSettled([
+              publicClient.simulateContract({
+                address: address,
+                abi: abi,
+                functionName: functionName,
+                args: params,
+                value: value,
+                account: account,
+              }),
+              // Only estimate gas if no gasLimit is provided
+              ...(!gasLimit
+                ? [
+                    publicClient.estimateContractGas({
+                      address: address,
+                      abi: abi,
+                      functionName: functionName,
+                      args: params,
+                      value: value,
+                      account: account,
+                    }),
+                  ]
+                : []),
+            ]);
+
+          if (simulationResult.status === "rejected") {
+            throw simulationResult.reason;
+          }
+
+          const estimatedGas =
+            gasLimit ??
+            (gasEstimateResult.status === "fulfilled"
+              ? increaseByPercentage(gasEstimateResult.value, 10)
+              : DEFAULT_METAMASK_GAS_LIMIT);
+
           receipt = await writeContractAsync({
-            ...request,
-            gas: gasLimit ?? request.gas,
+            ...simulationResult.value.request,
+            gas: estimatedGas,
+            nonce: nonce,
           });
         }
 

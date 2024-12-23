@@ -26,7 +26,11 @@ const USER_BLOCK_DELAY = 100n;
 
 export const RewardAllocationConfiguration = ({
   validatorPublicKey,
-}: { validatorPublicKey: Address }) => {
+  isQueuedOperatorWallet,
+}: {
+  validatorPublicKey: Address;
+  isQueuedOperatorWallet: boolean;
+}) => {
   const [vaults, setVaults] = useState<
     { address: string; distribution: number; id: string }[]
   >([{ address: "", distribution: 0, id: uuidv4() }]);
@@ -273,7 +277,9 @@ export const RewardAllocationConfiguration = ({
                       }
                       value={vaults[index].address}
                       selectedItems={vaults.map((vault) => vault.address)}
-                      disabled={isQueuedRewardAllocation}
+                      disabled={
+                        isQueuedRewardAllocation || isQueuedOperatorWallet
+                      }
                       onSelect={(selectedValue) =>
                         handleVaultChange(index, "address", selectedValue)
                       }
@@ -285,7 +291,9 @@ export const RewardAllocationConfiguration = ({
                   <Input
                     type="number"
                     value={vault.distribution}
-                    disabled={isQueuedRewardAllocation}
+                    disabled={
+                      isQueuedRewardAllocation || isQueuedOperatorWallet
+                    }
                     onChange={(e) => {
                       let value = e.target.value;
                       if (value.includes(".")) {
@@ -323,7 +331,11 @@ export const RewardAllocationConfiguration = ({
                   size={"sm"}
                   variant={"outline"}
                   onClick={() => handleDeleteVault(index)}
-                  disabled={vaults.length === 1 || isQueuedRewardAllocation}
+                  disabled={
+                    vaults.length === 1 ||
+                    isQueuedRewardAllocation ||
+                    isQueuedOperatorWallet
+                  }
                 >
                   <Icons.close className="h-6 w-6" />
                 </Button>
@@ -334,7 +346,11 @@ export const RewardAllocationConfiguration = ({
               <Button
                 className="flex border border-border p-2 font-semibold text-foreground"
                 size={"sm"}
-                disabled={vaults.length >= 10 || isQueuedRewardAllocation}
+                disabled={
+                  vaults.length >= 10 ||
+                  isQueuedRewardAllocation ||
+                  isQueuedOperatorWallet
+                }
                 variant={"outline"}
                 onClick={handleAddVault}
               >
@@ -346,7 +362,7 @@ export const RewardAllocationConfiguration = ({
                 size={"sm"}
                 variant={"outline"}
                 title="Distribute Vaults"
-                disabled={isQueuedRewardAllocation}
+                disabled={isQueuedRewardAllocation || isQueuedOperatorWallet}
                 onClick={handleDistributeVaults}
               >
                 {<Icons.squareEqual className="h-4 w-4" />}
@@ -382,17 +398,21 @@ export const RewardAllocationConfiguration = ({
         </div>
       </CardContent>
       <CardFooter className="flex w-full justify-between border-t border-border pt-6">
-        {isQueuedRewardAllocation && (
+        {isQueuedOperatorWallet ? (
+          <span className="mr-2 text-sm text-muted-foreground">
+            Unable to be modified as the current queued operator
+          </span>
+        ) : isQueuedRewardAllocation ? (
           <span className="mr-2 text-sm text-muted-foreground">
             Unable to be modified when there is a current queued reward
             allocation
           </span>
-        )}
+        ) : null}
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto border-border mr-2 flex min-w-36 px-4 py-2"
-          disabled={isQueuedRewardAllocation}
+          className="ml-auto mr-2 flex min-w-36 border-border px-4 py-2"
+          disabled={isQueuedRewardAllocation || isQueuedOperatorWallet}
           onClick={handleResetToDefault}
         >
           Reset to Default
@@ -403,7 +423,8 @@ export const RewardAllocationConfiguration = ({
           disabled={
             !!error ||
             isQueuedRewardAllocation ||
-            isApplyingQueuedRewardAllocation
+            isApplyingQueuedRewardAllocation ||
+            isQueuedOperatorWallet
           }
           onClick={handleQueue}
         >

@@ -5,13 +5,17 @@ import { Icons } from "@bera/ui/icons";
 import { Address } from "viem";
 
 import { GeneralSettings } from "./GeneralSettings";
-import { QueuedRewardAllocationConfiguration } from "./queued-reward-allocation-configuration";
 import { RewardAllocationConfiguration } from "./RewardAllocationConfiguration";
+import { QueuedRewardAllocationConfiguration } from "./queued-reward-allocation-configuration";
 
 export const ValidatorConfiguration = ({
   validatorPublicKey,
+  isQueuedOperatorWallet,
+  isValidatorWallet,
 }: {
   validatorPublicKey: Address;
+  isQueuedOperatorWallet: boolean;
+  isValidatorWallet: boolean;
 }) => {
   const handleUpdateMetadata = useCallback(() => {
     console.log("updating metadata", validatorPublicKey);
@@ -22,8 +26,15 @@ export const ValidatorConfiguration = ({
       <QueuedRewardAllocationConfiguration
         validatorPublicKey={validatorPublicKey}
       />
-      <RewardAllocationConfiguration validatorPublicKey={validatorPublicKey} />
-      <GeneralSettings validatorPublicKey={validatorPublicKey} />
+      <RewardAllocationConfiguration
+        validatorPublicKey={validatorPublicKey}
+        isQueuedOperatorWallet={isQueuedOperatorWallet}
+      />
+      <GeneralSettings
+        validatorPublicKey={validatorPublicKey}
+        isQueuedOperatorWallet={isQueuedOperatorWallet}
+        isValidatorWallet={isValidatorWallet}
+      />
       <Link href={"https://github.com/berachain/default-lists"}>
         <Card className="flex flex-col gap-1 p-4">
           <div className="flex-center flex">
