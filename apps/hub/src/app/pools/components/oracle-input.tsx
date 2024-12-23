@@ -3,6 +3,7 @@ import { ADDRESS_ZERO, Oracle, Token } from "@bera/berajs";
 import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { InputWithLabel } from "@bera/ui/input";
 import { ZERO_ADDRESS } from "@berachain-foundation/berancer-sdk";
+import { isAddress } from "viem";
 
 import BeraTooltip from "~/components/bera-tooltip";
 
@@ -30,13 +31,10 @@ const OracleInput: React.FC<OracleInputProps> = ({
       : null,
   );
 
-  const validateAddress = (value: string): boolean =>
-    /^0x[a-fA-F0-9]{40}$/.test(value);
-
   const handleAddressChange = (value: string) => {
     setRawAddress(value);
 
-    if (validateAddress(value)) {
+    if (isAddress(value)) {
       setAddressError(null);
       onOracleChange(index, { address: value });
     } else {
