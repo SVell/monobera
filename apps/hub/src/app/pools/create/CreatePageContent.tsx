@@ -865,7 +865,7 @@ export default function CreatePageContent() {
             </section>
           )} */}
 
-            {liquidityMismatchInfo.message && (
+            {liquidityMismatchInfo.message && currentStep <= 2 && (
               <Alert
                 variant="warning"
                 className={cn(
