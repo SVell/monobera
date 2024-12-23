@@ -120,7 +120,7 @@ export const useLiquidityMismatch = ({
       return;
     }
 
-    // Validation During Liquidity Input
+    // Validation During Liquidity Input and onwards.
     if (
       totalLiquidityUSD === 0 ||
       tokenUSDAmounts.some((value) => value === 0)

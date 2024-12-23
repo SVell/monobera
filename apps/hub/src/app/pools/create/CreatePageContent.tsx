@@ -865,27 +865,26 @@ export default function CreatePageContent() {
             </section>
           )} */}
 
-            {liquidityMismatchInfo.message &&
-              (completedSteps.includes(1) || completedSteps.includes(2)) && (
-                <Alert
-                  variant="warning"
-                  className={cn(
-                    "my-4",
-                    liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
-                  )}
-                  onClick={() => {
-                    if (liquidityMismatchInfo.suggestWeighted) {
-                      setCurrentStep(0);
-                      // setPoolType(PoolType.Weighted);
-                    }
-                  }}
-                >
-                  <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
-                  <AlertDescription>
-                    {liquidityMismatchInfo.message}
-                  </AlertDescription>
-                </Alert>
-              )}
+            {liquidityMismatchInfo.message && (
+              <Alert
+                variant="warning"
+                className={cn(
+                  "my-4",
+                  liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
+                )}
+                onClick={() => {
+                  if (liquidityMismatchInfo.suggestWeighted) {
+                    setCurrentStep(0);
+                    // setPoolType(PoolType.Weighted);
+                  }
+                }}
+              >
+                <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
+                <AlertDescription>
+                  {liquidityMismatchInfo.message}
+                </AlertDescription>
+              </Alert>
+            )}
 
             {isLastStep && isVerificationFailure && (
               <div className="pt-4">
