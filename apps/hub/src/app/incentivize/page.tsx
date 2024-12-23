@@ -5,8 +5,8 @@ import { Address } from "viem";
 import { Incentivize } from "./incentivize";
 
 export const metadata: Metadata = {
-  title: "Delegate",
-  description: "Delegate, Redelegate, or Undelegate your BGT",
+  title: "Incentivize",
+  description: "Incentivize a reward vault",
 };
 
 export default function Page() {

@@ -68,9 +68,8 @@ export const CancelButton = ({
       proposal.status,
     ) &&
       isCanceller) ||
-      (proposal.status && account?.toLowerCase() === proposal.proposer));
-
-  console.log({ isCanceller, canCancel, proposal });
+      (proposal.status === ProposalStatus.Pending &&
+        account?.toLowerCase() === proposal.proposer));
 
   return (
     <>

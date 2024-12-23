@@ -3,7 +3,7 @@ import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isIPFS } from "@bera/config";
 import { Address, createPublicClient, http, isAddress } from "viem";
-import { GaugeDetails } from "./components/gauge-details";
+import { VaultDetails } from "./components/VaultDetails";
 import { defaultBeraNetworkConfig } from "@bera/wagmi/config";
 import { BERA_VAULT_REWARDS_ABI } from "@bera/berajs/abi";
 
@@ -42,11 +42,14 @@ export default async function PoolPage({
   });
 
   if (!stakeToken) {
-    console.error("Factory address not found, so vault is invalid", stakeToken);
+    console.error(
+      "Stake token address not found, so vault is invalid",
+      stakeToken,
+    );
     notFound();
   }
 
-  return <GaugeDetails gaugeAddress={params.gaugeAddress} />;
+  return <VaultDetails address={params.gaugeAddress} />;
 }
 
 export function generateStaticParams() {

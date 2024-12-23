@@ -61,7 +61,9 @@ export const BeraJsProvider: React.FC<
     functionName: "getDefaultRewardAllocation",
   });
 
-  console.log({ defaultRewardAllocation });
+  useEffect(() => {
+    console.log({ defaultRewardAllocation });
+  }, [defaultRewardAllocation]);
 
   const isWrongNetwork = useMemo(() => {
     return !chains.some((c) => c.id === chain?.id);

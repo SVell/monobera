@@ -18,7 +18,6 @@ export const blockExplorerUrl = process.env
   .NEXT_PUBLIC_BLOCK_EXPLORER as string;
 export const blockExplorerName = process.env
   .NEXT_PUBLIC_BLOCK_EXPLORER_NAME as string;
-export const polEndpointUrl = process.env.NEXT_PUBLIC_POL_ENDPOINT as string;
 
 // Subgraphs
 export const balancerApiUrl = process.env

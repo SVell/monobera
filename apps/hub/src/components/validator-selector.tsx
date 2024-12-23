@@ -1,15 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  truncateHash,
-  useBeraJs,
-  useValidValidator,
-  useValidatorList,
-} from "@bera/berajs";
+import { truncateHash, useAllValidators, useValidator } from "@bera/berajs";
 import { SSRSpinner, SearchInput, ValidatorIcon } from "@bera/shared-ui";
 import { Button } from "@bera/ui/button";
 import { Dialog, DialogContent } from "@bera/ui/dialog";
 import { Icons } from "@bera/ui/icons";
-import { type Address } from "viem";
+import { keccak256, type Address } from "viem";
 
 export default function ValidatorSelector({
   validatorAddress = "0x",
@@ -25,33 +20,27 @@ export default function ValidatorSelector({
   showSearch?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
-  //@ts-ignore
 
-  const { data: isValidValidator, isLoading: isValidValidatorLoading } =
-    useValidValidator(validatorAddress, {
-      opts: {
-        refreshInterval: 0,
-      },
-    });
+  const { data: selectedValidator } = useValidator({
+    pubkey: validatorAddress,
+  });
+
+  const isValidValidator = !!selectedValidator;
 
   const { data: validatorInfo, isLoading: isValidatorListLoading } =
-    useValidatorList({
-      opts: {
-        refreshInterval: 0,
-      },
-    });
+    useAllValidators();
 
   const selectedValidatorInfo = useMemo(() => {
-    return validatorInfo?.validatorDictionary
-      ? validatorInfo?.validatorDictionary[validatorAddress.toLowerCase()]
-      : undefined;
+    if (selectedValidator) return selectedValidator;
+
+    return validatorInfo?.validators?.validators?.find(
+      (v) => v.pubkey.toLowerCase() === validatorAddress.toLowerCase(),
+    );
   }, [isValidValidator, validatorInfo]);
 
   const isLoading =
     validatorAddress !== "0x" &&
-    (isValidValidator === undefined ||
-      isValidValidatorLoading ||
-      isValidatorListLoading);
+    (isValidValidator === undefined || isValidatorListLoading);
   return (
     <div>
       <Button
@@ -65,9 +54,10 @@ export default function ValidatorSelector({
             <ValidatorIcon
               address={validatorAddress}
               className="h-8 w-8"
-              imgOverride={selectedValidatorInfo?.logoURI}
+              imgOverride={selectedValidatorInfo?.metadata?.logoURI}
             />
-            {selectedValidatorInfo?.name ?? truncateHash(validatorAddress)}
+            {selectedValidatorInfo?.metadata?.name ??
+              truncateHash(validatorAddress)}
             {!unselectable && (
               <Icons.chevronDown className="relative h-3 w-3" />
             )}

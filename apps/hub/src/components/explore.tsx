@@ -58,13 +58,6 @@ export const Explore = () => {
       href: homepageUrl,
     },
     {
-      image: <Icons.hubFav className="h-16 w-16" />,
-      title: "BeraHub",
-      subtitle: "The HUB for BGT Governance",
-      background: "#E6B434",
-      href: hubUrl,
-    },
-    {
       image: <Icons.honeyFav className="h-16 w-16" />,
       title: "Honey",
       subtitle: "Mint or redeem Berachain's native stablecoin",
@@ -72,32 +65,11 @@ export const Explore = () => {
       href: honeyUrl,
     },
     {
-      image: <Icons.faucetFav className="h-16 w-16" />,
-      title: "Faucet",
-      subtitle: "Fund your testnet wallet with BERA tokens",
-      background: "#326FE5",
-      href: faucetUrl,
-    },
-    {
       image: <Icons.berascanFav className="h-16 w-16" />,
       title: "Beratrails",
       subtitle: "Blockchain Explorer",
       background: "#96532C",
       href: blockExplorerUrl,
-    },
-    {
-      image: <Icons.berpsFav className="h-16 w-16" />,
-      title: "BERPS",
-      subtitle: "Trade your favorite pairs",
-      background: "#41D6E0",
-      href: perpsUrl,
-    },
-    {
-      image: <Icons.bendFav className="h-16 w-16" />,
-      title: "BEND",
-      subtitle: "Supply assets and borrow honey",
-      background: "#7464E5",
-      href: lendUrl,
     },
     {
       image: <Icons.ecoFav className="h-16 w-16" />,

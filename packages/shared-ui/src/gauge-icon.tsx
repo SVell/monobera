@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { usePollGauges } from "@bera/berajs";
+import { useRewardVaults } from "@bera/berajs";
 import { cn } from "@bera/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@bera/ui/avatar";
 import { Icons } from "@bera/ui/icons";
@@ -42,9 +42,12 @@ export const GaugeIcon = ({
   size,
   ...props
 }: IconProps) => {
-  const { gaugeDictionary } = usePollGauges({
+  const { data } = useRewardVaults({
     pageSize: 9999,
   });
+
+  const gaugeDictionary = data?.gaugeDictionary;
+
   const img = useMemo(
     () => gaugeDictionary?.[address]?.metadata?.logoURI ?? "",
     [address],

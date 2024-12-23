@@ -13,3 +13,4 @@ export * from "./formatNumber";
 export * from "./formatTimestamps";
 export * from "./tokenWrapping";
 export * from "./errorMessages";
+export * from "./isSubgraphStale";

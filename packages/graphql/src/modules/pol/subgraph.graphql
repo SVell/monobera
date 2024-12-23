@@ -1,0 +1,219 @@
+fragment ValidatorMinimal on Validator {
+  id
+  publicKey
+  amountDelegated
+}
+fragment SubgraphStatusMeta on _Meta_ {
+  block {
+    timestamp
+  }
+  hasIndexingErrors
+}
+
+query GetUserValidatorInformation($address: Bytes!) {
+  userValidatorInformations: userValidatorBGTDelegateds(
+    where: { user: $address }
+    first: 1000
+  ) {
+    id
+    queuedBoosts: amountQueued
+    activeBoosts: amountDeposited
+    queuedUnboosts: amountDropQueued
+    queuedUnboostStartBlock: dropQueuedStartBlock
+    queuedBoostStartBlock: queuedStartBlock
+    user
+    validator {
+      ...ValidatorMinimal
+    }
+  }
+  _meta {
+    ...SubgraphStatusMeta
+  }
+}
+
+query GetValidValidator($address: ID!) {
+  validator(id: $address) {
+    ...ValidatorMinimal
+  }
+}
+
+query GetAllValidators {
+  validators(first: 1000, orderDirection: desc, orderBy: amountDelegated) {
+    ...ValidatorMinimal
+  }
+}
+
+fragment ValidatorStakedBgts on ValidatorBGTDelegated {
+  allTimeBGTStaked: allTimeBGTDelegated
+  BGTStaked: BGTDelegated
+  id
+  timestamp
+}
+
+query GetValidatorBgtStaked($pubKey: String!, $timestamp: Timestamp!) {
+  validatorBgtStaked: validatorBGTDelegateds(
+    interval: day
+    where: { validator: $pubKey, timestamp_gte: $timestamp }
+  ) {
+    ...ValidatorStakedBgts
+  }
+}
+
+fragment BlockRewardStatsByValidator on BlockRewardStatsByValidator {
+  timestamp
+  # rewardRate
+  # commissionRate
+  BGTEmitted
+  BGTEarned
+  allTimeBGTEmitted
+  allTimeBGTEarned
+
+  validator {
+    ...ValidatorMinimal
+  }
+}
+
+# this is prob an issue.
+query GetValidatorBlockRewardStats($address: String!, $timestamp: Timestamp!) {
+  blockRewardStatsByValidators(
+    interval: day
+    where: { validator: $address, timestamp_gte: $timestamp }
+  ) {
+    ...BlockRewardStatsByValidator
+  }
+}
+
+query GetValidatorIncentivesReceiveds(
+  $address: String!
+  $timestamp: Timestamp!
+) {
+  validatorIncentivesReceiveds(
+    interval: day
+    where: { validator: $address, timestamp_gte: $timestamp }
+  ) {
+    token {
+      ...StakingToken
+    }
+    tokenReceived
+    # usdValueTokenRewarded
+    timestamp
+    allTimeTokenReceived
+    # allTimeUsdValueTokenRewarded
+    id
+  }
+  validatorRewardsDistributeds(
+    interval: day
+    where: { validator: $address }
+    first: 1
+  ) {
+    # allTimeUsdValueTokenRewarded
+    allTimeBGTDistributed
+  }
+}
+
+query GetValidatorBgtBoost($address: String!) {
+  userValidatorBoostQueued: userValidatorBGTDelegateds(
+    first: 10
+    where: { validator: $address, amountQueued_gt: "0" }
+    orderBy: amountQueued
+    orderDirection: desc
+  ) {
+    amountQueued
+    user
+  }
+  userValidatorBoostDeposited: userValidatorBGTDelegateds(
+    first: 10
+    where: { validator: $address, amountDeposited_gt: "0" }
+    orderBy: amountDeposited
+    orderDirection: desc
+  ) {
+    amountDeposited
+    user
+  }
+}
+
+query GetValidatorBlockStats($address: String) {
+  blockStatsByValidators(
+    interval: hour
+    first: 1
+    where: { validator: $address }
+  ) {
+    allTimeBlockCount
+  }
+}
+
+query GetAllValidatorBlockCount($timestamp: Timestamp) {
+  blockStatsByValidators(
+    interval: day
+    first: 1000
+    where: { timestamp: $timestamp }
+  ) {
+    allTimeBlockCount
+    blockCount
+    validator {
+      id
+      publicKey
+    }
+    timestamp
+  }
+}
+fragment StakingToken on TokenInformation {
+  address
+  # beraValue
+  decimals
+  name
+  symbol
+  # usdValue
+}
+
+fragment VaultMinimal on Vault {
+  id
+  stakingTokenAmount
+  vaultAddress
+  # activeIncentivesValueUsd
+}
+
+fragment VaultWithStakingToken on Vault {
+  ...VaultMinimal
+  stakingToken {
+    ...StakingToken
+  }
+}
+
+fragment GlobalInfo on GlobalInfo {
+  totalValidators
+  totalBGTStaked: totalBGTDelegated
+  totalBGTQueued
+  totalBGTDistributed
+  rewardRate
+  id
+  baseRewardRate
+}
+
+# TODO: we need to figure out what to do when we have 1000+ reward vaults and this query is wrong
+query GetGauges {
+  vaults(first: 1000, where: { isWhitelisted: true }) {
+    ...VaultWithStakingToken
+  }
+}
+
+query GetWeeklyBgtInflation($wbera: ID!) {
+  globalRewardDistributions(interval: day, first: 7) {
+    BGTDistributed
+  }
+  tokenInformation(id: $wbera) {
+    ...StakingToken
+  }
+}
+
+query GetRewardVault($stakingToken: String) {
+  vaults(first: 1, where: { stakingToken: $stakingToken }) {
+    ...VaultWithStakingToken
+  }
+}
+
+query GetValidatorByOperator($operator: Bytes = "") {
+  validators(where: { operator: $operator }) {
+    publicKey
+  }
+}

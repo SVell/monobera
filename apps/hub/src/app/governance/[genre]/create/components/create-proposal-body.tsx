@@ -1,9 +1,8 @@
 import { Button } from "@bera/ui/button";
 
-import { Icons } from "@bera/ui/icons";
-import { Input, InputWithLabel } from "@bera/ui/input";
+import { InputWithLabel } from "@bera/ui/input";
 import { TextArea } from "@bera/ui/text-area";
-import { Dispatch, SetStateAction, useCallback, useState } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
 import {
   CustomProposal,
   CustomProposalErrors,
@@ -11,7 +10,6 @@ import {
 } from "~/app/governance/types";
 import {
   checkProposalField,
-  getBodyErrors,
   type useCreateProposal,
 } from "~/hooks/useCreateProposal";
 import { useGovernance } from "../../components/governance-provider";

@@ -32,14 +32,6 @@ const footerNavigation = {
       href: honeyUrl,
     },
     {
-      name: lendName,
-      href: lendUrl,
-    },
-    {
-      name: perpsName,
-      href: perpsUrl,
-    },
-    {
       name: blockExplorerName,
       href: blockExplorerUrl,
     },

@@ -16,8 +16,6 @@ export const StatusAction = ({
   proposal: ProposalWithVotesFragment;
   userVote: Vote | false | undefined;
 }) => {
-  const status = proposal.status;
-
   const { data: proposalTimelockState } = useProposalTimelockState({
     proposalTimelockId: proposal.timelock?.id,
     timelockAddress: governanceTimelockAddress,
@@ -26,6 +24,14 @@ export const StatusAction = ({
   if (!proposal || !proposal.id) {
     return null;
   }
+
+  const status =
+    proposal.status === ProposalStatus.PendingExecution &&
+    proposal.queueEnd === null &&
+    proposal.queueStart === null &&
+    proposalTimelockState !== "ready"
+      ? ProposalStatus.InQueue
+      : proposal.status;
 
   return (
     <div className="flex items-center gap-3 font-medium">

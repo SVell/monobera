@@ -22,8 +22,7 @@ import { Skeleton } from "@bera/ui/skeleton";
 
 import { useClaimableFees } from "~/hooks/useClaimableFees";
 import { useClaimableIncetives } from "~/hooks/useClaimableIncentives";
-
-// import { useClaimAllBgtCalldata } from "~/hooks/useClaimAllBgtCalldata";
+import { Address } from "viem";
 
 export const GeneralInfo = () => {
   const { data: userVaultInfo, isLoading: isTotalBgtRewardsLoading } =
@@ -40,10 +39,6 @@ export const GeneralInfo = () => {
     isLoading: isClaimableFeesLoading,
     refresh,
   } = useClaimableFees();
-  // const isDataReady =
-  //   !isTotalBgtRewardsLoading &&
-  //   !isClaimableIncentivesLoading &&
-  //   !isClaimableFeesLoading
 
   const [isDataReady, setIsDataReady] = useState(false);
 
@@ -72,18 +67,6 @@ export const GeneralInfo = () => {
       refresh();
     },
   });
-
-  // const {
-  //   write: claimAllBgtWrite,
-  //   isLoading: isClaimAllBgtLoading,
-  //   ModalPortal: ClaimAllBgtModalPortal,
-  // } = useTxn({
-  //   message: "Claiming all BGT Rewards",
-  //   actionType: TransactionActionType.CLAIMING_REWARDS,
-  //   // onSuccess: () => {
-  //   //   refresh();
-  //   // },
-  // });
 
   // const claimAllBgtCalldata = useClaimAllBgtCalldata(userVaultInfo?.vaults.map((vault: any) => vault.vaultAddress) ?? [])
   return (
@@ -133,18 +116,19 @@ export const GeneralInfo = () => {
                 Reward Vaults:
               </div>
               {isDataReady &&
-                userVaultInfo?.vaults.map((gauge: UserVault, index: number) => (
+                userVaultInfo?.vaults.map((gauge, index) => (
                   <div
                     className="flex h-6 w-fit items-center gap-1 rounded-full border border-border bg-background px-2"
                     key={`gauge-${index}-${gauge}`}
                   >
                     <GaugeIcon
-                      address={gauge.vaultAddress}
-                      overrideImage={gauge.logoURI}
+                      address={gauge.vault.vaultAddress as Address}
+                      overrideImage={gauge.vault.metadata?.logoURI}
                       className="h-4 w-4"
                     />
-
-                    <span className="text-xs">{gauge.name} </span>
+                    <span className="text-xs">
+                      {gauge.vault.metadata?.name}
+                    </span>
                     <span className="text-[10px] text-muted-foreground">
                       BGT Earning:
                       <FormattedNumber
@@ -192,7 +176,7 @@ export const GeneralInfo = () => {
               {isDataReady ? (
                 <>
                   <FormattedNumber
-                    value={claimableIncentives.honeyValue}
+                    value={claimableIncentives?.honeyValue ?? 0}
                     symbol="USD"
                     compact
                     showIsSmallerThanMin

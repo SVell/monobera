@@ -3,7 +3,7 @@ import {
   GetUserValidatorInformation,
   GetUserValidatorInformationQuery,
   GetUserValidatorInformationQueryVariables,
-} from "@bera/graphql/pol";
+} from "@bera/graphql/pol/subgraph";
 import useSWR from "swr";
 import { Address } from "viem";
 

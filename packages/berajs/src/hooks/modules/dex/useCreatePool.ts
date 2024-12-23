@@ -15,14 +15,14 @@ import useSWRImmutable from "swr/immutable";
 import { formatUnits, keccak256, parseUnits } from "viem";
 
 import { generatePoolName, generatePoolSymbol } from "~/utils/poolNamings";
-import { wrapNativeToken, wrapNativeTokens } from "~/utils/tokenWrapping";
+import { wrapNativeTokens } from "~/utils/tokenWrapping";
 import { balancerPoolCreationHelperAbi } from "~/abi";
 import { ADDRESS_ZERO } from "~/config";
 import { IContractWrite } from "~/hooks/useContractWrite";
 import { Token, TokenInput } from "~/types";
 
 const DEFAULT_WEIGHTS_DUPLICATION_THRESHOLD = 0.005;
-const DEFAULT_POOL_CREATE_GAS_LIMIT = 7920027n; // NOTE: this is the metamask gas limit, in experiments we find we can easily use 75% of this.
+const DEFAULT_POOL_CREATE_GAS_LIMIT = 7_920_027n; // NOTE: this is the metamask gas limit, in experiments we find we can easily use 75% of this.
 
 interface UseCreatePoolProps {
   poolCreateTokens: Token[];

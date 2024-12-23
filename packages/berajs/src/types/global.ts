@@ -9,7 +9,6 @@ export interface BeraConfig {
     validatorList?: string;
     marketList?: string;
     validatorInfo?: string;
-    polEndpoint?: string;
   };
   subgraphs?: {
     honeySubgraph?: string;

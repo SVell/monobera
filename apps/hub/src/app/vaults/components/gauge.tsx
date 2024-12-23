@@ -12,7 +12,7 @@ export default function Gauge() {
   const { data, isLoading: isGlobalDataLoading } = usePollGlobalData();
   return (
     <div className="flex flex-col gap-6">
-      <div className="xs:gap-3 flex flex-col gap-6 lg:flex-row">
+      <div className="flex flex-col gap-6 lg:flex-row">
         <GaugeInfoCard />
         <GlobalGaugeWeightChart
           gaugeWeights={data?.globalCuttingBoard ?? []}

@@ -2,24 +2,31 @@
 
 import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePollGauges, type Gauge } from "@bera/berajs";
+import { useRewardVaults } from "@bera/berajs";
 import {
   SimpleTable,
   getRewardsVaultUrl,
   useAsyncTable,
 } from "@bera/shared-ui";
 import type {
-  ColumnDef,
   PaginationState,
   SortingState,
   TableState,
   Updater,
 } from "@tanstack/react-table";
 
-import { GlobalGaugeWeightColumns } from "~/columns/global-gauge-weight-columns";
+import { AllRewardVaultColumns } from "~/columns/global-gauge-weight-columns";
+import {
+  GqlRewardVaultOrderBy,
+  GqlRewardVaultOrderDirection,
+} from "@bera/graphql/pol/api";
 
 const GAUGE_PAGE_SIZE = 10;
 
+const map: Record<string, GqlRewardVaultOrderBy> = {
+  allTimeBGTReceived: GqlRewardVaultOrderBy.AllTimeBgtReceived,
+  dynamicData_bgtCapturePercentage: GqlRewardVaultOrderBy.BgtCapturePercentage,
+};
 export default function GlobalGaugeWeightTable({
   myGauge = false,
   keywords = "",
@@ -33,30 +40,35 @@ export default function GlobalGaugeWeightTable({
 }) {
   const router = useRouter();
   const [page, setPage] = useState(0);
-  const [sorting, setSorting] = useState([
-    { id: "activeIncentivesInHoney", desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
-  const { gaugeCounts, gaugeList, isLoading, isValidating } = usePollGauges(
+  const { data, isLoading, isValidating } = useRewardVaults(
     {
-      sortBy: sorting[0]?.id as
-        | "activeIncentivesInHoney"
-        | "amountstaked"
-        | "bgtInflationCapture"
-        | undefined,
-      sortOrder: sorting[0]?.desc ? "desc" : "asc",
-      page: page + 1,
-      filterByProduct: markets,
+      orderBy: map[sorting[0]?.id],
+      orderDirection: (sorting[0]?.desc
+        ? "desc"
+        : "asc") as GqlRewardVaultOrderDirection,
+      skip: GAUGE_PAGE_SIZE * page,
+      // filterByProduct: markets,
       pageSize: GAUGE_PAGE_SIZE,
-      query: isTyping ? "" : keywords,
+      search: isTyping ? "" : keywords,
     },
     { opts: { keepPreviousData: true } },
   );
 
+  const gaugeList = data?.gaugeList ?? [];
+  const gaugeCounts = data?.gaugeCounts ?? 0;
+
   const fetchData = useCallback(
     (state: TableState) => {
       setPage(state?.pagination?.pageIndex);
-      setSorting(state?.sorting);
+
+      setSorting(
+        state?.sorting.map((s) => ({
+          id: s.id,
+          desc: s.desc,
+        })),
+      );
     },
     [setPage],
   );
@@ -88,7 +100,7 @@ export default function GlobalGaugeWeightTable({
 
   const allGaugeTable = useAsyncTable({
     fetchData: fetchData,
-    columns: GlobalGaugeWeightColumns as ColumnDef<Gauge>[],
+    columns: AllRewardVaultColumns,
     data: myGauge ? [] : gaugeList ?? [],
     enablePagination: true,
     additionalTableProps: {

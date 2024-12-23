@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { usePollGlobalData } from "@bera/berajs";
 import { cloudinaryUrl } from "@bera/config";
@@ -5,7 +7,7 @@ import { FormattedNumber } from "@bera/shared-ui";
 import { Card } from "@bera/ui/card";
 import { Skeleton } from "@bera/ui/skeleton";
 
-export const ValidatorGlobalInfo = () => {
+export const ValidatorsGlobalInfo = () => {
   const { data, isLoading } = usePollGlobalData();
   const generalInfo = [
     {
@@ -24,6 +26,26 @@ export const ValidatorGlobalInfo = () => {
             alt="Total Validators"
             width={140}
             height={140}
+          />
+        </div>
+      ),
+    },
+    {
+      amount: (
+        <FormattedNumber
+          value={data?.bgtTotalBoosts ?? 0}
+          symbol="BGT"
+          showIsSmallerThanMin
+        />
+      ),
+      text: "Total Value Staked",
+      img: (
+        <div className="absolute bottom-0 right-0">
+          <Image
+            src={`${cloudinaryUrl}/station/inflation`}
+            alt="Inflation"
+            width={80}
+            height={80}
           />
         </div>
       ),
@@ -50,27 +72,7 @@ export const ValidatorGlobalInfo = () => {
     {
       amount: (
         <FormattedNumber
-          value={data?.bgtInfo?.bgtInflation ?? 0}
-          symbol="BGT"
-          showIsSmallerThanMin
-        />
-      ),
-      text: "BGT Inflation per year",
-      img: (
-        <div className="absolute bottom-0 right-0">
-          <Image
-            src={`${cloudinaryUrl}/station/inflation`}
-            alt="Inflation"
-            width={80}
-            height={80}
-          />
-        </div>
-      ),
-    },
-    {
-      amount: (
-        <FormattedNumber
-          value={data?.vaultCount ?? 0}
+          value={data?.activeRewardVaultCount ?? 0}
           compact={false}
           visibleDecimals={0}
         />
@@ -95,13 +97,13 @@ export const ValidatorGlobalInfo = () => {
           className="relative h-[150px] border-border p-6 text-left"
           key={info.text + index}
         >
-          <div className="text-xs font-medium leading-[14px] text-muted-foreground">
+          <div className="text-sm font-medium leading-none text-muted-foreground pb-2">
             {info.text}
           </div>
           {isLoading ? (
-            <Skeleton className="mt-4 h-[45px] w-[120px]" />
+            <Skeleton className="h-[45px] w-[120px]" />
           ) : (
-            <div className="mt-4 text-2xl font-semibold leading-loose text-foreground">
+            <div className="text-2xl font-semibold leading-loose text-foreground">
               {info.amount}
             </div>
           )}

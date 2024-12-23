@@ -17,5 +17,5 @@
     "esm",
     "cjs",
   ],
-  "include": ["**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs", "../../apps/hub/src/hooks/useCreateProposal.ts", "../../apps/hub/src/b-sdk/balancer.ts", "../../apps/hub/src/b-sdk/balancerClient.ts", "jest.config.js", "../../apps/hub/src/app/pools/usePoolTable.tsx"]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs",  "../../apps/hub/src/b-sdk/balancer.ts","jest.config.js"]
 }

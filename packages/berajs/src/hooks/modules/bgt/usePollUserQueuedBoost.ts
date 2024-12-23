@@ -8,7 +8,7 @@ import {
 } from "~/actions/bgt/getUserQueueInfo";
 import { useBeraJs } from "~/contexts";
 import { DefaultHookOptions, DefaultHookReturnType } from "~/types";
-import { usePollValidatorInfo } from "./usePollValidatorInfo";
+import { useAllValidators } from "../pol";
 
 export interface UsePollValidatorInfoResponse
   extends DefaultHookReturnType<{
@@ -21,10 +21,13 @@ export const usePollUserQueuedBoost = (
   const publicClient = usePublicClient();
   const { account, config: beraConfig } = useBeraJs();
   const config = options?.beraConfigOverride ?? beraConfig;
-  const { validatorInfoList } = usePollValidatorInfo();
-  const validatorAddressList = validatorInfoList.map(
-    (validator) => validator.coinbase,
-  );
+
+  const { data } = useAllValidators();
+  const validatorAddressList =
+    data?.validators?.validators?.map(
+      (validator) => validator.pubkey as Address,
+    ) ?? [];
+
   const QUERY_KEY = account
     ? [account, validatorAddressList, "usePollUserQueuedBoost"]
     : null;

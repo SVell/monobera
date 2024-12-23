@@ -16,7 +16,6 @@ import {
   lendUIDataProviderAddress,
   marketListUrl,
   multicallAddress,
-  polEndpointUrl,
   polSubgraphUrl,
   tokenListUrl,
   tradingContractAddress,
@@ -31,7 +30,6 @@ export const defaultBeraConfig: BeraConfig = {
     validatorList: validatorListUrl,
     marketList: marketListUrl,
     validatorInfo: validatorListUrl,
-    polEndpoint: polEndpointUrl,
   },
   subgraphs: {
     honeySubgraph: honeySubgraphUrl,

@@ -1,62 +1,87 @@
-import { polEndpointUrl } from "@bera/config";
-import { bgtClient } from "@bera/graphql";
+import { BeraConfig } from "~/types";
+import { getUserBoosts } from "./getUserBoosts";
+import { getAllValidators } from "./get-all-validators";
+import { ApiValidatorFragment } from "@bera/graphql/pol/api";
 import {
-  GetUserValidatorInformation,
-  GetUserValidatorInformationQueryVariables,
-  type GetUserValidatorInformationQuery,
-} from "@bera/graphql/pol";
+  UserBoostsOnValidator,
+  getUserBoostsOnValidator,
+} from "./getUserBoostsOnValidator";
+import { Address } from "viem";
+import { GetPublicClientReturnType } from "@wagmi/core";
+import { isSubgraphStale } from "~/utils";
 
-import {
-  BeraConfig,
-  type UserValidator,
-  type ValidatorResponse,
-} from "~/types";
+export type ValidatorWithUserBoost = ApiValidatorFragment & {
+  userBoosts: UserBoostsOnValidator;
+};
 
 export const getUserActiveValidators = async ({
   config,
   account,
+  publicClient,
 }: {
   config: BeraConfig;
   account: string;
-}): Promise<UserValidator[] | undefined> => {
-  try {
-    if (!config.subgraphs?.polSubgraph) {
-      throw new Error("pol subgraph uri is not found in config");
+  publicClient?: GetPublicClientReturnType;
+}): Promise<ValidatorWithUserBoost[] | undefined> => {
+  const userBoosts = await getUserBoosts({ config, account });
+
+  const [validatorInfoList, onChainBoosts] = await Promise.all([
+    getAllValidators({
+      config,
+      variables: {
+        where: {
+          idIn: userBoosts.data.userValidatorInformations.map(
+            (t) => t.validator.id,
+          ),
+        },
+      },
+    }),
+    publicClient && isSubgraphStale(userBoosts.data._meta?.block.timestamp)
+      ? Promise.all(
+          userBoosts.data.userValidatorInformations.map((t) =>
+            getUserBoostsOnValidator({
+              config,
+              account: account as Address,
+              pubkey: t.validator.publicKey,
+              publicClient: publicClient,
+            }),
+          ),
+        )
+      : undefined,
+  ]);
+
+  return validatorInfoList?.validators.validators.map((validator) => {
+    const userDeposited = onChainBoosts
+      ? onChainBoosts.find(
+          (data) =>
+            data.pubkey.toLowerCase() === validator.pubkey.toLowerCase(),
+        )
+      : userBoosts.data.userValidatorInformations.find(
+          (data) =>
+            data.validator.id.toLowerCase() === validator.id.toLowerCase(),
+        );
+
+    if (!userDeposited) {
+      throw new Error("User deposited not found");
     }
 
-    // TODO: handle more than 1000 validators
-    const result = await bgtClient.query<
-      GetUserValidatorInformationQuery,
-      GetUserValidatorInformationQueryVariables
-    >({
-      query: GetUserValidatorInformation,
-      variables: { address: account.toLowerCase() },
-    });
-
-    const url = `${polEndpointUrl}/user/${account}/validators`;
-    const indexerRes = await fetch(url);
-    const indexerData: ValidatorResponse = await indexerRes.json();
-    const validatorInfoList =
-      indexerData.userValidators.map((t) => t.validator) ?? [];
-
-    const userDepositedData = result.data.userValidatorInformations;
-
-    return validatorInfoList.map((validator) => {
-      const userDeposited = userDepositedData.find(
-        (data) =>
-          data.validator.id.toLowerCase() === validator.id.toLowerCase(),
-      );
-
-      return {
-        ...validator,
-        amountDeposited: userDeposited?.amountDeposited ?? "0",
-        amountQueued: userDeposited?.amountQueued ?? "0",
-        latestBlock: userDeposited?.latestBlock ?? "0",
-        latestBlockTime: userDeposited?.latestBlockTime ?? "0",
-      };
-    });
-  } catch (e) {
-    console.error("getUserActiveValidators:", e);
-    return undefined;
-  }
+    return {
+      ...validator,
+      userBoosts: {
+        pubkey:
+          "pubkey" in userDeposited
+            ? userDeposited.pubkey
+            : userDeposited.validator.publicKey,
+        activeBoosts: userDeposited?.activeBoosts,
+        queuedBoosts: userDeposited?.queuedBoosts,
+        queuedBoostStartBlock: userDeposited?.queuedBoostStartBlock,
+        queuedUnboosts: userDeposited?.queuedUnboosts,
+        queuedUnboostStartBlock: userDeposited?.queuedUnboostStartBlock,
+        hasPendingBoosts:
+          Number(userDeposited?.queuedBoosts) > 0 ||
+          Number(userDeposited?.queuedUnboosts) > 0,
+        hasActiveBoosts: Number(userDeposited?.activeBoosts) > 0,
+      } satisfies UserBoostsOnValidator,
+    } satisfies ValidatorWithUserBoost;
+  });
 };

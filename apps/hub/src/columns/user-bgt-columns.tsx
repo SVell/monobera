@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import {
-  BERA_VAULT_REWARDS_ABI,
   type IContractWrite,
-  useBeraJs,
   usePollVaultsInfo,
+  UserVault,
 } from "@bera/berajs";
 import { DataTableColumnHeader, FormattedNumber } from "@bera/shared-ui";
 import { Button } from "@bera/ui/button";
@@ -12,6 +11,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 
 import { GaugeHeaderWidget } from "~/components/gauge-header-widget";
 import { ClaimBGTModal } from "~/app/vaults/components/claim-modal";
+import { Address } from "viem";
 
 export const getUserBgtColumns = ({
   isLoading,
@@ -20,15 +20,16 @@ export const getUserBgtColumns = ({
   isLoading: boolean;
   write: (props: IContractWrite) => void;
 }) => {
-  const user_bgt_columns: ColumnDef<any>[] = [
+  const user_bgt_columns: ColumnDef<UserVault>[] = [
     {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Reward Vault" />
       ),
       cell: ({ row }) => (
         <GaugeHeaderWidget
-          address={row.original.vaultAddress}
+          address={row.original.vault.address as Address}
           className="w-[200px]"
+          gauge={row.original.vault}
         />
       ),
       accessorKey: "gauge",
@@ -38,7 +39,7 @@ export const getUserBgtColumns = ({
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title="Amount Deposited"
+          title="Amount Staked"
           className="items-center whitespace-nowrap text-center"
         />
       ),
@@ -51,11 +52,11 @@ export const getUserBgtColumns = ({
             className="text-md font-medium"
           />
           <span className="ml-1 text-xs text-muted-foreground">
-            {row.original.name}
+            {row.original.vault?.metadata?.name}
           </span>
         </>
       ),
-      accessorKey: "amountDeposited",
+      accessorKey: "balance",
       enableSorting: true,
     },
     {
@@ -68,7 +69,7 @@ export const getUserBgtColumns = ({
       ),
       cell: ({ row }) => {
         const { data } = usePollVaultsInfo({
-          vaultAddress: row.original.vaultAddress,
+          vaultAddress: row.original.vault?.vaultAddress as Address,
         });
 
         return (
@@ -100,7 +101,7 @@ export const getUserBgtColumns = ({
             <ClaimBGTModal
               isOpen={isClaimModalOpen}
               onOpenChange={setIsClaimModalOpen}
-              rewardVault={row.original.vaultAddress}
+              rewardVault={row.original.vault.vaultAddress as Address}
             />
             <Button
               size="sm"

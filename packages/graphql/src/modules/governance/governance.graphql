@@ -8,6 +8,10 @@ fragment ProposalSelection on Proposal {
   createdAtBlock
   unverifiedForumLink
   quorum
+  succeededAt
+  timelock {
+    id
+  }
   pollResult {
     for
     forVotersCount

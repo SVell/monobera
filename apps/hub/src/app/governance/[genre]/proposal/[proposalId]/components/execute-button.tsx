@@ -1,5 +1,5 @@
-import React from "react";
-import { GOVERNANCE_ABI, Proposal } from "@bera/berajs";
+import React, { useState } from "react";
+import { GOVERNANCE_ABI, Proposal, usePollProposal } from "@bera/berajs";
 import { ActionButton, useTxn } from "@bera/shared-ui";
 import { Button } from "@bera/ui/button";
 import { useGovernance } from "~/app/governance/[genre]/components/governance-provider";
@@ -17,8 +17,16 @@ export const ExecuteButton = ({
   proposal,
   title,
 }: { proposal: Proposal; title: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { refresh } = usePollProposal(proposal.id);
+
   const { write, ModalPortal } = useTxn({
     message: "Executing proposal",
+    onSubmission: () => {
+      setIsOpen(false);
+      refresh();
+    },
   });
 
   const { governorAddress } = useGovernance();
@@ -26,7 +34,7 @@ export const ExecuteButton = ({
   return (
     <>
       {ModalPortal}
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger>
           <Button>Execute</Button>
         </DialogTrigger>

@@ -1,11 +1,10 @@
 import { useState } from "react";
 import {
   BERA_VAULT_REWARDS_ABI,
-  Gauge,
-  RewardVault,
   Token,
   TransactionActionType,
   usePollVaultsInfo,
+  usePollWalletBalances,
 } from "@bera/berajs";
 import {
   ActionButton,
@@ -16,20 +15,21 @@ import {
 import { Button } from "@bera/ui/button";
 import { Slider } from "@bera/ui/slider";
 import BigNumber from "bignumber.js";
-import { parseUnits } from "viem";
+import { Address, parseUnits } from "viem";
+import { ApiVaultFragment } from "@bera/graphql/pol/api";
 
 export const WithdrawLP = ({
   lpToken,
   rewardVault,
 }: {
   lpToken: Token;
-  rewardVault: RewardVault;
+  rewardVault: ApiVaultFragment;
 }) => {
   const [withdrawAmount, setWithdrawAmount] = useState<`${number}`>("0");
   const [withdrawPercent, setWithdrawPercent] = useState<number>(0);
 
   const { data, refresh } = usePollVaultsInfo({
-    vaultAddress: rewardVault.address,
+    vaultAddress: rewardVault.vaultAddress as Address,
   });
 
   const validAmount =
@@ -38,14 +38,14 @@ export const WithdrawLP = ({
 
   const { captureException, track } = useAnalytics();
   const { write, ModalPortal } = useTxn({
-    message: "Withdraw LP Tokens", // aka unstake
+    message: "Unstake LP Tokens", // aka unstake
     actionType: TransactionActionType.WITHDRAW_LIQUIDITY,
     onSuccess: () => {
       try {
         track("unstake", {
           quantity: withdrawAmount,
           token: lpToken.symbol,
-          vault: rewardVault.address,
+          vault: rewardVault.vaultAddress,
         });
       } catch (e) {
         captureException(e);
@@ -63,10 +63,10 @@ export const WithdrawLP = ({
     <div className="flex flex-col gap-4 rounded-md border border-border p-4">
       <div>
         <div className="text-lg font-semibold leading-7">
-          Withdraw Receipt Tokens
+          Unstake Receipt Tokens
         </div>
         <div className="mt-1 text-sm leading-5">
-          Withdrawing your receipt tokens will also claim your outstanding BGT
+          Unstaking your receipt tokens will also claim your outstanding BGT
           rewards
         </div>
         <div className="mt-4 rounded-md border border-border bg-muted">
@@ -141,7 +141,7 @@ export const WithdrawLP = ({
           disabled={!validAmount}
           onClick={() =>
             write({
-              address: rewardVault.address,
+              address: rewardVault.vaultAddress as Address,
               abi: BERA_VAULT_REWARDS_ABI,
               functionName: "withdraw",
               params: [parseUnits(withdrawAmount, lpToken.decimals)],
@@ -149,7 +149,7 @@ export const WithdrawLP = ({
             })
           }
         >
-          Withdraw
+          Unstake
         </Button>
       </ActionButton>
       {ModalPortal}

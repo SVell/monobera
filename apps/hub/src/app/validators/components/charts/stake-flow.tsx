@@ -78,7 +78,7 @@ export const StakeFlow = ({
 
   const dataP = useMemo(() => {
     return {
-      labels: ["Delegation-In", "Delegation-Out"],
+      labels: ["Boost-In", "Boost-Out"],
       datasets: [
         {
           hoverBorderWidth: 10,
@@ -150,7 +150,7 @@ export const StakeFlow = ({
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div className="flex">
-          <span className="text-md mr-1 font-semibold">Stake Flow</span>
+          <span className="text-md mr-1 font-semibold">Boost Flow</span>
           <span className="flex text-sm text-muted-foreground">{`(Last ${dayRange} days)`}</span>
         </div>
         {!formattedData?.data || isLoading ? (
@@ -159,7 +159,7 @@ export const StakeFlow = ({
           <div className="flex w-full flex-col items-center gap-8 text-sm font-normal leading-normal text-muted-foreground lg:flex-row">
             <div className="flex w-full flex-1 flex-col gap-4">
               <div className="flex justify-between">
-                <span className="text-md font-semibold">Delegation-In</span>
+                <span className="text-md font-semibold">Boost-In</span>
                 <FormattedNumber
                   compactThreshold={999_999_999}
                   value={formattedData?.delegationIn}
@@ -168,7 +168,7 @@ export const StakeFlow = ({
                 />
               </div>
               <div className="flex justify-between">
-                <span className="text-md font-semibold ">Delegation-Out</span>
+                <span className="text-md font-semibold ">Boost-Out</span>
                 <FormattedNumber
                   compactThreshold={999_999_999}
                   value={formattedData?.delegationOut}
@@ -176,7 +176,7 @@ export const StakeFlow = ({
                 />
               </div>
               <div className="flex justify-between">
-                <span className="text-md font-semibold ">Net Delegation</span>
+                <span className="text-md font-semibold ">Net Boosts</span>
                 <FormattedNumber
                   compactThreshold={999_999_999}
                   value={formattedData?.netDelegation}

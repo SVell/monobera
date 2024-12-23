@@ -3,8 +3,8 @@ import {
   IContractWrite,
   UserValidator,
   truncateHash,
+  useAllValidators,
   useBlockTime,
-  useValidatorList,
 } from "@bera/berajs";
 import { useBlock } from "wagmi";
 import { bgtTokenAddress } from "@bera/config";
@@ -48,12 +48,12 @@ export const ConfirmationCard = ({
     <span className="text-info-foreground">{blocksLeft} blocks remaining</span>
   );
 
-  const { data } = useValidatorList();
+  const { data } = useAllValidators();
 
-  const coinbase = userValidator.coinbase;
-  const validatorInfo = data?.validatorDictionary
-    ? data.validatorDictionary[coinbase]
-    : undefined;
+  const pubkey = userValidator.pubkey;
+  const validatorInfo = data?.validators?.validators?.find(
+    (v) => v.pubkey.toLowerCase() === pubkey.toLowerCase(),
+  );
 
   return (
     <div className="w-full rounded-md border border-border p-4">
@@ -61,13 +61,11 @@ export const ConfirmationCard = ({
         <div className="font-medium">
           <div className="flex items-center gap-2">
             <ValidatorIcon
-              address={userValidator.coinbase as Address}
+              address={pubkey as Address}
               className="h-8 w-8"
               //   imgOverride={userValidator.metadata?.logoURI}
             />
-            <div>
-              {validatorInfo?.name ?? truncateHash(userValidator.coinbase)}
-            </div>
+            <div>{validatorInfo?.metadata?.name ?? truncateHash(pubkey)}</div>
           </div>
           <div className="ml-8 text-muted-foreground ">
             <FormattedNumber
@@ -87,7 +85,7 @@ export const ConfirmationCard = ({
                 address: bgtTokenAddress,
                 abi: BGT_ABI,
                 functionName: "activateBoost",
-                params: [userValidator.coinbase],
+                params: [pubkey, parseUnits(userValidator.amountQueued, 18)],
               })
             }
           >
@@ -101,10 +99,7 @@ export const ConfirmationCard = ({
                 address: bgtTokenAddress,
                 abi: BGT_ABI,
                 functionName: "cancelBoost",
-                params: [
-                  userValidator.coinbase,
-                  parseUnits(userValidator.amountQueued, 18),
-                ],
+                params: [pubkey, parseUnits(userValidator.amountQueued, 18)],
               })
             }
           >

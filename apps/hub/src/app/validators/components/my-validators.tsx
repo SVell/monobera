@@ -4,6 +4,7 @@ import { SimpleTable, useAsyncTable } from "@bera/shared-ui";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { user_general_validator_columns } from "~/columns/general-validator-columns";
+import { ValidatorWithUserBoost } from "@bera/berajs/actions";
 
 export const MyValidator = ({
   keyword,
@@ -14,13 +15,13 @@ export const MyValidator = ({
 }) => {
   const { data = [], isLoading, isValidating } = useUserActiveValidators();
   const validators = useMemo(() => {
-    return data.filter((validator: UserValidator) => {
+    return data.filter((validator) => {
       if (
-        parseFloat(validator.amountDeposited) !== 0 ||
-        parseFloat(validator.amountQueued) !== 0
+        parseFloat(validator.userBoosts.activeBoosts) !== 0 ||
+        parseFloat(validator.userBoosts.queuedBoosts) !== 0
       ) {
         if (keyword === "") return true;
-        if (validator.coinbase.includes(keyword)) return true;
+        if (validator.pubkey.includes(keyword)) return true;
         if (validator.metadata?.name.includes(keyword)) return true;
       } else {
         return false;
@@ -30,7 +31,7 @@ export const MyValidator = ({
 
   const allValidatorTable = useAsyncTable({
     fetchData: () => {},
-    columns: user_general_validator_columns as ColumnDef<UserValidator>[],
+    columns: user_general_validator_columns,
     data: validators ?? [],
     enablePagination: false,
     additionalTableProps: {

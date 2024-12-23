@@ -51,14 +51,11 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             a.appendChild(r);
         })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');`,
         }}
-      />
-      <Providers>
-        <body
-          className={cn(
-            "min-h-screen font-sans antialiased",
-            fontSans.variable,
-          )}
-        >
+      />{" "}
+      <body
+        className={cn("min-h-screen font-sans antialiased", fontSans.variable)}
+      >
+        <Providers>
           <TermOfUseModal />
 
           <PostHogPageView />
@@ -83,8 +80,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           </div>
           <TailwindIndicator />
           <Analytics />
-        </body>
-      </Providers>
+        </Providers>
+      </body>
     </html>
   );
 }

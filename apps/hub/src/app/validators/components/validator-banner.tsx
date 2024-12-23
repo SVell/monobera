@@ -1,10 +1,11 @@
+"use client";
 import Link from "next/link";
 import { truncateHash, useBeraJs, useValidatorByOperator } from "@bera/berajs";
 import { ValidatorIcon } from "@bera/shared-ui";
 import { getHubValidatorPath } from "@bera/shared-ui";
 import { Icons } from "@bera/ui/icons";
 
-export const ValidatorBanner = () => {
+export const ValidatorsBanner = () => {
   const { account, isReady } = useBeraJs();
   const { data: validator, isLoading } = useValidatorByOperator(
     account ?? "0x",

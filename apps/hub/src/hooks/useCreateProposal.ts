@@ -351,21 +351,24 @@ export const useCreateProposal = ({
                 errors.functionSignature = ProposalErrorCodes.INVALID_ABI;
               }
             }
-          } else if (action.type === ProposalTypeEnum.UPDATE_REWARDS_GAUGE) {
+          } else if (
+            action.type === ProposalTypeEnum.WHITELIST_REWARD_VAULT ||
+            action.type === ProposalTypeEnum.BLACKLIST_REWARD_VAULT
+          ) {
             errors.vault = checkProposalField({
               fieldOrType: "address",
               value: action.vault,
             });
             errors.isFriend = null; //checkProposalField("bool", action.isFriend);
+            const whiteList =
+              action.type === ProposalTypeEnum.WHITELIST_REWARD_VAULT
+                ? true
+                : false;
             if (!errors.vault) {
               actions[idx] = encodeFunctionData({
                 abi: BERA_CHEF_ABI,
                 functionName: "setVaultWhitelistedStatus",
-                args: [
-                  action.vault!,
-                  !!action.isFriend!,
-                  action.metadata ?? "",
-                ], // TODO: A third param was added for metadata. It is optional but we should include it in our action
+                args: [action.vault!, whiteList, action.metadata ?? ""], // TODO: A third param was added for metadata. It is optional but we should include it in our action
               });
             }
           } else if (action.type === ProposalTypeEnum.ERC20_TRANSFER) {
@@ -427,6 +430,10 @@ export const useCreateProposal = ({
         version: "1.0.0",
         "content-encoding": "utf-8",
         "content-type": "text/markdown",
+        actions: proposal.actions.map((action, idx) => ({
+          type: action.type,
+          description: "more stuff",
+        })),
       });
 
       write({

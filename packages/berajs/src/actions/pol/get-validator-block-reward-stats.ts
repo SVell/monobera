@@ -3,7 +3,7 @@ import {
   GetValidatorBlockRewardStats,
   GetValidatorBlockRewardStatsQueryVariables,
   type GetValidatorBlockRewardStatsQuery,
-} from "@bera/graphql/pol";
+} from "@bera/graphql/pol/subgraph";
 import { Address } from "viem";
 
 import { type BeraConfig } from "~/types";

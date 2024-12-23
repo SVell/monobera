@@ -1,4 +1,4 @@
-import { type GetRewardVaultQuery } from "@bera/graphql/pol";
+import { type GetRewardVaultQuery } from "@bera/graphql/pol/subgraph";
 import { mutate } from "swr";
 import useSWRImmutable from "swr/immutable";
 import { Address } from "viem";

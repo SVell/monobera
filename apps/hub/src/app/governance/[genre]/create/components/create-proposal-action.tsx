@@ -7,10 +7,10 @@ import {
   ProposalAction,
   ProposalTypeEnum,
 } from "~/app/governance/types";
-import { UpdateFriendsOfChef } from "./update-friends-of-chef";
 import { CustomAction } from "./custom-action";
 import { usePrevious } from "@bera/berajs";
 import { Erc20Transfer } from "./erc20-transfer";
+import { UpdateVaultWhitelistStatus } from "./UpdateVaultWhitelistStatus";
 
 export const CreateProposalAction = ({
   action,
@@ -31,7 +31,11 @@ export const CreateProposalAction = ({
 
   useEffect(() => {
     if (prevAction?.type && action.type !== prevAction?.type) {
-      setAction((prev) => ({ type: action.type, calldata: [], target: "" }));
+      setAction((prev) => ({
+        type: action.type,
+        calldata: [],
+        target: "",
+      }));
     }
   }, [action, prevAction]);
 
@@ -63,8 +67,12 @@ export const CreateProposalAction = ({
               label: "Custom Action",
             },
             {
-              value: ProposalTypeEnum.UPDATE_REWARDS_GAUGE,
-              label: "Update Reward Vault",
+              value: ProposalTypeEnum.WHITELIST_REWARD_VAULT,
+              label: "Whitelist Reward Vault Address",
+            },
+            {
+              value: ProposalTypeEnum.BLACKLIST_REWARD_VAULT,
+              label: "Blacklist Reward Vault Address",
             },
             // { // TODO add wen we have the treasury contract
             //   value: ProposalTypeEnum.ERC20_TRANSFER,
@@ -89,8 +97,9 @@ export const CreateProposalAction = ({
           idx={idx}
         />
       )}
-      {action.type === ProposalTypeEnum.UPDATE_REWARDS_GAUGE && (
-        <UpdateFriendsOfChef
+      {(action.type === ProposalTypeEnum.WHITELIST_REWARD_VAULT ||
+        action.type === ProposalTypeEnum.BLACKLIST_REWARD_VAULT) && (
+        <UpdateVaultWhitelistStatus
           errors={errors}
           action={action}
           setAction={setAction}

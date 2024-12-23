@@ -21,6 +21,6 @@ export const getBgtTokenTotalSupply = async ({
     return formatEther(result ?? 0n);
   } catch (error) {
     console.log(error);
-    return "0";
+    throw error;
   }
 };

@@ -16,10 +16,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@bera/ui/card";
 import { Icons } from "@bera/ui/icons";
 import { Skeleton } from "@bera/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@bera/ui/tabs";
-import { Address, parseUnits } from "viem";
+import { Address, formatUnits, parseUnits } from "viem";
 
 import { usePsm } from "~/hooks/usePsm";
 import { cn } from "@bera/ui";
+import BigNumber from "bignumber.js";
 
 export function SwapCard() {
   const [tabValue, setTabValue] = useState<"mint" | "burn">("mint");
@@ -68,6 +69,13 @@ export function SwapCard() {
     setToAmount(newToAmounts);
   };
 
+  const userFriendlyAmount = (
+    amount: string | undefined,
+  ): string | undefined => {
+    if (!amount) return undefined;
+    return new BigNumber(amount).decimalPlaces(2, 1).toString();
+  };
+
   return (
     <div className="w-full">
       <Card className="relative z-10 m-auto block w-full max-w-[500px] bg-background shadow-2xl">
@@ -79,7 +87,7 @@ export function SwapCard() {
               <Skeleton className="absolute right-6 top-5 h-6 w-40" />
             ) : (
               <div className="absolute right-6 top-5 text-base font-medium text-muted-foreground">
-                Static fee of <FormattedNumber value={fee ?? 0} />%
+                Static fee of <FormattedNumber value={fee ?? 0} percent />
               </div>
             )}
           </CardTitle>
@@ -119,7 +127,9 @@ export function SwapCard() {
                 )}
               >
                 <TokenInput
-                  amount={fromAmount[selectedFrom?.[0]?.address!]}
+                  amount={userFriendlyAmount(
+                    fromAmount[selectedFrom?.[0]?.address!],
+                  )}
                   balance={fromBalance?.[0]}
                   selected={selectedFrom?.[0]}
                   selectable={selectedFrom?.[0]?.address !== honey?.address}
@@ -155,7 +165,9 @@ export function SwapCard() {
                   <>
                     <hr />
                     <TokenInput
-                      amount={fromAmount[selectedFrom?.[1]?.address!]}
+                      amount={userFriendlyAmount(
+                        fromAmount[selectedFrom?.[1]?.address!],
+                      )}
                       balance={fromBalance?.[1]}
                       selected={selectedFrom?.[1]}
                       selectable={selectedFrom?.[1]?.address !== honey?.address}
@@ -198,7 +210,9 @@ export function SwapCard() {
                 )}
               >
                 <TokenInput
-                  amount={toAmount[selectedTo?.[0]?.address!]}
+                  amount={userFriendlyAmount(
+                    toAmount[selectedTo?.[0]?.address!],
+                  )}
                   balance={toBalance?.[0]}
                   selected={selectedTo?.[0]}
                   selectable={selectedTo?.[0]?.address !== honey?.address}
@@ -236,7 +250,9 @@ export function SwapCard() {
                   <>
                     <hr />
                     <TokenInput
-                      amount={toAmount[selectedTo?.[1]?.address!]}
+                      amount={userFriendlyAmount(
+                        toAmount[selectedTo?.[1]?.address!],
+                      )}
                       balance={toBalance?.[1]}
                       selected={selectedTo?.[1]}
                       selectable={selectedTo?.[1]?.address !== honey?.address}

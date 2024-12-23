@@ -8,7 +8,7 @@ import { SubgraphPoolFragment } from "@bera/graphql/dex/subgraph";
 import { PoolHistoricalDataFragment } from "@bera/graphql/dex/api";
 import { usePoolHistoricalData } from "@bera/berajs";
 
-const Options = {
+const Options: React.ComponentProps<typeof BeraChart>["options"] = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -50,14 +50,9 @@ const Options = {
     tooltip: {
       displayColors: false,
       position: "nearest",
-      interaction: {
-        intersect: false,
-      },
+      intersect: false,
       callbacks: {
-        label: (context: {
-          dataset: { label: string };
-          parsed: { y: number | bigint | null };
-        }) => {
+        label: (context) => {
           let label = context.dataset.label || "";
 
           if (label) {
@@ -384,17 +379,17 @@ export const PoolChart = ({
           <>
             <TabsContent value={Chart.VOLUME}>
               <CardContent className="relative min-h-[250px] w-full">
-                <BeraChart data={data} options={Options as any} type="bar" />
+                <BeraChart data={data} options={Options} type="bar" />
               </CardContent>
             </TabsContent>
             <TabsContent value={Chart.TVL}>
               <CardContent className="relative min-h-[250px] w-full">
-                <BeraChart data={data} options={Options as any} type="line" />
+                <BeraChart data={data} options={Options} type="line" />
               </CardContent>
             </TabsContent>
             <TabsContent value={Chart.FEES}>
               <CardContent className="relative min-h-[250px] w-full">
-                <BeraChart data={data} options={Options as any} type="bar" />
+                <BeraChart data={data} options={Options} type="bar" />
               </CardContent>
             </TabsContent>
           </>

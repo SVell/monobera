@@ -40,10 +40,21 @@ All Berachain dapps are built to be single chain applications.
 | --------------------- | ---------------------------------------------------------------------------------------------- |
 | `.env.bartio` | Environment variables for Berachain bartio testnet |
 
+## Development Tips
+
+Sometimes your VSCode will not correctly pick up type information from `/packages`.  
+
+```bash
+pnpm build:pkg # This will build all packages
+pnpm format    # This will format all packages
+```
+
+Then in VSCode press `CMD+Shift+P` to open the command pallette and type `>` then type `Restart TS Server` and press enter. This will 
+restart the typescript server and should pick up the new types.
 
 ## Commands
 
-Monobera requires node 20.17+.
+Monobera requires node 22.12+.
 
 | Script                   | Description                                                                                              |
 | ------------------------ | -------------------------------------------------------------------------------------------------------- |

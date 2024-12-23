@@ -1,17 +1,19 @@
 import React from "react";
-import { type Gauge } from "@bera/berajs";
 import { DataTableColumnHeader, FormattedNumber } from "@bera/shared-ui";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { BribesPopover } from "~/components/bribes-tooltip";
 import { GaugeHeaderWidget } from "~/components/gauge-header-widget";
+import { ApiVaultFragment } from "@bera/graphql/pol/api";
+import { Address } from "viem";
 
-export const GlobalGaugeWeightColumns: ColumnDef<Gauge>[] = [
+export const AllRewardVaultColumns: ColumnDef<ApiVaultFragment>[] = [
   {
     header: "Reward Vaults",
     cell: ({ row }) => (
       <GaugeHeaderWidget
-        address={row.original.vaultAddress}
+        address={row.original.vaultAddress as Address}
+        gauge={row.original}
         // className="w-[150px]"
       />
     ),
@@ -26,14 +28,14 @@ export const GlobalGaugeWeightColumns: ColumnDef<Gauge>[] = [
         symbol="USD"
         compact={false}
         compactThreshold={999_999_999}
-        value={row.original.activeIncentivesInHoney}
+        value={row.original.dynamicData?.activeIncentivesValueUsd ?? 0}
       />
     ),
     meta: {
       tooltip: "The total value of incentives in the gauge.",
       headerClassname: "flex-initial whitespace-nowrap",
     },
-    accessorKey: "activeIncentivesInHoney",
+    accessorKey: "dynamicData?.activeIncentivesValueUsd",
     enableSorting: true,
   },
   {
@@ -42,18 +44,16 @@ export const GlobalGaugeWeightColumns: ColumnDef<Gauge>[] = [
       <FormattedNumber
         className="pl-2 justify-start"
         compact={false}
-        compactThreshold={999_999_999}
         percent
-        value={row.original.bgtInflationCapture / 10000 ?? 0}
+        value={Number(row.original.dynamicData?.bgtCapturePercentage) / 100}
       />
     ),
     meta: {
       tooltip: "The percentage of global BGT captured by the gauge.",
       headerClassname: "flex-initial whitespace-nowrap",
     },
-    accessorKey: "bgtInflationCapture",
-    // TODO: fix sorting for bgtInflationCapture
-    enableSorting: false,
+    accessorKey: "dynamicData.bgtCapturePercentage",
+    enableSorting: true,
   },
   // {
   //   header: ({ column }) => (

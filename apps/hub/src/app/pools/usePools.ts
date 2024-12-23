@@ -73,8 +73,6 @@ export const usePools = ({ keyword }: { keyword: string }) => {
     });
   }, [account, pools, walletPools]);
 
-  console.log({ mergedPools });
-
   return {
     pools: mergedPools,
     walletPools,

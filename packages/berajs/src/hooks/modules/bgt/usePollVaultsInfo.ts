@@ -24,7 +24,7 @@ export const usePollVaultsInfo = (
   const { account, config: beraConfig } = useBeraJs();
   const publicClient = usePublicClient();
   const QUERY_KEY =
-    account && publicClient
+    account && publicClient && args.vaultAddress
       ? ["usePollUserVaultsInfo", account, args.vaultAddress]
       : null;
 
@@ -53,10 +53,12 @@ export const usePollVaultsInfo = (
       return {
         balance: formatEther(userBalance),
         rewards: formatEther(userReward),
-        percentage: Number(
-          parseFloat(formatEther(userBalance ?? 0n)) /
-            parseFloat(formatEther(totalSupply ?? 0n)),
-        ).toString(),
+        percentage: totalSupply
+          ? Number(
+              parseFloat(formatEther(userBalance ?? 0n)) /
+                parseFloat(formatEther(totalSupply ?? 0n)),
+            ).toString()
+          : "0",
       };
     },
     {

@@ -1,11 +1,4 @@
-import React from "react";
-import {
-  RewardVault,
-  truncateHash,
-  useTokenHoneyPrice,
-  type CuttingBoardWeight,
-  type UserValidator,
-} from "@bera/berajs";
+import { truncateHash, useTokenHoneyPrice } from "@bera/berajs";
 import { beraTokenAddress } from "@bera/config";
 import {
   DataTableColumnHeader,
@@ -18,11 +11,13 @@ import { Button } from "@bera/ui/button";
 import { type ColumnDef } from "@tanstack/react-table";
 import { type Address } from "viem";
 
+import { ApiValidatorFragment, ApiVaultFragment } from "@bera/graphql/pol/api";
+import { CuttingBoardDisplay } from "~/app/validators/components/ValidatorsTable";
 import { BribesPopover } from "~/components/bribes-tooltip";
-import { CuttingBoardDisplay } from "~/app/validators/components/validators-table";
 import { useValidatorEstimatedBgtPerYear } from "~/hooks/useValidatorEstimatedBgtPerYear";
+import { ValidatorWithUserBoost } from "@bera/berajs/actions";
 
-const VALIDATOR_COLUMN: ColumnDef<UserValidator> = {
+const VALIDATOR_COLUMN: ColumnDef<ApiValidatorFragment> = {
   header: "Validator",
   cell: ({ row }) => (
     <div className="flex items-center gap-1 overflow-hidden truncate">
@@ -32,7 +27,7 @@ const VALIDATOR_COLUMN: ColumnDef<UserValidator> = {
         imgOverride={row.original.metadata?.logoURI}
       />
       <span className="flex-grow truncate">
-        {row.original.metadata?.name ?? truncateHash(row.original.coinbase)}
+        {row.original.metadata?.name ?? truncateHash(row.original.pubkey)}
       </span>
     </div>
   ),
@@ -41,42 +36,42 @@ const VALIDATOR_COLUMN: ColumnDef<UserValidator> = {
   enableSorting: false,
 };
 
-const GLOBAL_VOTING_POWER_COLUMN: ColumnDef<UserValidator> = {
-  header: "BGT Delegated",
+const GLOBAL_VOTING_POWER_COLUMN: ColumnDef<ApiValidatorFragment> = {
+  header: "BGT Boosts",
   cell: ({ row }) => (
     <div className="w-full text-start">
       <FormattedNumber
-        value={row.original.amountStaked}
+        value={row.original.dynamicData?.amountDelegated ?? 0}
         compact={false}
         symbol="BGT"
       />
     </div>
   ),
   minSize: 200,
-  accessorKey: "votingpower",
-  enableSorting: true,
-};
 
-const COMMISSION_COLUMN: ColumnDef<UserValidator> = {
-  header: "Commission",
-  cell: ({ row }) => {
+  accessorKey: "dynamicData.amountDelegated",
+
+  sortingFn: (a, b) => {
+    console.log({ a, b });
+
     return (
-      <FormattedNumber
-        value={row.original.commission ?? 0}
-        showIsSmallerThanMin
-        percent
-      />
+      Number(a.original.dynamicData?.amountDelegated) -
+      Number(b.original.dynamicData?.amountDelegated)
     );
   },
-  accessorKey: "commission",
   enableSorting: true,
 };
 
-const APY_COLUMN: ColumnDef<UserValidator> = {
-  header: "vAPY",
+const APY_COLUMN: ColumnDef<ApiValidatorFragment> = {
+  header: "Capture",
   cell: ({ row }) => (
     <div className="flex h-full w-[91px] items-center">
-      <FormattedNumber value={row.original.apy / 10000} percent />
+      <FormattedNumber
+        value={
+          Number(row.original.dynamicData?.bgtCapturePercentage ?? 0) / 100
+        }
+        percent
+      />
     </div>
   ),
   minSize: 150,
@@ -84,17 +79,17 @@ const APY_COLUMN: ColumnDef<UserValidator> = {
     tooltip: bribeApyTooltipText(),
     headerClassname: "flex-initial",
   },
-  accessorKey: "apy",
+  accessorKey: "dynamicData.bgtCapturePercentage",
   enableSorting: true,
 };
 
-const MOST_WEIGHTED_GAUGE_COLUMN: ColumnDef<UserValidator> = {
+const MOST_WEIGHTED_GAUGE_COLUMN: ColumnDef<ApiValidatorFragment> = {
   header: "Most Weighted Vault",
   cell: ({ row }) => {
-    const cuttingBoards: CuttingBoardWeight[] =
-      row.original.cuttingBoard.weights ?? [];
+    const cuttingBoards = [...(row.original.rewardAllocationWeights ?? [])];
+
     const mostWeightedCuttingBoard = cuttingBoards.sort(
-      (a, b) => Number(a.percentageNumerator) - Number(b.percentageNumerator),
+      (a, b) => Number(b.percentageNumerator) - Number(a.percentageNumerator),
     )[0];
     return <CuttingBoardDisplay cuttingBoard={mostWeightedCuttingBoard} />;
   },
@@ -102,24 +97,33 @@ const MOST_WEIGHTED_GAUGE_COLUMN: ColumnDef<UserValidator> = {
   enableSorting: false,
 };
 
-const BRIBES_COLUMN: ColumnDef<UserValidator> = {
+const BRIBES_COLUMN: ColumnDef<ValidatorWithUserBoost> = {
   header: "Incentives",
   cell: ({ row }) => {
-    return <BribesPopover incentives={row.original.activeIncentives} />;
+    return (
+      <BribesPopover
+        incentives={row.original.rewardAllocationWeights
+          .filter((x) => x?.receivingVault)
+          .flatMap((rv) => rv.receivingVault!.activeIncentives!)}
+      />
+    );
   },
   accessorKey: "bribes",
   enableSorting: false,
 };
 
-const CLAIMABLE_BRIBES_COLUMN: ColumnDef<UserValidator> = {
+const CLAIMABLE_BRIBES_COLUMN: ColumnDef<ValidatorWithUserBoost> = {
   header: ({ column }) => (
     <DataTableColumnHeader column={column} title="Incentives" />
   ),
   cell: ({ row }) => {
-    // return <ClaimBribesPopover coinbase={row.original.coinbase} bribes={row.original.activeIncentives} />;
     return (
       <div className="flex flex-row items-center gap-1">
-        <BribesPopover incentives={row.original.activeIncentives} />
+        <BribesPopover
+          incentives={row.original.rewardAllocationWeights
+            ?.filter((rv) => rv.receivingVault)
+            .flatMap((rv) => rv.receivingVault!.activeIncentives!)}
+        />
         <Tooltip
           text={"Claiming coming soon"}
           toolTipTrigger={
@@ -135,49 +139,83 @@ const CLAIMABLE_BRIBES_COLUMN: ColumnDef<UserValidator> = {
   enableSorting: false,
 };
 
-const USER_STAKED_COLUMN: ColumnDef<UserValidator> = {
+const USER_BOOSTED_COLUMN: ColumnDef<ValidatorWithUserBoost> = {
   header: ({ column }) => (
     <DataTableColumnHeader
       column={column}
-      title="User Staked"
+      title="Boosts"
       className="whitespace-nowrap"
     />
   ),
   cell: ({ row }) => {
-    console.log(row.original);
     return (
       <FormattedNumber
         showIsSmallerThanMin
-        value={row.original.amountQueued}
+        value={row.original.userBoosts.activeBoosts ?? 0}
         symbol="BGT"
       />
     );
   },
-  accessorKey: "amountQueued",
+  accessorKey: "userBoosts.activeBoosts",
   sortingFn: (a, b) =>
-    Number(a.original.amountQueued) - Number(b.original.amountQueued),
-  enableSorting: false,
+    Number(a.original.userBoosts.activeBoosts) -
+    Number(b.original.userBoosts.activeBoosts),
+  enableSorting: true,
 };
 
-const USER_QUEUED_COLUMN: ColumnDef<UserValidator> = {
+const USER_QUEUED_BOOSTS_COLUMN: ColumnDef<ValidatorWithUserBoost> = {
   header: ({ column }) => (
     <DataTableColumnHeader
       column={column}
-      title="User Queued"
+      title="Queued Boosts"
       className="whitespace-nowrap"
     />
   ),
   cell: ({ row }) => {
-    return <FormattedNumber value={row.original.amountQueued} symbol="BGT" />;
+    return (
+      <FormattedNumber
+        value={row.original.userBoosts?.queuedBoosts ?? 0}
+        symbol="BGT"
+      />
+    );
   },
-  accessorKey: "amountQueued",
+  accessorKey: "userBoosts.queuedBoosts",
   sortingFn: (a, b) =>
-    Number(a.original.amountQueued) - Number(b.original.amountQueued),
-  enableSorting: false,
+    Number(a.original.userBoosts?.queuedBoosts) -
+    Number(b.original.userBoosts?.queuedBoosts),
+  enableSorting: true,
 };
 
-export const getGaugeValidatorColumns = (gauge: RewardVault) => {
-  const gauge_validator_columns: ColumnDef<UserValidator>[] = [
+const USER_QUEUED_DROP_BOOSTS_COLUMN: ColumnDef<ValidatorWithUserBoost> = {
+  header: ({ column }) => (
+    <DataTableColumnHeader
+      column={column}
+      title="Queued Unboosts"
+      className="whitespace-nowrap"
+    />
+  ),
+  cell: ({ row }) => {
+    return (
+      <FormattedNumber
+        value={
+          Number(row.original.userBoosts?.queuedUnboosts) > 0
+            ? -row.original.userBoosts?.queuedUnboosts
+            : 0
+        }
+        symbol="BGT"
+        colored
+      />
+    );
+  },
+  accessorKey: "userBoosts.queuedUnboosts",
+  sortingFn: (a, b) =>
+    Number(a.original.userBoosts?.queuedUnboosts) -
+    Number(b.original.userBoosts?.queuedUnboosts),
+  enableSorting: true,
+};
+
+export const getGaugeValidatorColumns = (rewardVault: ApiVaultFragment) => {
+  const gauge_validator_columns: ColumnDef<ApiValidatorFragment>[] = [
     VALIDATOR_COLUMN,
     {
       header: ({ column }) => (
@@ -194,10 +232,11 @@ export const getGaugeValidatorColumns = (gauge: RewardVault) => {
           tokenAddress: beraTokenAddress,
         });
 
-        const cuttingBoard = row.original.cuttingBoard.weights.find(
+        const cuttingBoard = row.original.rewardAllocationWeights.find(
           (cb: any) =>
-            cb.receiver.toLowerCase() === gauge.address.toLowerCase(),
+            cb.receiver.toLowerCase() === rewardVault.address.toLowerCase(),
         );
+
         if (!cuttingBoard)
           return (
             <FormattedNumber
@@ -208,9 +247,9 @@ export const getGaugeValidatorColumns = (gauge: RewardVault) => {
               value={0}
             />
           );
-        const weight =
-          parseFloat(cuttingBoard?.percentageNumerator) / 10000 ?? 0;
-        const perProposal = weight * parseFloat(row.original.rewardRate);
+        const weight = cuttingBoard?.percentageNumerator / 1e5 ?? 0;
+        const perProposal =
+          weight * parseFloat(row.original.dynamicData?.rewardRate ?? "0");
         return (
           <div className="flex flex-col gap-1">
             <FormattedNumber
@@ -247,9 +286,9 @@ export const getGaugeValidatorColumns = (gauge: RewardVault) => {
           tokenAddress: beraTokenAddress,
         });
 
-        const cuttingBoard = row.original.cuttingBoard.weights.find(
+        const cuttingBoard = row.original.rewardAllocationWeights.find(
           (cb: any) =>
-            cb.receiver.toLowerCase() === gauge.address.toLowerCase(),
+            cb.receiver.toLowerCase() === rewardVault.address.toLowerCase(),
         );
         if (!cuttingBoard)
           return (
@@ -264,8 +303,7 @@ export const getGaugeValidatorColumns = (gauge: RewardVault) => {
         const estimatedYearlyBgt = useValidatorEstimatedBgtPerYear(
           row.original,
         );
-        const weight =
-          parseFloat(cuttingBoard?.percentageNumerator) / 10000 ?? 0;
+        const weight = cuttingBoard?.percentageNumerator / 10000;
 
         const estimatedAmountDirected = weight * estimatedYearlyBgt;
         return (
@@ -294,31 +332,27 @@ export const getGaugeValidatorColumns = (gauge: RewardVault) => {
   return gauge_validator_columns;
 };
 
-export const generalValidatorColumns: ColumnDef<UserValidator>[] = [
+export const generalValidatorColumns: ColumnDef<ApiValidatorFragment>[] = [
   VALIDATOR_COLUMN,
   GLOBAL_VOTING_POWER_COLUMN,
-  COMMISSION_COLUMN,
   APY_COLUMN,
   MOST_WEIGHTED_GAUGE_COLUMN,
-  BRIBES_COLUMN,
+  BRIBES_COLUMN as ColumnDef<ApiValidatorFragment>,
 ];
 
-export const user_general_validator_columns: ColumnDef<UserValidator>[] = [
-  VALIDATOR_COLUMN as ColumnDef<UserValidator>,
-  USER_STAKED_COLUMN,
-  USER_QUEUED_COLUMN,
-  {
-    ...GLOBAL_VOTING_POWER_COLUMN,
-    enableSorting: true,
-  } as ColumnDef<UserValidator>,
-  { ...COMMISSION_COLUMN, enableSorting: true } as ColumnDef<UserValidator>,
-  { ...APY_COLUMN, enableSorting: true } as ColumnDef<UserValidator>,
-  BRIBES_COLUMN as ColumnDef<UserValidator>,
-];
+export const user_general_validator_columns: ColumnDef<ValidatorWithUserBoost>[] =
+  [
+    VALIDATOR_COLUMN as ColumnDef<ValidatorWithUserBoost>,
+    USER_BOOSTED_COLUMN,
+    USER_QUEUED_BOOSTS_COLUMN,
+    USER_QUEUED_DROP_BOOSTS_COLUMN,
+    { ...APY_COLUMN, enableSorting: true } as ColumnDef<ValidatorWithUserBoost>,
+    BRIBES_COLUMN,
+  ];
 
-export const user_incentives_columns: ColumnDef<UserValidator>[] = [
-  VALIDATOR_COLUMN as ColumnDef<UserValidator>,
-  USER_STAKED_COLUMN as ColumnDef<UserValidator>,
-  APY_COLUMN as ColumnDef<UserValidator>,
-  CLAIMABLE_BRIBES_COLUMN as ColumnDef<UserValidator>,
+export const user_incentives_columns: ColumnDef<ValidatorWithUserBoost>[] = [
+  VALIDATOR_COLUMN as ColumnDef<ValidatorWithUserBoost>,
+  USER_BOOSTED_COLUMN,
+  APY_COLUMN as ColumnDef<ValidatorWithUserBoost>,
+  CLAIMABLE_BRIBES_COLUMN,
 ];

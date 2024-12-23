@@ -1,6 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "globalDependencies": ["**/.env"],
+  "globalDependencies": [".env", "./secrets/**"],
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
@@ -34,12 +34,5 @@
       "outputs": ["storybook-static/**"]
     }
   },
-  "globalEnv": [
-    "CI",
-    "NODE_ENV",
-    "SKIP_ENV_VALIDATION",
-    "VERCEL",
-    "VERCEL_URL",
-    "VERCEL_ENV"
-  ]
+  "globalEnv": ["CI", "NODE_ENV", "SKIP_ENV_VALIDATION", "VERCEL", "VERCEL_ENV"]
 }

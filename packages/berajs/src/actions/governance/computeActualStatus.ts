@@ -29,6 +29,7 @@ export function computeActualStatus(
     if (proposal.status === ProposalStatus.CanceledByGuardian) {
       return ProposalStatus.CanceledByGuardian;
     }
+
     if (proposalOnChainState === ProposalState.Canceled) {
       if (proposal.voteStartBlock < currentBlock)
         return ProposalStatus.CanceledByUser;
@@ -46,7 +47,7 @@ export function computeActualStatus(
       ) {
         return ProposalStatus.QuorumNotReached;
       }
-      return ProposalStatus.Defeated; //
+      return ProposalStatus.Defeated;
     }
 
     if (proposalOnChainState === ProposalState.Succeeded)

@@ -2,72 +2,87 @@ import { useMemo, useState } from "react";
 import {
   BGT_ABI,
   IContractWrite,
-  type UserValidator,
   TransactionActionType,
   truncateHash,
   useBgtUnstakedBalance,
   useUserActiveValidators,
-  useValidatorList,
   useBeraJs,
+  useAllValidators,
 } from "@bera/berajs";
 import { bgtTokenAddress } from "@bera/config";
-import {
-  FormattedNumber,
-  Spinner,
-  ValidatorIcon,
-  useTxn,
-} from "@bera/shared-ui";
+import { FormattedNumber, ValidatorIcon, useTxn } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
 import { Button } from "@bera/ui/button";
 import { Skeleton } from "@bera/ui/skeleton";
 import { Address, parseUnits } from "viem";
-import { useBlock } from "wagmi";
+import { useBlockNumber } from "wagmi";
+import { ValidatorWithUserBoost } from "@bera/berajs/actions";
 
 export const HISTORY_BUFFER = 8192;
 
+type QueueItem = ValidatorWithUserBoost & {
+  canActivate: boolean;
+  type: "boost" | "dropBoost";
+};
+
 export const BoostQueue = ({
-  selectedValidator,
-  isValidatorDataLoading,
   setIsValidatorDataLoading,
 }: {
-  selectedValidator?: string | undefined;
   isValidatorDataLoading?: boolean;
   setIsValidatorDataLoading: (loading: boolean) => void;
 }) => {
   const { data = [], refresh } = useUserActiveValidators();
   const { refresh: refreshBalance } = useBgtUnstakedBalance();
 
-  const result = useBlock();
-  const blockNumber = result?.data?.number;
+  const { data: blockNumber } = useBlockNumber();
 
   const queuedList = useMemo(() => {
     return !data || !blockNumber || !data.length
       ? []
-      : data
-          .filter((validator: UserValidator) => {
-            return parseFloat(validator.amountQueued) !== 0;
-          })
-          .map((validator: UserValidator) => {
-            return {
+      : data.flatMap((validator) => {
+          const items: QueueItem[] = [];
+
+          if (Number(validator.userBoosts.queuedBoosts) > 0) {
+            items.push({
               ...validator,
               canActivate:
-                parseInt(validator.latestBlock) +
+                validator.userBoosts?.queuedBoostStartBlock +
                   HISTORY_BUFFER -
                   Number(blockNumber) <=
                 0,
-            };
-          })
-          .filter((validator: UserValidator) => {
-            return selectedValidator !== undefined
-              ? validator.coinbase.toLowerCase() ===
-                  selectedValidator.toLowerCase()
-              : true;
-          });
+              type: "boost",
+            });
+          }
+
+          if (Number(validator.userBoosts.queuedUnboosts) > 0) {
+            items.push({
+              ...validator,
+              canActivate:
+                validator.userBoosts?.queuedUnboostStartBlock +
+                  HISTORY_BUFFER -
+                  Number(blockNumber) <=
+                0,
+              type: "dropBoost",
+            });
+          }
+
+          return items;
+        });
   }, [data, blockNumber]);
+
+  const onSuccess = () => {
+    setIsValidatorDataLoading(true);
+    setTimeout(() => {
+      refresh();
+      refreshBalance();
+      setHasSubmittedTxn({});
+      setIsValidatorDataLoading(false);
+    }, 5000);
+  };
 
   const [hasSubmittedTxn, setHasSubmittedTxn] = useState<
     Record<number, boolean>
-  >({} as any);
+  >({});
 
   const {
     write: activateWrite,
@@ -76,15 +91,23 @@ export const BoostQueue = ({
   } = useTxn({
     message: "Activating queued BGT to Validator",
     actionType: TransactionActionType.DELEGATE,
-    onSuccess: () => {
-      setIsValidatorDataLoading(true);
-      setTimeout(() => {
-        refresh();
-        refreshBalance();
-        setHasSubmittedTxn({} as any);
-        setIsValidatorDataLoading(false);
-      }, 5000);
+    onError: () => {
+      setHasSubmittedTxn({});
     },
+    onSuccess,
+  });
+
+  const {
+    write: dropBoostWrite,
+    isLoading: isDropBoostLoading,
+    ModalPortal: DropBoostModalPortal,
+  } = useTxn({
+    message: "Confirming queued boost drop to validator",
+    actionType: TransactionActionType.DELEGATE,
+    onError: () => {
+      setHasSubmittedTxn({} as any);
+    },
+    onSuccess,
   });
 
   const {
@@ -94,27 +117,45 @@ export const BoostQueue = ({
   } = useTxn({
     message: "Cancelling queued BGT to Validator",
     actionType: TransactionActionType.DELEGATE,
-    onSuccess: () => {
-      setIsValidatorDataLoading(true);
-      setTimeout(() => {
-        refresh();
-        refreshBalance();
-        setHasSubmittedTxn({} as any);
-        setIsValidatorDataLoading(false);
-      }, 5000);
+    onError: () => {
+      setHasSubmittedTxn({} as any);
     },
+    onSuccess,
+  });
+
+  const {
+    write: cancelDropBoostWrite,
+    isLoading: isCancelDropBoostLoading,
+    ModalPortal: CancelDropBoostModalPortal,
+  } = useTxn({
+    message: "Cancelling queued drop boost to Validator",
+    actionType: TransactionActionType.DELEGATE,
+    onError: () => {
+      setHasSubmittedTxn({} as any);
+    },
+    onSuccess,
   });
 
   const handleTransaction = (
     index: number,
     isActivate: boolean,
     props: IContractWrite,
+    isDropBoost: boolean,
   ) => {
     setHasSubmittedTxn({ ...hasSubmittedTxn, [index]: true } as any);
+
     if (isActivate) {
-      activateWrite(props);
+      if (isDropBoost) {
+        dropBoostWrite(props);
+      } else {
+        activateWrite(props);
+      }
     } else {
-      cancelWrite(props);
+      if (isDropBoost) {
+        cancelDropBoostWrite(props);
+      } else {
+        cancelWrite(props);
+      }
     }
   };
 
@@ -122,10 +163,8 @@ export const BoostQueue = ({
     <div className="flex flex-col gap-3">
       {ActivateModalPortal}
       {CancelModalPortal}
-      <div className="flex items-center">
-        <div className="mr-2 text-lg font-semibold leading-7">Queued</div>
-        {isValidatorDataLoading && <Spinner size={18} color="white" />}
-      </div>
+      {CancelDropBoostModalPortal}
+      {DropBoostModalPortal}
 
       {!queuedList ? (
         <div>
@@ -134,21 +173,18 @@ export const BoostQueue = ({
         </div>
       ) : (
         <>
-          {queuedList?.map((validator: UserValidator, index: number) => (
-            <ConfirmationCard
-              key={validator.coinbase}
-              userValidator={validator}
-              index={index}
-              hasSubmittedTxn={hasSubmittedTxn[index] ?? false}
-              blocksLeft={
-                parseInt(validator.latestBlock) +
-                HISTORY_BUFFER -
-                Number(blockNumber)
-              }
-              isTxnLoading={isActivationLoading || isCancelLoading}
-              handleTransaction={handleTransaction}
-            />
-          ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
+            {queuedList?.map((validator, index: number) => (
+              <ConfirmationCard
+                key={`${validator.pubkey}-${validator.type}`}
+                userValidator={validator}
+                index={index}
+                hasSubmittedTxn={hasSubmittedTxn[index] ?? false}
+                isTxnLoading={isActivationLoading || isCancelLoading}
+                handleTransaction={handleTransaction}
+              />
+            ))}
+          </div>
           {!queuedList?.length && (
             <div className="text-muted-foreground">No validators in queue</div>
           )}
@@ -160,75 +196,100 @@ export const BoostQueue = ({
 
 const ConfirmationCard = ({
   userValidator,
-  blocksLeft,
   isTxnLoading,
   index,
   hasSubmittedTxn,
   handleTransaction,
 }: {
-  userValidator: UserValidator;
-  blocksLeft: number;
+  userValidator: QueueItem;
   isTxnLoading: boolean;
   index: number;
   hasSubmittedTxn: boolean;
   handleTransaction: (
     index: number,
     isActivate: boolean,
-    props: IContractWrite,
+    props: IContractWrite<typeof BGT_ABI>,
+    isDropBoost: boolean,
   ) => void;
 }) => {
+  const { data: block } = useBlockNumber();
+
   const { account } = useBeraJs();
-  const width = userValidator.canActivate
+
+  const amount =
+    userValidator.type === "boost"
+      ? userValidator.userBoosts.queuedBoosts
+      : userValidator.userBoosts.queuedUnboosts;
+  const startBlock =
+    userValidator.type === "boost"
+      ? userValidator.userBoosts.queuedBoostStartBlock
+      : userValidator.userBoosts.queuedUnboostStartBlock;
+
+  const blocksLeft = Number(startBlock) + HISTORY_BUFFER - Number(block);
+
+  const isReadyForConfirmation = blocksLeft <= 0;
+
+  const width = isReadyForConfirmation
     ? 100
     : Math.round(Math.abs(1 - blocksLeft / HISTORY_BUFFER) * 100);
 
   const timeText = (
-    <span className=" text-info-foreground">{blocksLeft} blocks remaining</span>
+    <span className="text-info-foreground">{blocksLeft} blocks remaining</span>
   );
 
-  const { data } = useValidatorList();
+  const { data } = useAllValidators();
 
-  const coinbase = userValidator.coinbase;
-  const validatorInfo = data?.validatorDictionary
-    ? data.validatorDictionary[coinbase]
-    : undefined;
+  const pubkey = userValidator.pubkey;
+  const validatorInfo = data?.validators?.validators?.find(
+    (v) => v.pubkey.toLowerCase() === pubkey.toLowerCase(),
+  );
 
   return (
-    <div className="w-full rounded-md border border-border p-4">
+    <div className="w-full rounded-md border border-border py-4 px-8">
       <div className="flex w-full justify-between">
         <div className="font-medium">
           <div className="flex items-center gap-2">
             <ValidatorIcon
-              address={userValidator.coinbase as Address}
-              className="h-8 w-8"
-              // imgOverride={userValidator.metadata?.logoURI}
+              address={userValidator.pubkey as Address}
+              className="h-6 w-6"
             />
-            <div>
-              {validatorInfo?.name ?? truncateHash(userValidator.coinbase)}
-            </div>
+            <h3 className="text-base font-medium">
+              {validatorInfo?.metadata?.name ??
+                truncateHash(userValidator.pubkey)}
+            </h3>
           </div>
-          <div className="ml-8 text-muted-foreground ">
+          <div className="text-muted-foreground ">
             <FormattedNumber
               showIsSmallerThanMin
-              value={userValidator.amountQueued}
+              value={userValidator.type === "boost" ? amount : -Number(amount)}
               compact
-            />{" "}
-            BGT
+              prefixText={userValidator.type === "boost" ? "+" : ""}
+              colored={userValidator.type === "dropBoost"}
+              symbol="BGT"
+            />
           </div>
         </div>
         <div>
           <Button
             variant="ghost"
             disabled={
-              isTxnLoading || !userValidator.canActivate || hasSubmittedTxn
+              isTxnLoading || !isReadyForConfirmation || hasSubmittedTxn
             }
             onClick={() =>
-              handleTransaction(index, true, {
-                address: bgtTokenAddress,
-                abi: BGT_ABI,
-                functionName: "activateBoost",
-                params: [account!, userValidator.coinbase],
-              })
+              handleTransaction(
+                index,
+                true,
+                {
+                  address: bgtTokenAddress,
+                  abi: BGT_ABI,
+                  functionName:
+                    userValidator.type === "boost"
+                      ? "activateBoost"
+                      : "dropBoost",
+                  params: [account!, userValidator.pubkey as Address],
+                },
+                userValidator.type === "dropBoost",
+              )
             }
           >
             Confirm
@@ -237,15 +298,23 @@ const ConfirmationCard = ({
             variant="ghost"
             disabled={isTxnLoading || hasSubmittedTxn}
             onClick={() =>
-              handleTransaction(index, false, {
-                address: bgtTokenAddress,
-                abi: BGT_ABI,
-                functionName: "cancelBoost",
-                params: [
-                  userValidator.coinbase,
-                  parseUnits(userValidator.amountQueued, 18),
-                ],
-              })
+              handleTransaction(
+                index,
+                false,
+                {
+                  address: bgtTokenAddress,
+                  abi: BGT_ABI,
+                  functionName:
+                    userValidator.type === "boost"
+                      ? "cancelBoost"
+                      : "cancelDropBoost",
+                  params: [
+                    userValidator.pubkey as Address,
+                    parseUnits(amount, 18),
+                  ],
+                },
+                userValidator.type === "dropBoost",
+              )
             }
           >
             Cancel
@@ -253,11 +322,11 @@ const ConfirmationCard = ({
         </div>
       </div>
 
-      <div className="mt-6 pl-8 pr-4">
+      <div className="mt-6 ">
         <div className="h-[9px] overflow-hidden rounded border border-border">
           <div
             className={cn(
-              userValidator.canActivate
+              isReadyForConfirmation
                 ? "bg-success-foreground"
                 : "bg-info-foreground",
               "h-full",
@@ -266,14 +335,14 @@ const ConfirmationCard = ({
           />
         </div>
         <div className="flex justify-between pt-2 text-sm font-medium leading-6">
-          {userValidator.canActivate ? (
+          {blocksLeft < 0 ? (
             <div className="text-success-foreground">
               Ready for confirmation
             </div>
           ) : (
             <div>Confirmation Wait Duration</div>
           )}
-          <div>{!userValidator.canActivate && timeText}</div>
+          <div>{blocksLeft > 0 && timeText}</div>
         </div>
       </div>
     </div>

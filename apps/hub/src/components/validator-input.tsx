@@ -5,6 +5,7 @@ import {
   useBeraJs,
   useBgtUnstakedBalance,
   useUserActiveValidators,
+  useUserBoostsOnValidator,
   type UserValidator,
 } from "@bera/berajs";
 import { FormattedNumber, Tooltip } from "@bera/shared-ui";
@@ -43,15 +44,14 @@ export default function ValidatorInput({
   const { isReady } = useBeraJs();
   const { data: bgtBalance } = useBgtUnstakedBalance();
 
-  const { data } = useUserActiveValidators();
+  const { data: userBoosts } = useUserBoostsOnValidator({
+    pubkey: validatorAddress,
+  });
 
-  const selectedValidator = data?.find(
-    (validator: UserValidator) =>
-      validator.coinbase.toLowerCase() === validatorAddress?.toLowerCase(),
-  );
-  const bgtDelegated = selectedValidator
-    ? selectedValidator.amountDeposited
-    : "0";
+  const bgtDelegated = userBoosts
+    ? Number(userBoosts?.activeBoosts) - Number(userBoosts.queuedUnboosts)
+    : 0;
+
   return (
     <div className="relative">
       <div
@@ -102,34 +102,32 @@ export default function ValidatorInput({
         </div>
       )}
 
-      {action !== DelegateEnum.DELEGATE &&
-        validatorAddress &&
-        Boolean(bgtDelegated) && (
-          <div className="absolute bottom-3 right-4 h-3 text-[10px] text-muted-foreground">
-            <div className="flex items-center gap-1">
-              {/* <ValidatorIcon className="h-6 w-6" address={validatorAddress} /> */}
-              <Tooltip
-                text="Amount of BGT delegated to this validator"
-                className="h-3 w-3"
-              />
+      {action !== DelegateEnum.DELEGATE && validatorAddress && (
+        <div className="absolute bottom-3 right-4 h-3 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1">
+            {/* <ValidatorIcon className="h-6 w-6" address={validatorAddress} /> */}
+            <Tooltip
+              text="Amount of BGT boosted to this validator, excluding queued unboosts"
+              className="h-3 w-3"
+            />
 
-              <FormattedNumber
-                value={bgtDelegated}
-                compact
-                symbol="BGT"
-                showIsSmallerThanMin
-              />
-              <span
-                className="underline hover:cursor-pointer"
-                onClick={() => {
-                  if (bgtDelegated) onAmountChange(bgtDelegated);
-                }}
-              >
-                MAX
-              </span>
-            </div>
+            <FormattedNumber
+              value={bgtDelegated}
+              compact
+              symbol="BGT"
+              showIsSmallerThanMin
+            />
+            <span
+              className="underline hover:cursor-pointer"
+              onClick={() => {
+                if (bgtDelegated) onAmountChange(bgtDelegated.toString());
+              }}
+            >
+              MAX
+            </span>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

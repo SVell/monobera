@@ -1,8 +1,8 @@
-import { GOVERNANCE_ABI, Proposal } from "@bera/berajs";
+import { use, useEffect, useRef, useState } from "react";
+import { GOVERNANCE_ABI, Proposal, usePollProposal } from "@bera/berajs";
 import { governanceTimelockAddress } from "@bera/config";
 import { ActionButton, useTxn } from "@bera/shared-ui";
 import { Button } from "@bera/ui/button";
-import { useGovernance } from "~/app/governance/[genre]/components/governance-provider";
 import {
   Dialog,
   DialogContent,
@@ -11,21 +11,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@bera/ui/dialog";
+
+import { useGovernance } from "~/app/governance/[genre]/components/governance-provider";
 import { StatusBadge } from "~/app/governance/components/status-badge";
 
 export const QueueButton = ({
   proposal,
   title,
-}: { proposal: Proposal; title: string }) => {
+}: {
+  proposal: Proposal;
+  title: string;
+}) => {
+  const { refresh } = usePollProposal(proposal.id);
+  const [open, setOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const { write, ModalPortal } = useTxn({
     message: "Queuing proposal",
+    onSuccess: () => {
+      setOpen(false);
+      // Wait a few seconds for subgraph to update and then refresh
+      timeoutRef.current = setTimeout(() => {
+        refresh();
+      }, 3000);
+    },
   });
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const { governorAddress } = useGovernance();
   return (
     <>
       {ModalPortal}
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
           <Button>Queue</Button>
         </DialogTrigger>
@@ -37,7 +61,7 @@ export const QueueButton = ({
               enables execution.
             </p>
             <div className="rounded-sm border border-border p-4">
-              <h3 className="font-semibold mb-3 line-clamp-1 text-base hyphens-auto text-foreground">
+              <h3 className="mb-3 line-clamp-1 hyphens-auto text-base font-semibold text-foreground">
                 {title}
               </h3>
               <StatusBadge proposal={proposal} />

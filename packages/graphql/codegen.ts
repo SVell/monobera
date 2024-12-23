@@ -9,7 +9,8 @@ export const getEndpointsMap = () => {
   const endpoints = [
     ["governance", process.env.NEXT_PUBLIC_GOVERNANCE_SUBGRAPH_URL],
     ["chain", process.env.NEXT_PUBLIC_CHAIN_BLOCKS_SUBGRAPH_URL],
-    ["pol", process.env.NEXT_PUBLIC_POL_SUBGRAPH_URL],
+    ["pol/subgraph", process.env.NEXT_PUBLIC_POL_SUBGRAPH_URL],
+    ["pol/api", process.env.NEXT_PUBLIC_BALANCER_API_URL],
     ["dex/subgraph", process.env.NEXT_PUBLIC_BALANCER_SUBGRAPH],
     ["dex/api", process.env.NEXT_PUBLIC_BALANCER_API_URL],
   ] as const;

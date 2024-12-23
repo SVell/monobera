@@ -12,6 +12,7 @@ export const PoolHeader = ({
   center,
   className,
   backHref,
+  isVault,
 }: {
   title: ReactNode;
   subtitles: {
@@ -25,6 +26,7 @@ export const PoolHeader = ({
   center?: boolean;
   className?: string;
   backHref?: string;
+  isVault?: boolean;
 }) => {
   const router = useRouter();
   return (
@@ -48,7 +50,7 @@ export const PoolHeader = ({
         >
           <Icons.arrowLeft className="h-4 w-4" />
           <div className="text-sm font-medium">
-            {backHref ? "Go Back" : "All Pools"}
+            {backHref ? "Go Back" : isVault ? "All Vaults" : "All Pools"}
           </div>
         </Button>
         <span

@@ -4,7 +4,7 @@ import {
   GetWeeklyBgtInflation,
   GetWeeklyBgtInflationQuery,
   GetWeeklyBgtInflationQueryVariables,
-} from "@bera/graphql/pol";
+} from "@bera/graphql/pol/subgraph";
 import useSWR from "swr";
 
 import { DefaultHookOptions, DefaultHookReturnType } from "~/types/global";

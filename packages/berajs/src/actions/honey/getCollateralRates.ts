@@ -87,8 +87,8 @@ export const getCollateralRates = async ({
     for (const coll of collateralList) {
       const collIdx = collateralList.indexOf(coll);
       collateralRates.single[coll] = {
-        mintFee: Number(formatUnits(mintRates[collIdx], 18)),
-        redeemFee: Number(formatUnits(redeemRates[collIdx], 18)),
+        mintFee: 1 - +formatUnits(mintRates[collIdx], 18),
+        redeemFee: 1 - +formatUnits(redeemRates[collIdx], 18),
       };
       totalWeightedMintCollateralsFee +=
         collateralRates.single[coll].mintFee *

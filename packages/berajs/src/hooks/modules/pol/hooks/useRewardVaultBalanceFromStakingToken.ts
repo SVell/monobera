@@ -6,6 +6,7 @@ import { usePublicClient } from "wagmi";
 import { BERA_CHEF_ABI, BERA_VAULT_REWARDS_ABI } from "~/abi";
 import { ADDRESS_ZERO } from "~/config";
 import { useBeraJs } from "~/contexts";
+import { useIsWhitelistedVault } from "~/hooks/useIsWhitelistedVault";
 import { useRewardVaultFromToken } from "./useRewardVaultFromToken";
 
 export const useRewardVaultBalanceFromStakingToken = ({
@@ -26,6 +27,13 @@ export const useRewardVaultBalanceFromStakingToken = ({
     tokenAddress: stakingToken,
   });
 
+  const { data: whitelistedVaults, refresh: refreshWhitelistedVaults } =
+    useIsWhitelistedVault(
+      rewardVaultAddress && rewardVaultAddress !== ADDRESS_ZERO
+        ? [rewardVaultAddress]
+        : [],
+    );
+
   const swrResponse = useSWR(
     rewardVaultAddress
       ? ["useVaultBalanceFromStakingToken", rewardVaultAddress, account]
@@ -40,22 +48,18 @@ export const useRewardVaultBalanceFromStakingToken = ({
         };
       }
 
-      const [isWhitelisted, balance] = await Promise.all([
-        client?.readContract({
-          address: beraChefAddress,
-          abi: BERA_CHEF_ABI,
-          functionName: "isWhitelistedVault",
-          args: [rewardVaultAddress!],
-        }),
-        account
-          ? client?.readContract({
-              address: rewardVaultAddress!,
-              abi: BERA_VAULT_REWARDS_ABI,
-              functionName: "balanceOf",
-              args: [account],
-            })
-          : undefined,
-      ]);
+      const isWhitelisted =
+        whitelistedVaults?.find((vault) => vault.address === rewardVaultAddress)
+          ?.isWhitelisted ?? false;
+
+      const balance = account
+        ? await client?.readContract({
+            address: rewardVaultAddress!,
+            abi: BERA_VAULT_REWARDS_ABI,
+            functionName: "balanceOf",
+            args: [account],
+          })
+        : undefined;
 
       return {
         address: rewardVaultAddress,
@@ -69,6 +73,7 @@ export const useRewardVaultBalanceFromStakingToken = ({
     ...swrResponse,
     refresh: () => {
       mutateRewardVaultAddress();
+      refreshWhitelistedVaults();
       swrResponse.mutate();
     },
   };

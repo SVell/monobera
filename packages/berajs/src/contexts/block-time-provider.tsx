@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useGetBlocksTimeStampQuery, blocksClient } from "@bera/graphql";
 import { FALLBACK_BLOCK_TIME } from "@bera/config";
 
@@ -17,6 +17,7 @@ export const BlockTimeProvider = ({
 }: { children: React.ReactNode; defaultBlockTime?: number }) => {
   const SKIP = 40_000;
 
+  const [blockTime, setBlockTime] = useState<number>(defaultBlockTime);
   // This could be cached server side
   const { data } = useGetBlocksTimeStampQuery({
     variables: {
@@ -25,10 +26,16 @@ export const BlockTimeProvider = ({
     client: blocksClient,
   });
 
-  const blockTime = data
-    ? (data?.newest[0]?.timestamp - data?.oldest[0]?.timestamp) /
-      (data?.newest[0]?.number - data?.oldest[0]?.number)
-    : defaultBlockTime;
+  useEffect(() => {
+    if (data) {
+      setBlockTime(
+        (data?.newest[0]?.timestamp - data?.oldest[0]?.timestamp) /
+          (data?.newest[0]?.number - data?.oldest[0]?.number),
+      );
+    } else {
+      setBlockTime(defaultBlockTime);
+    }
+  }, [data]);
 
   return (
     <BlockTimeContext.Provider value={blockTime}>

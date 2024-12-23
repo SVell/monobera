@@ -3,7 +3,7 @@ import {
   ValidatorStakedBgtsFragment,
   type BlockRewardStatsByValidatorFragment,
   type GetValidatorIncentivesReceivedsQuery,
-} from "@bera/graphql/pol";
+} from "@bera/graphql/pol/subgraph";
 import { addDays } from "date-fns";
 
 type GroupedValidatorRewardsData = {
@@ -54,7 +54,8 @@ const generateValidatorRewardsEmptyData = (
     allTimeBGTEarned: "0",
     validator: {
       id: "",
-      amountStaked: "0",
+      publicKey: "",
+      amountDelegated: "0",
     },
   };
 };

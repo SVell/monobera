@@ -1,16 +1,26 @@
 import React from "react";
 import Link from "next/link";
-import { truncateHash, usePollGlobalData, type Validator } from "@bera/berajs";
+import {
+  truncateHash,
+  useBlockTime,
+  usePollGlobalData,
+  type Validator,
+} from "@bera/berajs";
 import { FormattedNumber, ValidatorIcon } from "@bera/shared-ui";
 import { getHubValidatorPath } from "@bera/shared-ui";
 import { Icons } from "@bera/ui/icons";
 import { Skeleton } from "@bera/ui/skeleton";
 
 import { getValidatorEstimatedBgtPerYear } from "~/hooks/useValidatorEstimatedBgtPerYear";
+import { Address } from "viem";
 
 export default function GaugeInfoCard() {
   const { data: globalData, isLoading } = usePollGlobalData();
-  console.log("check globalData", globalData);
+
+  const timePerBlock = useBlockTime();
+  const blockCountPerYear = timePerBlock
+    ? (60 * 60 * 24 * 365) / timePerBlock
+    : 0;
   return (
     <div className="flex w-full flex-1 flex-col gap-6 sm:flex-row">
       <div className="flex flex-1 flex-row gap-6 sm:flex-col">
@@ -20,7 +30,7 @@ export default function GaugeInfoCard() {
           </div>
           {!isLoading ? (
             <span className="text-2xl font-semibold leading-8">
-              {globalData?.top3Vaults?.total}
+              {globalData?.activeRewardVaultCount}
             </span>
           ) : (
             <Skeleton className="h-8 w-[125px] " />
@@ -70,12 +80,13 @@ export default function GaugeInfoCard() {
           {isLoading ? (
             <Skeleton className="h-8 w-full" />
           ) : (
+            // Get BGT emitted last day and multiply by 365
             <FormattedNumber
-              value={globalData?.bgtInfo?.blockCountPerYear ?? 0}
+              value={0}
               compact={false}
               compactThreshold={999_999}
               symbol="BGT"
-              className="items-center text-xl font-bold leading-5"
+              className="items-center text-xl font-bold opacity-20 leading-5"
             />
           )}
         </div>
@@ -100,40 +111,35 @@ export default function GaugeInfoCard() {
             Top 3 Validators
           </div>
           {!isLoading && globalData ? (
-            globalData.top3EmittingValidators?.validators?.map(
-              (
-                validator: { stakedVotingPower: number; validator: Validator },
-                index: number,
-              ) => (
-                <Link
-                  className="cursor-pointer flex w-full flex-1 items-center gap-2 rounded-sm border border-border bg-background px-4 py-2"
-                  key={`${index}-${validator.validator.id}`}
-                  href={getHubValidatorPath(validator.validator.coinbase)}
-                  target="_blank"
-                >
-                  <ValidatorIcon
-                    address={validator.validator.coinbase}
-                    size="xl"
-                    imgOverride={validator.validator.metadata?.logoURI}
-                  />
-                  <div>
-                    <div className="text-nowrap text-sm font-semibold leading-5">
-                      {validator.validator?.metadata?.name ??
-                        truncateHash(validator.validator.coinbase)}
-                    </div>
-                    <FormattedNumber
-                      value={getValidatorEstimatedBgtPerYear(
-                        validator.validator,
-                        globalData.validatorCount,
-                      )}
-                      showIsSmallerThanMin
-                      symbol="BGT/Year"
-                      className="block text-nowrap text-[10px] font-medium leading-3 text-muted-foreground"
-                    />
+            globalData.top3EmittingValidators?.map((validator, index) => (
+              <Link
+                className="cursor-pointer flex w-full flex-1 items-center gap-2 rounded-sm border border-border bg-background px-4 py-2"
+                key={`${index}-${validator.id}`}
+                href={getHubValidatorPath(validator.pubkey)}
+                target="_blank"
+              >
+                <ValidatorIcon
+                  address={validator.pubkey as Address}
+                  size="xl"
+                  imgOverride={validator.metadata?.logoURI}
+                />
+                <div>
+                  <div className="text-nowrap text-sm font-semibold leading-5">
+                    {validator?.metadata?.name ??
+                      truncateHash(validator.pubkey)}
                   </div>
-                </Link>
-              ),
-            )
+                  <FormattedNumber
+                    value={getValidatorEstimatedBgtPerYear(
+                      validator,
+                      globalData.validatorCount,
+                    )}
+                    showIsSmallerThanMin
+                    symbol="BGT/Year"
+                    className="block text-nowrap text-[10px] font-medium leading-3 text-muted-foreground"
+                  />
+                </div>
+              </Link>
+            ))
           ) : (
             <>
               <Skeleton className="h-14 w-full rounded-md" />

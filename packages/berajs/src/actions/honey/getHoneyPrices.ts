@@ -5,8 +5,10 @@ import {
 } from "@bera/graphql/dex/subgraph";
 import { honeyTokenAddress } from "@bera/config";
 
-import { BeraConfig, Token } from "~/types";
+import { BeraConfig } from "~/types";
 import { handleNativeBera } from "~/utils";
+import { isSameAddress } from "@berachain-foundation/berancer-sdk";
+import { Address } from "viem";
 
 interface FetchHoneyPricesArgs {
   tokenAddresses?: string[] | undefined;
@@ -19,7 +21,6 @@ export interface TokenHoneyPrices {
 /**
  * fetch the current honey prices of a series of tokens
  */
-
 export const getTokenHoneyPrices = async ({
   tokenAddresses,
   config,
@@ -27,9 +28,11 @@ export const getTokenHoneyPrices = async ({
   if (!tokenAddresses || tokenAddresses.some((token) => token === undefined)) {
     return {};
   }
+
   const swappedAddresses = tokenAddresses.map((token: string | undefined) =>
     handleNativeBera(token).toLowerCase(),
   );
+
   try {
     const res = await bexSubgraphClient.query<GetTokenInformationsQuery>({
       query: GetTokenInformations,
@@ -38,6 +41,7 @@ export const getTokenHoneyPrices = async ({
         assets: swappedAddresses,
       },
     });
+
     const prices: TokenHoneyPrices = {};
 
     for (const tokenPrice of res.data?.tokenPrices || []) {
@@ -49,9 +53,23 @@ export const getTokenHoneyPrices = async ({
         prices[tokenPrice.asset] = tokenPrice.price;
       }
     }
+
+    /**
+     * We need the index so we are sure that in the prices map the address matches the input address
+     *
+     * e.g. lowercase addresses
+     */
+    const honeyIndex = tokenAddresses
+      .map((t) => t.toLowerCase())
+      .findIndex((t) => isSameAddress(t as Address, honeyTokenAddress));
+
+    if (honeyIndex !== -1) {
+      prices[tokenAddresses[honeyIndex]] = "1";
+    }
+
     return prices;
   } catch (e) {
     console.log(e);
-    return undefined;
+    throw e;
   }
 };

@@ -41,15 +41,13 @@ export default function UserGaugeWeightTable({
     return vaults
       .filter((vaultInfo: UserVault) => {
         if (keywords === "") return true;
-        if (vaultInfo.name.includes(keywords)) return true;
-        if (vaultInfo.product.includes(keywords)) return true;
-        if (vaultInfo.vaultAddress.includes(keywords)) return true;
+        if (vaultInfo.vault.metadata?.name?.includes(keywords)) return true;
+        if (vaultInfo.vault.metadata?.productName?.includes(keywords))
+          return true;
+        if (vaultInfo.vault.vaultAddress.includes(keywords)) return true;
         return false;
       })
-      .sort(
-        (a: UserVault, b: UserVault) =>
-          Number(b.unclaimedBgt) - Number(a.unclaimedBgt),
-      );
+      .sort((a, b) => Number(b.unclaimedBgt) - Number(a.unclaimedBgt));
   }, [userVaultInfo, keywords]);
 
   return (

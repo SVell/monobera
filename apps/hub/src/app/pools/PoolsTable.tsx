@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useBeraJs } from "@bera/berajs";
 import {
   ConnectWalletBear,
   NotFoundBear,
@@ -12,12 +13,10 @@ import {
 import { DataTableLoading } from "@bera/shared-ui/table/legacy";
 import { Button } from "@bera/ui/button";
 import { Icons } from "@bera/ui/icons";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@bera/ui/tabs";
 
 import { getPoolUrl } from "./fetchPools";
 import { usePoolTable } from "./usePoolTable";
-import { useBeraJs } from "@bera/berajs";
 
 export const PoolSearch = ({
   poolType = "allPools",
@@ -91,7 +90,7 @@ export const PoolSearch = ({
           </TabsList>
 
           <TabsContent value="allPools" className="w-full text-center">
-            <div className="flex w-full gap-y-3 gap-x-6 sm:items-center">
+            <div className="flex w-full gap-x-6 gap-y-3 sm:items-center">
               <SearchInput
                 value={search}
                 onChange={(e) => {
@@ -127,7 +126,7 @@ export const PoolSearch = ({
             </div>
           </TabsContent>
           <TabsContent value="userPools" className="w-full text-center">
-            <div className="flex w-full gap-y-3 gap-x-6 sm:items-center">
+            <div className="flex w-full gap-x-6 gap-y-3 sm:items-center">
               <SearchInput
                 value={search}
                 onChange={(e) => {
@@ -140,7 +139,7 @@ export const PoolSearch = ({
                   return;
                 }}
                 placeholder="Search..."
-                onKeyDown={(e: any) => {
+                onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     setKeyword(search);
                     clearTimeout(typingTimer);

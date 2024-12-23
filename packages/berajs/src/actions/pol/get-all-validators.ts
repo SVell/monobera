@@ -1,32 +1,30 @@
-import { bgtClient } from "@bera/graphql";
+import { bexApiGraphqlClient, bgtClient } from "@bera/graphql";
 import {
-  GetAllValidators,
-  GetAllValidatorsQueryVariables,
-  type GetAllValidatorsQuery,
-} from "@bera/graphql/pol";
+  GetValidatorsDocument,
+  GetValidatorsQueryVariables,
+  type GetValidatorsQuery,
+} from "@bera/graphql/pol/api";
 
 import { type BeraConfig } from "~/types";
 
 export const getAllValidators = async ({
   config,
+  variables,
 }: {
   config: BeraConfig;
-}): Promise<GetAllValidatorsQuery | undefined> => {
-  try {
-    if (!config.subgraphs?.polSubgraph) {
-      throw new Error("pol subgraph uri is not found in config");
-    }
-
-    const result = await bgtClient.query<
-      GetAllValidatorsQuery,
-      GetAllValidatorsQueryVariables
-    >({
-      query: GetAllValidators,
-    });
-
-    return result.data;
-  } catch (e) {
-    console.error("getAllValidators:", e);
-    return undefined;
+  variables?: GetValidatorsQueryVariables;
+}): Promise<GetValidatorsQuery | undefined> => {
+  if (!config.subgraphs?.polSubgraph) {
+    throw new Error("pol subgraph uri is not found in config");
   }
+
+  const result = await bexApiGraphqlClient.query<
+    GetValidatorsQuery,
+    GetValidatorsQueryVariables
+  >({
+    query: GetValidatorsDocument,
+    variables,
+  });
+
+  return result.data;
 };

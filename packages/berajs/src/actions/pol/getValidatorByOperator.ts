@@ -2,7 +2,7 @@ import { bgtClient } from "@bera/graphql";
 import {
   GetValidatorByOperator,
   type GetValidatorByOperatorQuery,
-} from "@bera/graphql/pol";
+} from "@bera/graphql/pol/subgraph";
 import { Address } from "viem";
 
 import { type BeraConfig } from "~/types";

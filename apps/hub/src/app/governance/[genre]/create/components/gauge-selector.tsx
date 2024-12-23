@@ -21,7 +21,12 @@ export const GaugeSelector = ({
   setGauge,
 }: {
   selectedGauge:
-    | (ProposalAction & { type: ProposalTypeEnum.UPDATE_REWARDS_GAUGE })
+    | (ProposalAction & {
+        type: ProposalTypeEnum.BLACKLIST_REWARD_VAULT;
+      })
+    | (ProposalAction & {
+        type: ProposalTypeEnum.WHITELIST_REWARD_VAULT;
+      })
     | undefined;
   setGauge: Dispatch<SetStateAction<ProposalAction>>;
 }) => {
@@ -71,14 +76,14 @@ export const GaugeSelector = ({
                     </Link>
                     <span
                       className={cn(
-                        gauge.isFriend
+                        gauge.type === ProposalTypeEnum.WHITELIST_REWARD_VAULT
                           ? "text-success-foreground"
                           : "text-destructive-foreground",
                       )}
                     >
-                      {gauge.isFriend
-                        ? "Reciving Emissions"
-                        : "Not Reciving Emissions"}
+                      {gauge.type === ProposalTypeEnum.WHITELIST_REWARD_VAULT
+                        ? "Receiving Emissions"
+                        : "Not Receiving Emissions"}
                     </span>
                   </div>
                   <div className="text-sm font-medium text-muted-foreground">

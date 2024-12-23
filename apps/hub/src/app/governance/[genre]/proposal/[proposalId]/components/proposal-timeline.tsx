@@ -1,9 +1,10 @@
-import { useBlockToTimestamp } from "@bera/berajs";
+import { useBlockToTimestamp, useProposalTimelockState } from "@bera/berajs";
 import { cn } from "@bera/ui";
 import {
   ProposalStatus,
   ProposalWithVotesFragment,
 } from "@bera/graphql/governance";
+import { governanceTimelockAddress } from "@bera/config";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
@@ -72,7 +73,20 @@ export const ProposalTimeline = ({
     },
   ];
 
-  if (proposal.status === ProposalStatus.CanceledByUser) {
+  const { data: timelockState } = useProposalTimelockState({
+    proposalTimelockId: proposal.timelock?.id,
+    timelockAddress: governanceTimelockAddress,
+  });
+
+  const status =
+    proposal.status === ProposalStatus.PendingExecution &&
+    proposal.queueEnd === null &&
+    proposal.queueStart === null &&
+    timelockState !== "ready"
+      ? ProposalStatus.InQueue
+      : proposal.status;
+
+  if (status === ProposalStatus.CanceledByUser) {
     steps.push({
       title: "Canceled by proposer",
       date: proposal.canceledAt,
@@ -81,20 +95,20 @@ export const ProposalTimeline = ({
     });
   } else {
     steps.push({
-      title: "Voting Period Begins",
+      title: "Voting Period Begun",
       block: proposal.voteStartBlock ?? 0,
-      isActive: proposal.status === ProposalStatus.Active,
+      isActive: status === ProposalStatus.Active,
     });
 
-    if (proposal.status === ProposalStatus.Active) {
+    if (status === ProposalStatus.Active) {
       steps.push({
         title: "Voting Period Ends",
         block: proposal.voteEndBlock,
         isActive: false,
       });
     } else if (
-      proposal.status === ProposalStatus.Defeated ||
-      proposal.status === ProposalStatus.QuorumNotReached
+      status === ProposalStatus.Defeated ||
+      status === ProposalStatus.QuorumNotReached
     ) {
       steps.push({
         title: "Proposal Defeated",
@@ -102,49 +116,76 @@ export const ProposalTimeline = ({
         block: proposal.voteEndBlock,
         isActive: true,
       });
-    } else if (proposal.status === ProposalStatus.Pending) {
+    } else if (status === ProposalStatus.Pending) {
       steps.push({
         title: "Voting Period Ends",
         block: proposal.voteEndBlock,
         isActive: false,
       });
     } else {
-      steps.push({
-        title: "Proposal Passed",
-        block: proposal.voteEndBlock,
-        bulletClassName: "bg-success-foreground",
-        isActive: proposal.status === ProposalStatus.PendingQueue,
-      });
+      if (proposal.succeededAt) {
+        steps.push({
+          title: "Proposal Queueable",
+          date: proposal.succeededAt,
+          isActive: status === ProposalStatus.PendingQueue,
+        });
+      } else {
+        steps.push({
+          title: "Voting Period Ends",
+          block: proposal.voteEndBlock,
+          bulletClassName: "bg-success-foreground",
+          isActive: status === ProposalStatus.PendingQueue,
+        });
+      }
 
-      if (proposal.status !== ProposalStatus.PendingQueue) {
+      if (status !== ProposalStatus.PendingQueue) {
         steps.push({
           title: "Proposal Queued",
-          date: proposal.queueStart,
-          isActive: proposal.status === ProposalStatus.InQueue,
+          date: proposal.queueStart ?? new Date().getTime() / 1000,
+          isActive: status === ProposalStatus.InQueue,
         });
 
-        if (proposal.status === ProposalStatus.CanceledByGuardian) {
+        if (status === ProposalStatus.CanceledByGuardian) {
           steps.push({
             title: "Canceled by guardian",
             date: proposal.canceledAt,
             isActive: true,
             bulletClassName: "bg-destructive-foreground",
           });
-        } else if (proposal.status === ProposalStatus.Executed) {
+        } else if (status === ProposalStatus.Executed) {
+          steps.push({
+            title: "Queue Ended",
+            date: proposal.queueEnd,
+            isActive: false,
+          });
           steps.push({
             title: "Proposal Executed",
             date: proposal.executedAt,
-            isActive: proposal.status === ProposalStatus.Executed,
+            isActive: status === ProposalStatus.Executed,
             bulletClassName: "bg-success-foreground",
           });
-        } else if (
-          proposal.status === ProposalStatus.InQueue ||
-          proposal.status === ProposalStatus.PendingExecution
-        ) {
+        } else if (status === ProposalStatus.InQueue) {
+          steps.push({
+            title: "Queue Ending",
+            // Temporary fix for proposals that are in queue but have no queueEnd
+            date: proposal.queueEnd ?? new Date().getTime() / 1000 + 60 * 15,
+            isActive: false,
+          });
+          steps.push({
+            title: "Proposal Executable",
+            date: proposal.queueEnd ?? new Date().getTime() / 1000 + 60 * 15,
+            isActive: false,
+          });
+        } else if (status === ProposalStatus.PendingExecution) {
+          steps.push({
+            title: "Queue Ended",
+            date: proposal.queueEnd,
+            isActive: false,
+          });
           steps.push({
             title: "Proposal Executable",
             date: proposal.queueEnd,
-            isActive: proposal.status === ProposalStatus.PendingExecution,
+            isActive: true,
           });
         }
       }

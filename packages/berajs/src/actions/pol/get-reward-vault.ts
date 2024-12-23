@@ -1,5 +1,8 @@
 import { bgtClient } from "@bera/graphql";
-import { GetRewardVault, type GetRewardVaultQuery } from "@bera/graphql/pol";
+import {
+  GetRewardVault,
+  type GetRewardVaultQuery,
+} from "@bera/graphql/pol/subgraph";
 import { Address } from "viem";
 
 import { type BeraConfig } from "~/types";
