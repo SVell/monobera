@@ -49,7 +49,7 @@ const ProcessSteps = ({
   return (
     <div
       className={cn(
-        "flex flex-wrap text-sm items-start gap-4 overflow-visible py-2 xl:flex-col xl:gap-6",
+        "flex flex-wrap items-start gap-4 overflow-visible py-2 text-sm xl:flex-col xl:gap-6",
         className,
       )}
     >
@@ -70,26 +70,26 @@ const ProcessSteps = ({
           )}
           <div
             className={cn(
-              "relative flex w-fit md:w-full overflow-hidden rounded-sm border shadow-md ",
+              "relative flex w-fit overflow-hidden rounded-sm border shadow-md md:w-full ",
               selectedStep === index &&
                 "bg-processStepBackground bg-opacity-55",
             )}
           >
             {selectedStep === index && (
-              <div className="w-1 absolute top-0 left-0 bottom-0 flex-shrink-0 bg-info-foreground" />
+              <div className="absolute bottom-0 left-0 top-0 w-1 flex-shrink-0 bg-info-foreground" />
             )}
-            <div className="flex w-full justify-between p-4 items-center">
+            <div className="flex w-full items-center justify-between p-4">
               <h3 className="text-nowrap pr-2 font-normal">{title}</h3>
               {completedSteps.includes(index) &&
                 (verifiedSteps.steps[index] ? (
                   <Icons.checkCircle
                     size={16}
-                    className="text-semanticSuccessForeground -mr-2"
+                    className="-mr-2 text-green-500"
                   />
                 ) : (
                   <Icons.xCircle
                     size={16}
-                    className="text-destructive-foreground -mr-2"
+                    className="-mr-2 text-destructive-foreground"
                   />
                 ))}
             </div>

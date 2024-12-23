@@ -95,20 +95,18 @@ const PoolCreationSummary = memo(
             showStep(0) && poolType ? (
               <div
                 className={cn(
-                  "flex items-center gap-2 rounded-full border-2 px-2 text-base xl:text-sm 2xl:text-base",
+                  "flex items-center gap-2 rounded-full border-2 px-2 text-center text-base xl:text-sm 2xl:text-base",
                   poolType === PoolType.ComposableStable &&
-                    "border-semanticSuccessForeground bg-semanticSuccessBackground text-semanticSuccessForeground",
+                    "border-green-500 bg-muted text-green-500",
                   poolType === PoolType.Weighted &&
-                    "border-semanticBlueSuccessForeground bg-semanticBlueSuccessBackground text-semanticBlueSuccessForeground",
+                    "border-highlight bg-muted text-highlight",
                 )}
               >
                 <div
                   className={cn(
                     "h-1 w-1 rounded-full",
-                    poolType === PoolType.ComposableStable &&
-                      "bg-semanticSuccessForeground",
-                    poolType === PoolType.Weighted &&
-                      "bg-semanticBlueSuccessForeground",
+                    poolType === PoolType.ComposableStable && "bg-green-500",
+                    poolType === PoolType.Weighted && "bg-highlight",
                   )}
                 />
                 <span>
