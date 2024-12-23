@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@bera/ui";
 import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { InputWithLabel } from "@bera/ui/input";
@@ -29,6 +29,11 @@ export const AmplificationInput: React.FC<AmplificationInputProps> = ({
     `${initialAmplification}`,
   );
   const [isInvalid, setIsInvalid] = useState<boolean>(false); // Invalid state
+
+  useEffect(() => {
+    // If we change the preset we need to set the raw value.
+    setRawAmplification(`${initialAmplification}`);
+  }, [initialAmplification]);
 
   const validateAmplification = (
     value: string,
