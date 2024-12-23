@@ -1,6 +1,7 @@
 import {
   Oracle,
   OracleMode,
+  PoolCreationStep,
   type Token,
   type TokenInput as TokenInputType,
 } from "@bera/berajs";
@@ -258,12 +259,6 @@ export const DEFAULT_WEIGHTS = [500000000000000000n, 500000000000000000n];
  */
 export const DEFAULT_PARAMETER_PRESET = ParameterPreset.USDBACKED;
 
-/**
- * Last form step number.
- * @constant {number}
- */
-export const LAST_FORM_STEP_NUM = 4; // NOTE: in the future we might consider making this more dynamic/strongly typed via enums.
-
 export const emptyTokenInput: TokenInputType = {
   address: "" as `0x${string}`,
   amount: "0",
@@ -310,3 +305,14 @@ export const emptyOracle: Oracle = {
  * @constant {Oracle[]}
  */
 export const DEFAULT_ORACLES: Oracle[] = [emptyOracle, emptyOracle];
+
+/**
+ * This is the order of steps that the next button traverses to create a pool.
+ */
+export const POOL_CREATION_STEPS = [
+  PoolCreationStep.POOL_TYPE,
+  PoolCreationStep.SELECT_TOKENS,
+  PoolCreationStep.DEPOSIT_LIQUIDITY,
+  PoolCreationStep.SET_PARAMETERS,
+  PoolCreationStep.SET_INFO,
+];

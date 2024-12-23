@@ -3,7 +3,7 @@ import { PoolType } from "@berachain-foundation/berancer-sdk";
 
 import { wrapNativeTokens } from "~/utils/tokenWrapping";
 import { TokenCurrentPriceMap } from "~/actions";
-import { TokenWithAmount } from "~/types";
+import { PoolCreationStep, TokenWithAmount } from "~/types";
 import { Oracle, OracleMode } from "./useCreatePool";
 
 const DEFAULT_LIQUIDITY_MISMATCH_TOLERANCE_PERCENT = 0.05; // 5%
@@ -15,7 +15,7 @@ export type LiquidityMismatchInfo = {
 };
 
 interface UseLiquidityMismatchParams {
-  currentStep: number;
+  currentStep: PoolCreationStep;
   tokenPrices?: TokenCurrentPriceMap;
   isLoadingTokenPrices: boolean;
   tokens: TokenWithAmount[] | null;
@@ -29,7 +29,7 @@ interface UseLiquidityMismatchParams {
 /**
  * Hook for detecting liquidity mismatches.
  *
- * @param {number} currentStep - The current step of the pool creation process.
+ * @param {PoolCreationStep} currentStep - The current step of the pool creation process.
  * @param {Record<string, number>} tokenPrices - The current token prices.
  * @param {boolean} isLoadingTokenPrices - Whether the token prices are still loading.
  * @param {Array<{ address: string, amount: number }>} tokens - The tokens in the pool, including their addresses and amounts.
@@ -99,7 +99,10 @@ export const useLiquidityMismatch = ({
     }
 
     // Step 1 - During token selection we check for a deviation in the quote prices of the tokens selected (for stable pools).
-    if (currentStep === 1 && poolType === PoolType.ComposableStable) {
+    if (
+      currentStep === PoolCreationStep.SELECT_TOKENS &&
+      poolType === PoolType.ComposableStable
+    ) {
       const normalizedUSDPrices = tokenUSDPrices.map(
         (priceUSD) => priceUSD! / tokenUSDPrices[0]!, // always normalize on the first token's price
       );

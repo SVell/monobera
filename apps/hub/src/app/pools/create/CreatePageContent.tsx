@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Oracle,
   OracleMode,
+  PoolCreationStep,
   balancerComposableStablePoolFactoryV6,
   balancerPoolCreationHelperAbi,
   useBeraJs,
@@ -12,10 +13,8 @@ import {
   useLiquidityMismatch,
   useSubgraphTokenInformations,
   useTokenCurrentPrices,
-  useTokens,
   wBeraToken,
   wrapNativeToken,
-  wrapNativeTokens,
   type Token,
   type TokenInput as TokenInputType,
 } from "@bera/berajs";
@@ -58,7 +57,7 @@ import {
   DEFAULT_TOKENS,
   DEFAULT_USD_BACKED_AMPLIFICATION,
   DEFAULT_WEIGHTS,
-  LAST_FORM_STEP_NUM,
+  POOL_CREATION_STEPS,
   ParameterPreset,
   emptyOracle,
   emptyToken,
@@ -105,14 +104,15 @@ export default function CreatePageContent() {
     string | null
   >(null);
   const [isPreviewOpen, setPreviewOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [currentStep, setCurrentStep] = useState(PoolCreationStep.POOL_TYPE);
+  const [completedSteps, setCompletedSteps] = useState<PoolCreationStep[]>([]);
   const [nextButtonDisabled, setNextButtonDisabled] = useState(false);
   const [parameterPreset, setParameterPreset] = useState<ParameterPreset>(
     DEFAULT_PARAMETER_PRESET,
   );
   const [oracles, setOracles] = useState<Oracle[]>(DEFAULT_ORACLES);
-  const isLastStep = currentStep === LAST_FORM_STEP_NUM;
+  const isLastStep =
+    currentStep === POOL_CREATION_STEPS[POOL_CREATION_STEPS.length - 1];
 
   const { data: bexTokenPrices, isLoading: isLoadingBexTokenPrices } =
     useTokenCurrentPrices();
@@ -384,7 +384,9 @@ export default function CreatePageContent() {
     oracles,
   });
 
-  const [verifiedSteps, setVerifiedSteps] = useState<VerifiedSteps>(
+  const [verifiedSteps, setVerifiedSteps] = useState<
+    ReturnType<typeof getStepVerification>
+  >(
     getStepVerification(
       poolCreateTokens,
       initialLiquidityTokens,
@@ -401,7 +403,10 @@ export default function CreatePageContent() {
       poolSymbol,
     ),
   );
-  const isVerificationFailure = verifiedSteps.steps.some((step) => !step);
+
+  const isVerificationFailure = Object.values(verifiedSteps.steps).some(
+    (step) => !step,
+  );
   const [finalStepErrorMessage, setFinalStepErrorMessage] = useState<
     string | null
   >(null);
@@ -426,7 +431,7 @@ export default function CreatePageContent() {
     setNextButtonDisabled(!verifiedSteps.steps[currentStep]);
     setVerifiedSteps(verifiedSteps);
     setFinalStepErrorMessage(
-      verifiedSteps.errors
+      Object.values(verifiedSteps.errors)
         .filter((error) => error !== null)
         .map((error) => `• ${error}`)
         .join("\n") || null,
@@ -486,13 +491,7 @@ export default function CreatePageContent() {
       <div className="flex w-full flex-col justify-center xl:flex-row">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <ProcessSteps
-            titles={[
-              "Pool Type",
-              "Select Tokens",
-              "Deposit Liquidity",
-              "Set Parameters",
-              "Set Info",
-            ]}
+            stepEnum={PoolCreationStep}
             className="xl:col-span-2"
             selectedStep={currentStep}
             completedSteps={completedSteps}
@@ -500,13 +499,13 @@ export default function CreatePageContent() {
             verifiedSteps={verifiedSteps}
           />
           <div className="flex w-full flex-col xl:col-span-6">
-            {currentStep === 0 && (
+            {currentStep === PoolCreationStep.POOL_TYPE && (
               <PoolTypeSelector
                 poolType={poolType}
                 onPoolTypeChange={setPoolType}
               />
             )}
-            {currentStep === 1 && (
+            {currentStep === PoolCreationStep.SELECT_TOKENS && (
               <section className="flex w-full flex-col gap-4">
                 <h2 className="self-start text-xl font-semibold">{`Select Tokens ${
                   poolType === PoolType.Weighted ? "& Weighting" : ""
@@ -597,7 +596,7 @@ export default function CreatePageContent() {
                 )}
               </section>
             )}
-            {currentStep === 2 && (
+            {currentStep === PoolCreationStep.DEPOSIT_LIQUIDITY && (
               <section className="flex w-full flex-col gap-4">
                 <h2 className="self-start text-xl font-semibold">
                   Set Initial Liquidity
@@ -650,7 +649,7 @@ export default function CreatePageContent() {
                 </div>
               </section>
             )}
-            {currentStep === 3 && (
+            {currentStep === PoolCreationStep.SET_PARAMETERS && (
               <ParametersInput
                 amplification={amplification}
                 onAmplificationChange={setAmplification}
@@ -669,7 +668,7 @@ export default function CreatePageContent() {
                 predefinedFees={predefinedFees}
               />
             )}
-            {currentStep === 4 && (
+            {currentStep === PoolCreationStep.SET_INFO && (
               <section className="flex w-full flex-col gap-4">
                 <InputWithLabel
                   label="Pool Name"
@@ -701,26 +700,28 @@ export default function CreatePageContent() {
             </section>
           )} */}
 
-            {liquidityMismatchInfo.message && currentStep <= 2 && (
-              <Alert
-                variant="warning"
-                className={cn(
-                  "my-4",
-                  liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
-                )}
-                onClick={() => {
-                  if (liquidityMismatchInfo.suggestWeighted) {
-                    setCurrentStep(0);
-                    // setPoolType(PoolType.Weighted);
-                  }
-                }}
-              >
-                <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
-                <AlertDescription>
-                  {liquidityMismatchInfo.message}
-                </AlertDescription>
-              </Alert>
-            )}
+            {liquidityMismatchInfo.message &&
+              (currentStep === PoolCreationStep.SELECT_TOKENS ||
+                currentStep === PoolCreationStep.DEPOSIT_LIQUIDITY) && (
+                <Alert
+                  variant="warning"
+                  className={cn(
+                    "my-4",
+                    liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
+                  )}
+                  onClick={() => {
+                    if (liquidityMismatchInfo.suggestWeighted) {
+                      setCurrentStep(PoolCreationStep.POOL_TYPE);
+                      // setPoolType(PoolType.Weighted);
+                    }
+                  }}
+                >
+                  <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
+                  <AlertDescription>
+                    {liquidityMismatchInfo.message}
+                  </AlertDescription>
+                </Alert>
+              )}
 
             {isLastStep && isVerificationFailure && (
               <div className="pt-4">
@@ -739,7 +740,11 @@ export default function CreatePageContent() {
                   if (isLastStep) {
                     setPreviewOpen(true);
                   } else {
-                    setCurrentStep(currentStep + 1);
+                    setCurrentStep(
+                      POOL_CREATION_STEPS[
+                        POOL_CREATION_STEPS.indexOf(currentStep) + 1
+                      ],
+                    );
                     setCompletedSteps([...completedSteps, currentStep]);
                   }
                 }}
@@ -760,6 +765,7 @@ export default function CreatePageContent() {
 
           <PoolCreationSummary
             className="xl:col-span-4"
+            currentStep={currentStep}
             completedSteps={completedSteps}
             poolType={poolType}
             ownershipType={ownershipType}

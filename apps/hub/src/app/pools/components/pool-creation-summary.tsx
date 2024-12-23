@@ -1,5 +1,6 @@
 import { ReactNode, memo, useMemo } from "react";
 import {
+  PoolCreationStep,
   formatMaxLength,
   formatUsd,
   getSafeNumber,
@@ -8,9 +9,9 @@ import {
   type TokenInput,
 } from "@bera/berajs";
 import { SubgraphTokenInformations } from "@bera/berajs/actions";
-import { TokenChip, TokenIcon } from "@bera/shared-ui";
+import { TokenIcon } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
-import { InputToken, PoolType } from "@berachain-foundation/berancer-sdk";
+import { PoolType } from "@berachain-foundation/berancer-sdk";
 import { Address } from "viem";
 
 import { OwnershipType } from "./parameters-input";
@@ -57,7 +58,8 @@ const TokenDisplay = memo(({ token, tokenPrices }: TokenDisplayProps) => {
 TokenDisplay.displayName = "TokenDisplay";
 
 type PoolCreationSummaryProps = {
-  completedSteps: number[];
+  currentStep: PoolCreationStep;
+  completedSteps: PoolCreationStep[];
   poolType?: PoolType;
   ownershipType?: OwnershipType;
   tokens?: TokenInput[];
@@ -71,6 +73,7 @@ type PoolCreationSummaryProps = {
 
 const PoolCreationSummary = memo(
   ({
+    currentStep,
     completedSteps,
     poolType,
     ownershipType,
@@ -82,8 +85,7 @@ const PoolCreationSummary = memo(
     symbol,
     className,
   }: PoolCreationSummaryProps) => {
-    function showStep(previewStep: number) {
-      // NOTE: if switched to using an ENUM / Map for steps we could do something more intelligent here.
+    function showStep(previewStep: PoolCreationStep) {
       return completedSteps.includes(previewStep);
     }
 
@@ -92,7 +94,7 @@ const PoolCreationSummary = memo(
         {
           label: "Pool Type",
           value:
-            showStep(0) && poolType ? (
+            showStep(PoolCreationStep.POOL_TYPE) && poolType ? (
               <div
                 className={cn(
                   "flex items-center gap-2 rounded-full border-2 px-2 text-center text-base xl:text-sm 2xl:text-base",
@@ -118,7 +120,7 @@ const PoolCreationSummary = memo(
         {
           label: "Tokens",
           value:
-            showStep(1) && tokens?.length ? (
+            showStep(PoolCreationStep.SELECT_TOKENS) && tokens?.length ? (
               <div className="flex flex-col gap-2">
                 {tokens.map((token, index) => (
                   <TokenDisplay
@@ -132,20 +134,29 @@ const PoolCreationSummary = memo(
         },
         {
           label: "Swap Fee",
-          value: showStep(3) && swapFee && `${swapFee}%`,
+          value:
+            showStep(PoolCreationStep.SET_PARAMETERS) &&
+            swapFee &&
+            `${swapFee}%`,
         },
         {
           label: "Owners Address",
           value:
-            showStep(3) &&
+            showStep(PoolCreationStep.SET_PARAMETERS) &&
             `${ownershipType} (${
               ownersAddress &&
               truncateHash(ownersAddress, undefined, undefined, true)
             })`,
         },
         // NOTE: strangely, in the final step you will see both what you are typing & and the preview at the same time.
-        { label: "Name", value: showStep(3) && name },
-        { label: "Symbol", value: showStep(3) && symbol },
+        {
+          label: "Name",
+          value: currentStep === PoolCreationStep.SET_INFO && name,
+        },
+        {
+          label: "Symbol",
+          value: currentStep === PoolCreationStep.SET_INFO && symbol,
+        },
       ],
       [poolType, tokens, swapFee, ownersAddress, name, symbol, completedSteps],
     );
@@ -153,7 +164,7 @@ const PoolCreationSummary = memo(
     return (
       <div className={className}>
         <h2 className="mb-4 self-start text-xl font-semibold">Pool Summary</h2>
-        <section className="flex h-fit flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:min-w-[350px] xl:text-sm 2xl:min-w-[400px] 2xl:text-base">
+        <section className="flex h-fit w-full flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:w-[350px] xl:text-sm 2xl:w-[400px] 2xl:text-base">
           {summaryRows.map((row, index) => (
             <div
               className="text-right font-medium"

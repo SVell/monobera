@@ -1,4 +1,4 @@
-import { Oracle, Token, TokenInput } from "@bera/berajs";
+import { Oracle, PoolCreationStep, Token, TokenInput } from "@bera/berajs";
 import { PoolType } from "@berachain-foundation/berancer-sdk";
 import { isAddress } from "viem";
 
@@ -21,8 +21,9 @@ import { OwnershipType } from "./components/parameters-input";
  * @param {number | null} amplification - The amplification factor.
  * @param {string} poolName - The name of the pool.
  * @param {string} poolSymbol - The symbol of the pool.
- * @returns {{ steps: boolean[], errors: (string | null)[] }} The verification steps and errors.
- */
+ * @returns {{ steps: Record<PoolCreationStep, boolean>, errors: Record<PoolCreationStep, string | null> }}
+ *          The verification steps and errors.
+ **/
 export const getStepVerification = (
   poolCreateTokens: Token[],
   initialLiquidityTokens: TokenInput[],
@@ -38,14 +39,18 @@ export const getStepVerification = (
   poolName: string,
   poolSymbol: string,
 ) => {
-  const errors: (string | null)[] = Array(5).fill(null); // Initialize errors with null
+  const errors: Record<PoolCreationStep, string | null> = {
+    [PoolCreationStep.POOL_TYPE]: null,
+    [PoolCreationStep.SELECT_TOKENS]: null,
+    [PoolCreationStep.DEPOSIT_LIQUIDITY]: null,
+    [PoolCreationStep.SET_PARAMETERS]: null,
+    [PoolCreationStep.SET_INFO]: null,
+  };
 
-  const steps = [
-    // Step 0: Pool type (always complete, impossible to fail)
-    true,
+  const steps: Record<PoolCreationStep, boolean> = {
+    [PoolCreationStep.POOL_TYPE]: true, // Step 0: Always complete
 
-    // Step 1: Select tokens
-    (() => {
+    [PoolCreationStep.SELECT_TOKENS]: (() => {
       const hasEmptyToken = poolCreateTokens.some(
         (token) => token.address.length === 0,
       );
@@ -59,17 +64,19 @@ export const getStepVerification = (
       );
 
       if (hasEmptyToken) {
-        errors[1] = "All token slots must have a valid token selected.";
+        errors[PoolCreationStep.SELECT_TOKENS] =
+          "All token slots must have a valid token selected.";
         return false;
       }
 
       if (hasZeroWeight) {
-        errors[1] = "Weights must be greater than 0 for Weighted Pools.";
+        errors[PoolCreationStep.SELECT_TOKENS] =
+          "Weights must be greater than 0 for Weighted Pools.";
         return false;
       }
 
       if (hasUnsetCustomOracles) {
-        errors[1] =
+        errors[PoolCreationStep.SELECT_TOKENS] =
           "All rate-providing token oracles must have a valid address.";
         return false;
       }
@@ -77,8 +84,7 @@ export const getStepVerification = (
       return true;
     })(),
 
-    // Step 2: Deposit liquidity
-    (() => {
+    [PoolCreationStep.DEPOSIT_LIQUIDITY]: (() => {
       const isValid =
         !initialLiquidityTokens.some(
           (token) =>
@@ -87,56 +93,61 @@ export const getStepVerification = (
             token.amount === "" ||
             token.exceeding,
         ) && poolCreateTokens.length === initialLiquidityTokens.length;
-      if (!isValid)
-        errors[2] = "Ensure all tokens have valid liquidity amounts.";
+
+      if (!isValid) {
+        errors[PoolCreationStep.DEPOSIT_LIQUIDITY] =
+          "Ensure all tokens have valid liquidity amounts.";
+      }
+
       return isValid;
     })(),
 
-    // Step 3: Set parameters
-    (() => {
+    [PoolCreationStep.SET_PARAMETERS]: (() => {
       if (!owner) {
-        errors[3] = "Owner address is required.";
+        errors[PoolCreationStep.SET_PARAMETERS] = "Owner address is required.";
         return false;
       }
 
       if (ownershipType === OwnershipType.Custom && !isAddress(owner)) {
-        errors[3] = "Custom owner address is invalid.";
+        errors[PoolCreationStep.SET_PARAMETERS] =
+          "Custom owner address is invalid.";
         return false;
       }
 
       if (poolType === PoolType.ComposableStable && !amplification) {
-        errors[3] = "Amplification factor is required for stable pools.";
+        errors[PoolCreationStep.SET_PARAMETERS] =
+          "Amplification factor is required for stable pools.";
         return false;
       }
 
       if (swapFeeIsInvalid) {
-        errors[3] = "Swap fee is invalid.";
+        errors[PoolCreationStep.SET_PARAMETERS] = "Swap fee is invalid.";
         return false;
       }
 
       if (amplificationInvalid) {
-        errors[3] = "Amplification factor is invalid.";
+        errors[PoolCreationStep.SET_PARAMETERS] =
+          "Amplification factor is invalid.";
         return false;
       }
 
       return true;
     })(),
 
-    // Step 4: Set info
-    (() => {
+    [PoolCreationStep.SET_INFO]: (() => {
       if (!poolName) {
-        errors[4] = "Pool name cannot be empty.";
+        errors[PoolCreationStep.SET_INFO] = "Pool name cannot be empty.";
         return false;
       }
 
       if (!poolSymbol) {
-        errors[4] = "Pool symbol cannot be empty.";
+        errors[PoolCreationStep.SET_INFO] = "Pool symbol cannot be empty.";
         return false;
       }
 
       return true;
     })(),
-  ];
+  };
 
   return { steps, errors };
 };

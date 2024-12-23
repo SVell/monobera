@@ -2,48 +2,37 @@ import { cn } from "@bera/ui";
 import { Icons } from "@bera/ui/icons";
 
 export interface VerifiedSteps {
-  steps: boolean[];
-  errors: (string | null)[];
+  steps: Record<string, boolean>;
+  errors: Record<string, string | null>;
 }
 
-const ProcessSteps = ({
-  /**
-   * Array of titles for each step
-   * @type {string[]}
-   */
-  titles,
-  /**
-   * Index of the selected step
-   * @type {number}
-   */
+type EnumType = { [key: string]: string };
+
+const ProcessSteps = <T extends EnumType>({
+  stepEnum,
   selectedStep,
-  /**
-   * Indexes of the completed steps
-   * @type {number[]}
-   */
   completedSteps,
-  /**
-   * Function to set the selected step
-   * @type {(arg0: number) => void}
-   */
   setCurrentStep,
-  /**
-   * Object containing the verification status of each step
-   * @type {VerifiedSteps}
-   */
   verifiedSteps,
   className,
 }: {
-  titles: string[];
-  selectedStep: number;
-  completedSteps: number[];
-  setCurrentStep: (arg0: number) => void;
+  stepEnum: T;
+  selectedStep: T[keyof T];
+  completedSteps: T[keyof T][];
+  setCurrentStep: (arg0: T[keyof T]) => void;
   verifiedSteps: VerifiedSteps;
   className?: string;
 }) => {
-  function isStepSelectable(index: number) {
-    // NOTE: we check -1 to allow you to go back to the current (partially-completed) step
-    return completedSteps.includes(index) || completedSteps.includes(index - 1);
+  const stepKeys = Object.keys(stepEnum) as (keyof T)[];
+  const stepTitles = Object.values(stepEnum);
+
+  function isStepSelectable(stepKey: T[keyof T]) {
+    const currentIndex = stepKeys.findIndex((key) => stepEnum[key] === stepKey);
+    const previousStep = stepKeys[currentIndex - 1];
+    return (
+      completedSteps.includes(stepKey) ||
+      (previousStep && completedSteps.includes(stepEnum[previousStep]))
+    );
   }
 
   return (
@@ -53,49 +42,58 @@ const ProcessSteps = ({
         className,
       )}
     >
-      {titles.map((title, index) => (
-        <div
-          key={index}
-          title={(isStepSelectable(index) && verifiedSteps.errors[index]) || ""}
-          className={cn(
-            "relative w-full",
-            isStepSelectable(index) ? "cursor-pointer" : "cursor-not-allowed",
-          )}
-          onClick={() => {
-            isStepSelectable(index) && setCurrentStep(index);
-          }}
-        >
-          {index < titles.length - 1 && (
-            <div className="absolute left-1.5 top-full hidden h-6 w-0.5 bg-processStepBackground xl:block" />
-          )}
+      {stepTitles.map((title, index) => {
+        const stepKey = stepEnum[stepKeys[index]];
+        return (
           <div
+            key={String(stepKey)}
+            title={
+              (isStepSelectable(stepKey) &&
+                verifiedSteps.errors[stepKey as string]) ||
+              ""
+            }
             className={cn(
-              "relative flex w-fit overflow-hidden rounded-sm border shadow-md md:w-full ",
-              selectedStep === index &&
-                "bg-processStepBackground bg-opacity-55",
+              "relative w-full",
+              isStepSelectable(stepKey)
+                ? "cursor-pointer"
+                : "cursor-not-allowed",
             )}
+            onClick={() => {
+              isStepSelectable(stepKey) && setCurrentStep(stepKey);
+            }}
           >
-            {selectedStep === index && (
-              <div className="absolute bottom-0 left-0 top-0 w-1 flex-shrink-0 bg-info-foreground" />
+            {index < stepTitles.length - 1 && (
+              <div className="absolute left-1.5 top-full hidden h-6 w-0.5 bg-processStepBackground xl:block" />
             )}
-            <div className="flex w-full items-center justify-between p-4">
-              <h3 className="text-nowrap pr-2 font-normal">{title}</h3>
-              {completedSteps.includes(index) &&
-                (verifiedSteps.steps[index] ? (
-                  <Icons.checkCircle
-                    size={16}
-                    className="-mr-2 text-green-500"
-                  />
-                ) : (
-                  <Icons.xCircle
-                    size={16}
-                    className="-mr-2 text-destructive-foreground"
-                  />
-                ))}
+            <div
+              className={cn(
+                "relative flex w-fit overflow-hidden rounded-sm border shadow-md md:w-full ",
+                selectedStep === stepKey &&
+                  "bg-processStepBackground bg-opacity-55",
+              )}
+            >
+              {selectedStep === stepKey && (
+                <div className="absolute bottom-0 left-0 top-0 w-1 flex-shrink-0 bg-info-foreground" />
+              )}
+              <div className="flex w-full items-center justify-between p-4">
+                <h3 className="text-nowrap pr-2 font-normal">{title}</h3>
+                {completedSteps.includes(stepKey) &&
+                  (verifiedSteps.steps[stepKey as string] ? (
+                    <Icons.checkCircle
+                      size={16}
+                      className="-mr-2 text-green-500"
+                    />
+                  ) : (
+                    <Icons.xCircle
+                      size={16}
+                      className="-mr-2 text-destructive-foreground"
+                    />
+                  ))}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
