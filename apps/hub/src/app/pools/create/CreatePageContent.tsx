@@ -75,6 +75,7 @@ import PoolCreationSummary from "../components/pool-creation-summary";
 import PoolTypeSelector from "../components/pool-type-selector";
 import ProcessSteps, { VerifiedSteps } from "../components/process-steps";
 import { getPoolUrl } from "../fetchPools";
+import { getStepVerification } from "../getStepVerification";
 
 export default function CreatePageContent() {
   const router = useRouter();
@@ -383,123 +384,45 @@ export default function CreatePageContent() {
     oracles,
   });
 
-  const getStepVerification = (): {
-    steps: boolean[];
-    errors: (string | null)[];
-  } => {
-    const errors: (string | null)[] = Array(5).fill(null); // Initialize errors with null
-
-    const steps = [
-      // Step 0: Pool type (always complete, impossible to fail)
-      true,
-
-      // Step 1: Select tokens
-      (() => {
-        const hasEmptyToken = poolCreateTokens.some(
-          (token) => token.address.length === 0,
-        );
-        const hasZeroWeight =
-          poolType === PoolType.Weighted &&
-          weights.some((weight) => weight === 0n);
-
-        const hasUnsetCustomOracles = oracles.some(
-          (oracle) =>
-            oracle.mode === OracleMode.Custom && !isAddress(oracle.address),
-        );
-
-        if (hasEmptyToken) {
-          errors[1] = "All token slots must have a valid token selected.";
-          return false;
-        }
-
-        if (hasZeroWeight) {
-          errors[1] = "Weights must be greater than 0 for Weighted Pools.";
-          return false;
-        }
-
-        if (hasUnsetCustomOracles) {
-          errors[1] =
-            "All rate-providing token oracles must have a valid address.";
-          return false;
-        }
-
-        return true;
-      })(),
-
-      // Step 2: Deposit liquidity
-      (() => {
-        const isValid =
-          !initialLiquidityTokens.some(
-            (token) =>
-              !token.amount ||
-              Number(token.amount) <= 0 ||
-              token.amount === "" ||
-              token.exceeding,
-          ) && poolCreateTokens.length === initialLiquidityTokens.length;
-        if (!isValid)
-          errors[2] = "Ensure all tokens have valid liquidity amounts.";
-        return isValid;
-      })(),
-
-      // Step 3: Set parameters
-      (() => {
-        if (!owner) {
-          errors[3] = "Owner address is required.";
-          return false;
-        }
-
-        if (ownershipType === OwnershipType.Custom && !isAddress(owner)) {
-          errors[3] = "Custom owner address is invalid.";
-          return false;
-        }
-
-        if (poolType === PoolType.ComposableStable && !amplification) {
-          errors[3] = "Amplification factor is required for stable pools.";
-          return false;
-        }
-
-        if (swapFeeIsInvalid) {
-          errors[3] = "Swap fee is invalid.";
-          return false;
-        }
-
-        if (amplificationInvalid) {
-          errors[3] = "Amplification factor is invalid.";
-          return false;
-        }
-
-        return true;
-      })(),
-
-      // Step 4: Set info
-      (() => {
-        if (!poolName) {
-          errors[4] = "Pool name cannot be empty.";
-          return false;
-        }
-
-        if (!poolSymbol) {
-          errors[4] = "Pool symbol cannot be empty.";
-          return false;
-        }
-
-        return true;
-      })(),
-    ];
-
-    return { steps, errors };
-  };
-
   const [verifiedSteps, setVerifiedSteps] = useState<VerifiedSteps>(
-    getStepVerification(),
+    getStepVerification(
+      poolCreateTokens,
+      initialLiquidityTokens,
+      poolType,
+      weights,
+      oracles,
+      OracleMode,
+      owner,
+      ownershipType,
+      swapFeeIsInvalid,
+      amplificationInvalid,
+      amplification,
+      poolName,
+      poolSymbol,
+    ),
   );
   const isVerificationFailure = verifiedSteps.steps.some((step) => !step);
   const [finalStepErrorMessage, setFinalStepErrorMessage] = useState<
     string | null
   >(null);
 
+  // TODO: we might move this into a custom use-hook
   useEffect(() => {
-    const verifiedSteps = getStepVerification();
+    const verifiedSteps = getStepVerification(
+      poolCreateTokens,
+      initialLiquidityTokens,
+      poolType,
+      weights,
+      oracles,
+      OracleMode,
+      owner,
+      ownershipType,
+      swapFeeIsInvalid,
+      amplificationInvalid,
+      amplification,
+      poolName,
+      poolSymbol,
+    );
     setNextButtonDisabled(!verifiedSteps.steps[currentStep]);
     setVerifiedSteps(verifiedSteps);
     setFinalStepErrorMessage(
