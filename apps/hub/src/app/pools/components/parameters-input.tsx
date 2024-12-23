@@ -14,8 +14,8 @@ import { InputWithLabel } from "@bera/ui/input";
 import { PoolType } from "@berachain-foundation/berancer-sdk";
 import { Address } from "viem";
 
+import { ParameterPreset } from "~/utils/constants";
 import BeraTooltip from "~/components/bera-tooltip";
-import { ParameterPreset } from "../create/CreatePageContent";
 import { AmplificationInput } from "./amplification-parameter";
 import { SwapFeeInput } from "./swap-fee";
 

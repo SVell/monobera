@@ -19,7 +19,6 @@ import {
   type Token,
   type TokenInput as TokenInputType,
 } from "@bera/berajs";
-import { getTokenCurrentPrices } from "@bera/berajs/actions";
 import {
   balancerDelegatedOwnershipAddress,
   balancerVaultAddress,
@@ -47,6 +46,24 @@ import {
 import { Address, decodeEventLog, isAddress, zeroAddress } from "viem";
 import { usePublicClient } from "wagmi";
 
+import {
+  DEFAULT_ALGORITHMIC_AMPLIFICATION,
+  DEFAULT_AMPLIFICATION,
+  DEFAULT_LIQUIDITY,
+  DEFAULT_ORACLES,
+  DEFAULT_OWNER,
+  DEFAULT_OWNERSHIP_TYPE,
+  DEFAULT_PARAMETER_PRESET,
+  DEFAULT_POOL_TYPE,
+  DEFAULT_TOKENS,
+  DEFAULT_USD_BACKED_AMPLIFICATION,
+  DEFAULT_WEIGHTS,
+  LAST_FORM_STEP_NUM,
+  ParameterPreset,
+  emptyOracle,
+  emptyToken,
+  emptyTokenInput,
+} from "~/utils/constants";
 import { isBera, isBeratoken } from "~/utils/isBeraToken";
 import { usePoolWeights } from "~/b-sdk/usePoolWeights";
 import useMultipleTokenApprovalsWithSlippage from "~/hooks/useMultipleTokenApprovalsWithSlippage";
@@ -58,112 +75,6 @@ import PoolCreationSummary from "../components/pool-creation-summary";
 import PoolTypeSelector from "../components/pool-type-selector";
 import ProcessSteps, { VerifiedSteps } from "../components/process-steps";
 import { getPoolUrl } from "../fetchPools";
-
-export enum ParameterPreset {
-  USDBACKED = "USD-Backed Stablecoin",
-  ALGORITHMIC = "Algorithmic Stablecoin",
-}
-
-/**
- * Default pool amplification factor (responsiveness to price fluctuations) for USD-backed stablecoins.
- * @constant {number}
- */
-const DEFAULT_USD_BACKED_AMPLIFICATION = 2500;
-
-/**
- * Default pool amplification factor (responsiveness to price fluctuations) for algorithmic stablecoins.
- * @constant {number}
- */
-const DEFAULT_ALGORITHMIC_AMPLIFICATION = 200;
-
-/**
- * Default pool type for pools is a composable stable pool, which can be referred to as a 'stable pool'.
- * @constant {PoolType}
- */
-const DEFAULT_POOL_TYPE = PoolType.ComposableStable;
-
-/**
- * Default amplification factor for pools is a higher value for USD-backed stablecoin pools (max 5k).
- * @constant {number}
- */
-const DEFAULT_AMPLIFICATION = DEFAULT_USD_BACKED_AMPLIFICATION;
-
-/**
- * Default owner for pools is fixed type, which is the 0x0 address.
- * @constant {Address}
- */
-const DEFAULT_OWNER = ZERO_ADDRESS;
-
-/**
- * Default ownership type for pools is Fixed which yields the 0x0 owner address.
- * @constant {OwnershipType}
- */
-const DEFAULT_OWNERSHIP_TYPE = OwnershipType.Fixed;
-
-/**
- * Default weights for pools is an event split since we default to two tokens.
- * @constant {bigint[]}
- */
-const DEFAULT_WEIGHTS = [500000000000000000n, 500000000000000000n];
-
-/**
- * Default parameter preset for pools is USD-backed stablecoin preset.
- * @constant {ParameterPreset}
- */
-const DEFAULT_PARAMETER_PRESET = ParameterPreset.USDBACKED;
-
-/**
- * Last form step number.
- * @constant {number}
- */
-const LAST_FORM_STEP_NUM = 4; // NOTE: in the future we might consider making this more dynamic/strongly typed via enums.
-
-const emptyTokenInput: TokenInputType = {
-  address: "" as `0x${string}`,
-  amount: "0",
-  decimals: 18,
-  exceeding: false,
-  name: "",
-  symbol: "",
-};
-const emptyToken: Token = {
-  address: "" as `0x${string}`,
-  decimals: 18,
-  name: "",
-  symbol: "",
-};
-
-/**
- * Default tokens for pools is two empty tokens.
- * NOTE: if in the future we streamline the token selection process, we might consider tying this closer to TokenInputs
- * @constant {Token[]}
- */
-const DEFAULT_TOKENS = [emptyToken, emptyToken];
-
-/**
- * Default liquidity for pools is two empty tokens.
- * @constant {TokenInputType[]}
- */
-const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
-
-/**
- * If a rate provider (oracle) is provided, this is the default update interval in seconds (using block.timestamp internally).
- * @constant {number}
- */
-const DEFAULT_ORACLE_CACHE_DURATION = 100;
-
-const emptyOracle: Oracle = {
-  mode: OracleMode.None,
-  address: ZERO_ADDRESS,
-  tokenAddress: "",
-  cacheDuration: DEFAULT_ORACLE_CACHE_DURATION, // NOTE: even if we dont use an oracle, we pass a safe value for this to pool create
-};
-
-/**
- * Default oracles for pools is two empty oracles.
- * @constant {Oracle[]}
- */
-const DEFAULT_ORACLES: Oracle[] = [emptyOracle, emptyOracle];
 
 export default function CreatePageContent() {
   const router = useRouter();
@@ -254,6 +165,7 @@ export default function CreatePageContent() {
         return null;
       }
 
+      // @ts-ignore
       return event.args.poolId ?? null;
     } catch (error) {
       console.error(error);
