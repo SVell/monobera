@@ -72,6 +72,7 @@ export const AmplificationInput: React.FC<AmplificationInputProps> = ({
       <div className="flex flex-col gap-4">
         <InputWithLabel
           label="Amplification Factor"
+          id="amplification-factor"
           className={cn({
             "border-destructive-foreground text-destructive-foreground":
               isInvalid,

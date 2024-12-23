@@ -64,13 +64,13 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
   // ... you can still create Pools with those types of ownership from the contract, but we are not supporting them in the UI.
 
   return (
-    <section className="flex w-full flex-col gap-4">
+    <section className="flex w-full flex-col gap-6">
       {poolType === PoolType.ComposableStable && (
         <>
           <h3 className="self-start text-xl font-semibold">
             Select a Parameter Preset
           </h3>
-          <div className="flex w-full flex-col gap-6">
+          <div className="flex w-full flex-col gap-4">
             <Card
               className={cn(
                 "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
@@ -108,98 +108,109 @@ const ParametersInput: React.FC<OwnershipInputProps> = ({
           </div>
         </>
       )}
-      <div className="flex items-center gap-1">
-        <h3 className="self-start text-xl font-semibold">Set Swap Fee</h3>
-        <div className="pt-[-1]">
-          <BeraTooltip
-            size="lg"
-            wrap
-            text="Half of the swap fee goes to the liquidity providers, the other half goes to the protocol."
-          />
-        </div>
-      </div>
-      <SwapFeeInput
-        initialFee={swapFee}
-        onFeeChange={onSwapFeeChange}
-        predefinedFees={predefinedFees}
-        onInvalidSwapFee={onInvalidSwapFee}
-        poolType={poolType}
-      />
 
-      <div className="flex items-center gap-1">
-        <div className="self-start font-semibold">Fee Ownership</div>
-        <div className="pt-[-1]">
-          <BeraTooltip
-            size="lg"
-            wrap
-            text={`The owner of the pool can make changes, such as setting the swap fee. 
+      <div className="grid grid-cols-1 gap-4">
+        <div className="flex items-center gap-1">
+          <h3 className="self-start text-xl font-semibold">Set Swap Fee</h3>
+          <div className="pt-[-1]">
+            <BeraTooltip
+              size="lg"
+              wrap
+              text="Half of the swap fee goes to the liquidity providers, the other half goes to the protocol."
+            />
+          </div>
+        </div>
+        <SwapFeeInput
+          initialFee={swapFee}
+          onFeeChange={onSwapFeeChange}
+          predefinedFees={predefinedFees}
+          onInvalidSwapFee={onInvalidSwapFee}
+          poolType={poolType}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <div className="flex items-center gap-1">
+          <div className="self-start font-semibold">Fee Ownership</div>
+          <div className="pt-[-1]">
+            <BeraTooltip
+              size="lg"
+              wrap
+              text={`The owner of the pool can make changes, such as setting the swap fee. 
               Ownership by the null address will fix the fee, while ownership by a delegated 
               address will allow governance to modify the fee.`}
-          />
+            />
+          </div>
         </div>
+
+        <div className="flex w-full flex-row gap-6 xl:flex-col xl:gap-3 2xl:flex-row 2xl:gap-6">
+          <Card
+            onClick={() => onChangeOwnershipType(OwnershipType.Governance)}
+            className={cn(
+              "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
+              ownershipType === OwnershipType.Governance &&
+                "border-info-foreground ",
+            )}
+          >
+            <span className="text-lg font-semibold">Governance</span>
+            <span className="-mt-1 text-sm text-muted-foreground">
+              Enables fee modification through governance
+            </span>
+          </Card>
+          <Card
+            onClick={() => onChangeOwnershipType(OwnershipType.Fixed)}
+            className={cn(
+              "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
+              ownershipType === OwnershipType.Fixed &&
+                "border-info-foreground ",
+            )}
+          >
+            <span className="text-lg font-semibold">Fixed</span>
+            <span className="-mt-1 text-sm text-muted-foreground">
+              Fee is fixed and unmodifiable
+            </span>
+          </Card>
+          <Card
+            onClick={() => onChangeOwnershipType(OwnershipType.Custom)}
+            className={cn(
+              "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
+              ownershipType === OwnershipType.Custom &&
+                "border-info-foreground ",
+            )}
+          >
+            <span className="text-lg font-semibold">Custom Address</span>
+            <span className="-mt-1 text-sm text-muted-foreground">
+              Update fees through a custom address
+            </span>
+          </Card>
+        </div>
+        {ownershipType === OwnershipType.Custom && (
+          <div className="pt-2">
+            <InputWithLabel
+              id="owner-address"
+              label="Owner Address"
+              disabled={ownershipType !== OwnershipType.Custom}
+              variant="black"
+              className="bg-transparent"
+              value={owner}
+              maxLength={42}
+              onChange={(e) => {
+                const value = e.target.value as Address;
+                onOwnerChange(value);
+              }}
+            />
+            {invalidAddressErrorMessage && (
+              <Alert variant="destructive" className="my-4">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  {invalidAddressErrorMessage}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="flex w-full flex-row gap-6 xl:flex-col xl:gap-3 2xl:flex-row 2xl:gap-6">
-        <Card
-          onClick={() => onChangeOwnershipType(OwnershipType.Governance)}
-          className={cn(
-            "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            ownershipType === OwnershipType.Governance &&
-              "border-info-foreground ",
-          )}
-        >
-          <span className="text-lg font-semibold">Governance</span>
-          <span className="-mt-1 text-sm text-muted-foreground">
-            Enables fee modification through governance
-          </span>
-        </Card>
-        <Card
-          onClick={() => onChangeOwnershipType(OwnershipType.Fixed)}
-          className={cn(
-            "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            ownershipType === OwnershipType.Fixed && "border-info-foreground ",
-          )}
-        >
-          <span className="text-lg font-semibold">Fixed</span>
-          <span className="-mt-1 text-sm text-muted-foreground">
-            Fee is fixed and unmodifiable
-          </span>
-        </Card>
-        <Card
-          onClick={() => onChangeOwnershipType(OwnershipType.Custom)}
-          className={cn(
-            "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            ownershipType === OwnershipType.Custom && "border-info-foreground ",
-          )}
-        >
-          <span className="text-lg font-semibold">Custom Address</span>
-          <span className="-mt-1 text-sm text-muted-foreground">
-            Update fees through a custom address
-          </span>
-        </Card>
-      </div>
-      {ownershipType === OwnershipType.Custom && (
-        <div className="pt-2">
-          <InputWithLabel
-            label="Owner Address"
-            disabled={ownershipType !== OwnershipType.Custom}
-            variant="black"
-            className="bg-transparent"
-            value={owner}
-            maxLength={42}
-            onChange={(e) => {
-              const value = e.target.value as Address;
-              onOwnerChange(value);
-            }}
-          />
-          {invalidAddressErrorMessage && (
-            <Alert variant="destructive" className="my-4">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{invalidAddressErrorMessage}</AlertDescription>
-            </Alert>
-          )}
-        </div>
-      )}
       {poolType === PoolType.ComposableStable && (
         // NOTE: at this time there is no need to show advanced settings for pools other than ComposableStable type ones
         <Accordion type="single" collapsible>

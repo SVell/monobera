@@ -66,6 +66,7 @@ type PoolCreationSummaryProps = {
   ownersAddress?: Address;
   name?: string;
   symbol?: string;
+  className?: string;
 };
 
 const PoolCreationSummary = memo(
@@ -79,6 +80,7 @@ const PoolCreationSummary = memo(
     ownersAddress,
     name,
     symbol,
+    className,
   }: PoolCreationSummaryProps) => {
     function showStep(previewStep: number) {
       // NOTE: if switched to using an ENUM / Map for steps we could do something more intelligent here.
@@ -151,7 +153,7 @@ const PoolCreationSummary = memo(
     );
 
     return (
-      <div>
+      <div className={className}>
         <h2 className="mb-4 self-start text-xl font-semibold">Pool Summary</h2>
         <section className="flex h-fit flex-col justify-between gap-y-2 rounded-sm border p-4 text-base xl:min-w-[350px] xl:text-sm 2xl:min-w-[400px] 2xl:text-base">
           {summaryRows.map((row, index) => (

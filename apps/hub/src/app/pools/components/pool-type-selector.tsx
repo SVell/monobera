@@ -17,7 +17,7 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
   return (
     <section className="flex w-full flex-col gap-4">
       <h2 className="self-start text-xl font-semibold">Select a Pool Type</h2>
-      <div className="flex w-full flex-col gap-6">
+      <div className="flex w-full flex-col gap-4">
         <Card
           onClick={() => onPoolTypeChange(PoolType.ComposableStable)}
           className={cn(
@@ -25,7 +25,7 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
             poolType === PoolType.ComposableStable && "border-info-foreground",
           )}
         >
-          <span className="text-lg font-semibold">Stable</span>
+          <span className="text-base font-semibold">Stable</span>
           <span className="-mt-1 text-sm text-muted-foreground">
             Suggested for stable pairs
           </span>
@@ -37,7 +37,7 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
             poolType === PoolType.Weighted && "border-info-foreground",
           )}
         >
-          <span className="text-lg font-semibold">Weighted</span>
+          <span className="text-sm font-semibold">Weighted</span>
           <span className="-mt-1 text-sm text-muted-foreground">
             Customizable pool tokens and weights
           </span>

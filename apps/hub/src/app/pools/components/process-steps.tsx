@@ -32,12 +32,14 @@ const ProcessSteps = ({
    * @type {VerifiedSteps}
    */
   verifiedSteps,
+  className,
 }: {
   titles: string[];
   selectedStep: number;
   completedSteps: number[];
   setCurrentStep: (arg0: number) => void;
   verifiedSteps: VerifiedSteps;
+  className?: string;
 }) => {
   function isStepSelectable(index: number) {
     // NOTE: we check -1 to allow you to go back to the current (partially-completed) step
@@ -45,13 +47,18 @@ const ProcessSteps = ({
   }
 
   return (
-    <div className="flex flex-wrap items-start gap-4 overflow-visible py-2 xl:flex-col xl:gap-8">
+    <div
+      className={cn(
+        "flex flex-wrap text-sm items-start gap-4 overflow-visible py-2 xl:flex-col xl:gap-6",
+        className,
+      )}
+    >
       {titles.map((title, index) => (
         <div
           key={index}
           title={(isStepSelectable(index) && verifiedSteps.errors[index]) || ""}
           className={cn(
-            "relative",
+            "relative w-full",
             isStepSelectable(index) ? "cursor-pointer" : "cursor-not-allowed",
           )}
           onClick={() => {
@@ -59,25 +66,31 @@ const ProcessSteps = ({
           }}
         >
           {index < titles.length - 1 && (
-            <div className="absolute left-4 top-full hidden h-8 w-0.5 bg-processStepBackground xl:block" />
+            <div className="absolute left-1.5 top-full hidden h-6 w-0.5 bg-processStepBackground xl:block" />
           )}
           <div
             className={cn(
-              "relative flex w-fit overflow-hidden rounded-sm border shadow-md xl:w-48 2xl:w-64",
+              "relative flex w-fit md:w-full overflow-hidden rounded-sm border shadow-md ",
               selectedStep === index &&
                 "bg-processStepBackground bg-opacity-55",
             )}
           >
             {selectedStep === index && (
-              <div className="w-1 flex-shrink-0 bg-info-foreground" />
+              <div className="w-1 absolute top-0 left-0 bottom-0 flex-shrink-0 bg-info-foreground" />
             )}
-            <div className="flex w-full justify-between p-4">
+            <div className="flex w-full justify-between p-4 items-center">
               <h3 className="text-nowrap pr-2 font-normal">{title}</h3>
               {completedSteps.includes(index) &&
                 (verifiedSteps.steps[index] ? (
-                  <Icons.checkCircle className="text-semanticSuccessForeground" />
+                  <Icons.checkCircle
+                    size={16}
+                    className="text-semanticSuccessForeground -mr-2"
+                  />
                 ) : (
-                  <Icons.xCircle className="text-destructive-foreground" />
+                  <Icons.xCircle
+                    size={16}
+                    className="text-destructive-foreground -mr-2"
+                  />
                 ))}
             </div>
           </div>

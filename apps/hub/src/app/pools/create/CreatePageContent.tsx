@@ -649,7 +649,7 @@ export default function CreatePageContent() {
       </Button>
       <h2 className="self-start text-3xl font-semibold">Create a Pool</h2>
       <div className="flex w-full flex-col justify-center xl:flex-row">
-        <div className="flex w-full flex-col gap-12 xl:flex-row">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           <ProcessSteps
             titles={[
               "Pool Type",
@@ -658,12 +658,13 @@ export default function CreatePageContent() {
               "Set Parameters",
               "Set Info",
             ]}
+            className="xl:col-span-2"
             selectedStep={currentStep}
             completedSteps={completedSteps}
             setCurrentStep={setCurrentStep}
             verifiedSteps={verifiedSteps}
           />
-          <div className="flex w-full flex-col">
+          <div className="flex w-full flex-col xl:col-span-6">
             {currentStep === 0 && (
               <PoolTypeSelector
                 poolType={poolType}
@@ -923,6 +924,7 @@ export default function CreatePageContent() {
           </div>
 
           <PoolCreationSummary
+            className="xl:col-span-4"
             completedSteps={completedSteps}
             poolType={poolType}
             ownershipType={ownershipType}
