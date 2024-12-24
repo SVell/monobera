@@ -20,9 +20,9 @@ import { AmplificationInput } from "./amplification-parameter";
 import { SwapFeeInput } from "./swap-fee";
 
 export enum OwnershipType {
-  Governance = "governance",
-  Fixed = "fixed",
-  Custom = "custom",
+  Governance = "Governance",
+  Fixed = "Fixed",
+  Custom = "Custom",
 }
 
 interface OwnershipInputProps {
