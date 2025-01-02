@@ -15,6 +15,7 @@ export type Token = {
   usdValue?: string;
   beraValue?: string;
   weight?: number;
+  base64?: string;
 };
 
 export interface TokenWithAmount extends Token {

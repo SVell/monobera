@@ -1,7 +1,7 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "globalDependencies": [".env", "./secrets/**"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": [
@@ -11,7 +11,6 @@
         "storybook-static/**"
       ]
     },
-
     "start": {
       "persistent": true,
       "cache": false

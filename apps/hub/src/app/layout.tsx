@@ -1,9 +1,11 @@
 import "../styles/globals.css";
+import { existsSync, readFileSync } from "fs";
+import path from "path";
 import { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { IBM_Plex_Sans } from "next/font/google";
 import Script from "next/script";
-import { hubName, hubUrl } from "@bera/config";
+import { hubName, hubUrl, tokenListUrl } from "@bera/config";
 import {
   Footer,
   Header,
@@ -35,7 +37,40 @@ const PostHogPageView = dynamic(() => import("./PostHogPageView"), {
   ssr: false,
 });
 
-export default function RootLayout(props: { children: React.ReactNode }) {
+export default async function RootLayout(props: { children: React.ReactNode }) {
+  let fetchedTokenList = null;
+
+  try {
+    if (tokenListUrl.startsWith("http")) {
+      const response = await fetch(tokenListUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch token list: ${response.statusText}`);
+      }
+      fetchedTokenList = await response.json();
+    } else {
+      const publicPath = path.join(process.cwd(), "public");
+      const tokenListPath = path.join(publicPath, tokenListUrl);
+
+      // Check if public directory and file exist
+      if (existsSync(tokenListPath)) {
+        try {
+          const fileContent = readFileSync(tokenListPath, "utf8");
+          fetchedTokenList = JSON.parse(fileContent);
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(`Error parsing token list file: ${errorMessage}`);
+        }
+      } else {
+        console.error(`Token list file not found at: ${tokenListPath}`);
+      }
+    }
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error(`Error loading token list: ${errorMessage}`);
+  }
+
   return (
     <html lang="en" className="bg-background">
       <Script
@@ -55,7 +90,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body
         className={cn("min-h-screen font-sans antialiased", fontSans.variable)}
       >
-        <Providers>
+        <Providers content={fetchedTokenList}>
           <TermOfUseModal />
 
           <PostHogPageView />

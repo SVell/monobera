@@ -41,6 +41,7 @@ const client = [
   "./src/pagination.tsx",
   "./src/table/index.ts",
   "./src/table/legacy/index.ts",
+  "./src/custom-avatar.tsx",
 ];
 
 const server = [

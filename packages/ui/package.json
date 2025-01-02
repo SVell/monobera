@@ -226,6 +226,10 @@
       "import": "./dist/pagination.mjs",
       "types": "./dist/pagination.d.ts"
     },
+    "./custom-avatar": {
+      "import": "./dist/custom-avatar.mjs",
+      "types": "./dist/custom-avatar.d.ts"
+    },
     "./badge": {
       "import": "./dist/badge.mjs",
       "types": "./dist/badge.d.ts"
@@ -396,6 +400,9 @@
       ],
       "radio-group": [
         "dist/radio-group.d.ts"
+      ],
+      "custom-avatar": [
+        "dist/custom-avatar.d.ts"
       ]
     }
   },

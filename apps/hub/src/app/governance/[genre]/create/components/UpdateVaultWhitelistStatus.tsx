@@ -52,11 +52,11 @@ export const UpdateVaultWhitelistStatus = ({
           label="Reward Vault Address"
           value={gauge?.vault}
           error={
-            errors.vault === ProposalErrorCodes.REQUIRED
+            errors?.vault === ProposalErrorCodes.REQUIRED
               ? "A Vault Must Be Chosen"
-              : errors.vault === ProposalErrorCodes.INVALID_ADDRESS
+              : errors?.vault === ProposalErrorCodes.INVALID_ADDRESS
                 ? "Invalid Vault address."
-                : errors.vault
+                : errors?.vault
           }
           onChange={async (e) => {
             setAction({

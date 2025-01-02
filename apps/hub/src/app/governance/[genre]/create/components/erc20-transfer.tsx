@@ -60,11 +60,11 @@ export function Erc20Transfer({
         variant="black"
         label="Enter Recipient"
         error={
-          errors.to === ProposalErrorCodes.REQUIRED
+          errors?.to === ProposalErrorCodes.REQUIRED
             ? "Recipient must be filled"
-            : errors.to === ProposalErrorCodes.INVALID_ADDRESS
+            : errors?.to === ProposalErrorCodes.INVALID_ADDRESS
               ? "Invalid recipient address"
-              : errors.to
+              : errors?.to
         }
         id={`proposal-to--${idx}`}
         placeholder={truncateHash("0x00000000000000")}
@@ -120,13 +120,13 @@ export function Erc20Transfer({
           filteredSymbols={["BGT"]}
         />
         <FormError>
-          {errors.target === ProposalErrorCodes.REQUIRED
+          {errors?.target === ProposalErrorCodes.REQUIRED
             ? "A Token Must Be Chosen"
-            : errors.amount === ProposalErrorCodes.REQUIRED
+            : errors?.amount === ProposalErrorCodes.REQUIRED
               ? "Amount must be filled"
-              : errors.amount === ProposalErrorCodes.INVALID_AMOUNT
+              : errors?.amount === ProposalErrorCodes.INVALID_AMOUNT
                 ? "Invalid amount."
-                : errors.amount}
+                : errors?.amount}
         </FormError>
         {warning && (
           <div className="text-warning-foreground text-sm leading-tight">

@@ -2,6 +2,10 @@ import { AbiParameter } from "viem";
 import { InputWithLabel } from "@bera/ui/input";
 import { useEffect, useState } from "react";
 import { Button } from "@bera/ui/button";
+import { Label } from "@bera/ui/label";
+import { Switch } from "@bera/ui/switch";
+import { FormError } from "@bera/ui/form-error";
+import { ProposalErrorCodes } from "~/app/governance/types";
 
 export function AbiInput({
   input,
@@ -21,6 +25,9 @@ export function AbiInput({
   useEffect(() => {
     if ("components" in input && typeof value !== "object") {
       onChange({ [input.name!]: {} });
+    }
+    if (input.type === "string" && typeof value !== "string") {
+      onChange("");
     }
   }, [value, input]);
 
@@ -46,6 +53,7 @@ export function AbiInput({
               }
             />
           ))}
+          <FormError>{errors}</FormError>
         </div>
       );
     }
@@ -54,18 +62,57 @@ export function AbiInput({
       <AbiTupleArrayInput
         input={input}
         onChange={onChange}
-        value={value}
+        value={value ?? ""}
         id={`${id}-${input.name}`}
         key={`${id}-${input.name}`}
         errors={errors}
       />
     );
   }
+
+  const error =
+    errors && typeof errors === "object" && input.name
+      ? errors[input.name]
+      : errors;
+  if (input.type === "bool") {
+    return (
+      <div className="grid grid-cols-1 gap-2">
+        <Label htmlFor={`${id}-${input.name}`}>Set {input.name}</Label>
+        <div className="flex gap-2 items-center">
+          <Switch
+            id={`${id}-${input.name}`}
+            checked={value}
+            size={"sm"}
+            onCheckedChange={(e) => {
+              onChange(!!e);
+            }}
+          />
+          {value ? (
+            <label
+              htmlFor={`${id}-${input.name}`}
+              className="text-success-foreground"
+            >
+              True
+            </label>
+          ) : (
+            <label htmlFor={`${id}-${input.name}`} className="">
+              False
+            </label>
+          )}
+        </div>
+        <FormError>
+          {error === ProposalErrorCodes.INVALID_AMOUNT
+            ? "Please enter a valid boolean"
+            : error}
+        </FormError>
+      </div>
+    );
+  }
   return (
     <InputWithLabel
       label={`Enter ${input.name}`}
-      error={errors}
-      id={`proposal-calldata--${id}-${input.name}`}
+      error={error}
+      id={`${id}-${input.name}`}
       placeholder={input.type}
       value={value}
       onChange={(e) => onChange(e.target.value)}

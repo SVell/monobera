@@ -39,6 +39,9 @@ const config = {
       "res.cloudinary.com",
       "raw.githubusercontent.com",
       "s3.amazonaws.com",
+      "assets.coingecko.com",
+      "artio-static-asset-public.s3.ap-southeast-1.amazonaws.com", // clean this up with new links
+      // Add google cdn here as well
     ],
   },
 };

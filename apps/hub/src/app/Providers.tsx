@@ -1,14 +1,19 @@
 "use client";
 
 import React, { useEffect, type PropsWithChildren } from "react";
-import { BeraJsProvider, BlockTimeProvider } from "@bera/berajs";
+import { BeraJsProvider, BlockTimeProvider, SWRFallback } from "@bera/berajs";
+import { tokenListUrl } from "@bera/config";
 import { BeraWagmi } from "@bera/wagmi";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
+import { unstable_serialize } from "swr";
 
 import { ThemeProvider } from "~/components/theme-provider";
 
-export default function Providers({ children }: PropsWithChildren<any>) {
+export default function Providers({
+  children,
+  content,
+}: PropsWithChildren<any>) {
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
       return;
@@ -24,14 +29,21 @@ export default function Providers({ children }: PropsWithChildren<any>) {
       <BeraWagmi>
         <BeraJsProvider configOverride={undefined}>
           <BlockTimeProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="dark"
-              forcedTheme="dark"
-              themes={["dark"]}
+            <SWRFallback
+              fallback={{
+                [unstable_serialize(["useTokens", tokenListUrl])]:
+                  content?.tokens,
+              }}
             >
-              {children}
-            </ThemeProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="dark"
+                forcedTheme="dark"
+                themes={["dark"]}
+              >
+                {children}
+              </ThemeProvider>
+            </SWRFallback>
           </BlockTimeProvider>
         </BeraJsProvider>
       </BeraWagmi>

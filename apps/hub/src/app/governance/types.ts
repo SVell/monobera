@@ -41,7 +41,7 @@ export type CustomProposalActionErrors = {
   isFriend?: null | ProposalErrorCodes;
   to?: null | ProposalErrorCodes;
   amount?: null | ProposalErrorCodes;
-};
+} | null;
 
 export type CustomProposalErrors = {
   title?: null | ProposalErrorCodes;

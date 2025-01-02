@@ -15,3 +15,4 @@ export * from "./tokenWrapping";
 export * from "./errorMessages";
 export * from "./isSubgraphStale";
 export * from "./const";
+export * from "./formatTokenList";
