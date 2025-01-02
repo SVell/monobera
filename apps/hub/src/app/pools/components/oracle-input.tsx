@@ -56,15 +56,22 @@ const OracleInput: React.FC<OracleInputProps> = ({
           <BeraTooltip
             size="md"
             wrap={true}
-            // FIXME: this is an info-dump, do we want a full modal/Dialog for this?
-            text={`Address must point to a rate provider deployment implementing the function getRate() which returns an 
-                   exchange rate. You will want to use rateProviders for all assets in your pool when each asset has its own 
-                   price that is independent of all the other assets' prices.\nIf we have tokens A, B, and C and only have price 
-                   feeds with respect to USD, then we would want all assets to have price feeds. When internally calculating 
-                   relative prices, the USD would cancel out, giving us prices for A:B, A:C, B:C, and their inverses.\nIf we have
-                   tokens A and B and a rate provider that gives the price of A with respect to B, 
-                   then the rateProvider corresponding to token A would get the A:B price feed, and the rateProvider 
-                   corresponding to token B would be the zero address.`}
+            text=""
+            children={
+              <p>
+                The address must point to a rate provider implementing the
+                getRate() function. Use rate providers for all assets which are
+                correlated but not strictly pegged.
+                {/* - more details{" "} // TODO (#): Add a documentation link
+                <a
+                  href="https://www.google.com/search?q=rate+providers&oq=rate+providers"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  here
+                </a> */}
+              </p>
+            }
           />
         }
       />
