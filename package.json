@@ -2,7 +2,7 @@
   "name": "monobera",
   "private": true,
   "engines": {
-    "node": ">=v22.0.0",
+    "node": "^22.12",
     "pnpm": ">=9"
   },
   "pnpm": {
@@ -35,7 +35,6 @@
     "postformat": "cd ./packages/b-sdk && pnpm format",
     "check": "biome check .",
     "prepare": "husky install",
-    "upsertenv": "node ./scripts/upsertVercelEnv.js",
     "knip": "knip --exclude binaries"
   },
   "dependencies": {

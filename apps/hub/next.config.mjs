@@ -1,11 +1,8 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
-import "./src/env.mjs";
-
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  pageExtensions: ["ts", "tsx"],
   trailingSlash: true,
   transpilePackages: ["@bera/ui", "@bera/berajs", "@bera/wagmi"],
   compiler: {
@@ -51,7 +48,7 @@ export default withSentryConfig(config, {
   // https://github.com/getsentry/sentry-webpack-plugin#options
 
   // Suppresses source map uploading logs during build
-  silent: true,
+  silent: process.env.NODE_ENV === "development",
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
 
