@@ -12,6 +12,7 @@ import { bgtTokenAddress, nativeTokenAddress } from "@bera/config";
 import { cn } from "@bera/ui";
 import { Icons } from "@bera/ui/icons";
 import { Input } from "@bera/ui/input";
+import { Address } from "viem";
 
 import {
   BREAKPOINTS,
@@ -21,7 +22,6 @@ import {
   useBreakpoint,
 } from ".";
 import { getPriceImpactColorClass } from "./utils/textStyling";
-import { Address } from "viem";
 
 type Props = {
   selected: Token | undefined;
@@ -231,7 +231,7 @@ export function TokenInput({
             }}
             onChange={(e: any) => {
               const inputValue = e.target.value;
-              const filteredValue = formatInputTokenValue(inputValue);
+              const filteredValue = formatInputTokenValue(inputValue); // TODO (#BFE-411): you can type in a huge number this way.
               const [_, decimalPart = ""] = filteredValue.split(".");
               if (decimalPart.length > _maxDecimal) return;
               setAmount?.(filteredValue);

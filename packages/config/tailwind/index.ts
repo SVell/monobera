@@ -152,6 +152,9 @@ export default {
         berascanTheme: "#96532C",
         faucetTheme: "#326FE5",
         ecosystemTheme: "#2F2F2F",
+        createButton: "#e6b434",
+        processStepBackground: "#373332",
+        highlight: "#0284C7",
       },
       borderRadius: {
         "2xs": "0.125rem",

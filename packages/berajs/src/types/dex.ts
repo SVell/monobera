@@ -124,3 +124,11 @@ export interface IProvision {
 export interface IUserPool extends PoolV2 {
   userPosition: IUserPosition | undefined;
 }
+
+export enum PoolCreationStep {
+  POOL_TYPE = "Pool Type",
+  SELECT_TOKENS = "Select Tokens",
+  DEPOSIT_LIQUIDITY = "Deposit Liquidity",
+  SET_PARAMETERS = "Set Parameters",
+  SET_INFO = "Set Info",
+}

@@ -2,40 +2,45 @@ import { useEffect, useState } from "react";
 import { PoolType } from "@berachain-foundation/berancer-sdk";
 
 import { wrapNativeTokens } from "~/utils/tokenWrapping";
-import { SubgraphTokenInformations } from "~/actions";
-import { TokenWithAmount } from "~/types";
+import { TokenCurrentPriceMap } from "~/actions";
+import { PoolCreationStep, TokenWithAmount } from "~/types";
+import { Oracle, OracleMode } from "./useCreatePool";
 
 const DEFAULT_LIQUIDITY_MISMATCH_TOLERANCE_PERCENT = 0.05; // 5%
 
 export type LiquidityMismatchInfo = {
   title: string | null;
   message: string | null;
+  suggestWeighted?: boolean;
 };
 
 interface UseLiquidityMismatchParams {
-  tokenPrices?: SubgraphTokenInformations;
+  currentStep: PoolCreationStep;
+  tokenPrices?: TokenCurrentPriceMap;
   isLoadingTokenPrices: boolean;
   tokens: TokenWithAmount[] | null;
   weights: bigint[] | null;
   weightsError: string | null;
   poolType: PoolType;
   liquidityMismatchTolerancePercent?: number;
+  oracles: Oracle[];
 }
 
 /**
- * A hook that checks for liquidity mismatches in a pool. It evaluates whether the USD value of tokens
- * added aligns with the pool's specified weights or type (e.g., Stable, Weighted). If a mismatch is
- * detected, it provides a title and message to warn the user.
+ * Hook for detecting liquidity mismatches.
  *
- * @param {SubgraphTokenInformations} tokenPrices - Pricing information for tokens, including USD values.
- * @param {boolean} isLoadingTokenPrices - Indicates if token prices are still loading.
- * @param {TokenWithAmount[]} tokens - Array of tokens with addresses & amounts.
- * @param {bigint[]} weights - Array of weights for each token, used for proportional calculations.
- * @param {string | null} weightsError - Message inidicating there's an error with token weights (don't fire hook if true).
- * @param {PoolType} poolType - The type of pool being created (Stable, Weighted, etc.).
- * @returns {LiquidityMismatchInfo} An object containing a title and message if a mismatch is detected.
+ * @param {PoolCreationStep} currentStep - The current step of the pool creation process.
+ * @param {Record<string, number>} tokenPrices - The current token prices.
+ * @param {boolean} isLoadingTokenPrices - Whether the token prices are still loading.
+ * @param {Array<{ address: string, amount: number }>} tokens - The tokens in the pool, including their addresses and amounts.
+ * @param {Record<string, number>} weights - The per-token weights in the pool we are creating.
+ * @param {string | null} weightsError - An error message for the weights indicating that the weights are invalid.
+ * @param {string} poolType - The type of pool being created.
+ * @param {number} liquidityMismatchTolerancePercent - The tolerance for liquidity mismatches in percent.
+ * @returns {Object} The liquidity mismatch info.
  */
 export const useLiquidityMismatch = ({
+  currentStep,
   tokenPrices,
   isLoadingTokenPrices,
   tokens,
@@ -43,118 +48,141 @@ export const useLiquidityMismatch = ({
   weightsError,
   poolType,
   liquidityMismatchTolerancePercent = DEFAULT_LIQUIDITY_MISMATCH_TOLERANCE_PERCENT,
+  oracles,
 }: UseLiquidityMismatchParams): LiquidityMismatchInfo => {
-  const [liquidityMismatchInfo, setLiquidityMismatchInfo] = useState<{
-    title: string | null;
-    message: string | null;
-  }>({ title: null, message: null });
+  // NOTE: would be nice to use Maps/Records more in here, as the zipping/unzipping is cumbersome.
+  // NOTE: if we pull in string literal for currentStep things would also be a bit clearer in here.
+  const [liquidityMismatchInfo, setLiquidityMismatchInfo] =
+    useState<LiquidityMismatchInfo>({ title: null, message: null });
 
   useEffect(() => {
+    // If we are either using custom rate-providing oracles or have incorrect/loading token prices, we cant do validation.
     if (
       !tokenPrices ||
       isLoadingTokenPrices ||
       !tokens ||
       !weights ||
       weightsError ||
-      tokens.some((token) => !token.address) // TODO: stateful input so we dont need to check for EmptyToken like this
+      tokens.some((token) => !token.address) ||
+      oracles.some((oracle) => oracle.mode === OracleMode.Custom) // Oracles give prices on their own, we dont support that here yet.
     ) {
       setLiquidityMismatchInfo({ title: null, message: null });
       return;
     }
 
-    if (
-      Object.keys(tokenPrices).length !== tokens.length ||
-      Object.values(tokenPrices).some((price) => Number(price) === 0 || !price)
-    ) {
-      // Display a generic warning since price information is either incomplete or isn't available.
-      // TODO: the hook should return a flag if the results are incomplete
+    // Calculate some basic metrics we'll use to determine per-token contributions and model potential losses from arbitrage.
+    let totalLiquidityUSD = 0;
+    const tokenUSDAmounts: number[] = [];
+    const numTokens = tokens.length;
+    const wrappedTokens = wrapNativeTokens(tokens);
+    const tokenUSDPrices = wrappedTokens.map((token) => {
+      const tokenPriceUSD =
+        tokenPrices[token.address.toLowerCase()]?.price ?? 0;
+      if (!tokenPriceUSD || tokenPriceUSD === 0) {
+        tokenUSDAmounts.push(0);
+        return null;
+      }
+      const tokenAmountUSD = tokenPriceUSD * parseFloat(token.amount);
+      tokenUSDAmounts.push(tokenAmountUSD);
+      totalLiquidityUSD += tokenAmountUSD;
+      return tokenPriceUSD;
+    });
+
+    // Doesn't matter what step it is, if we have missing token prices for tokens we have selected, we cant issue a real warning.
+    if (tokenUSDPrices.some((price) => price === null)) {
       setLiquidityMismatchInfo({
-        title: "Token price data not available",
-        message: `Please ensure that the value of each token is proportional to its assigned weight in the pool. 
-        If there is a mismatch the pool may be at risk of arbitrage after creation.`,
+        title: "Missing token price data",
+        message: `One or more token(s) do not have valid market price data. Please verify that token market prices align with the pool
+                  weightings and your initial liquidity amounts.`,
       });
       return;
     }
 
-    let totalLiquidityUSD = 0;
-    const tokenUSDValues: number[] = [];
-    let totalMismatchedLiquidityUSD = 0;
-
-    const wrappedTokens = wrapNativeTokens(tokens); // NOTE: pricing will only exist for WBERA not BERA
-
-    wrappedTokens.forEach((token) => {
-      const tokenPriceUSD = tokenPrices[token.address];
-      const tokenAmount = parseFloat(token.amount);
-      if (!tokenPriceUSD || tokenAmount <= 0) return;
-      const tokenLiquidityUSD = Number(tokenPriceUSD) * tokenAmount;
-      tokenUSDValues.push(tokenLiquidityUSD);
-      totalLiquidityUSD += tokenLiquidityUSD;
-    });
-
-    if (totalLiquidityUSD === 0) {
-      setLiquidityMismatchInfo({ title: null, message: null });
-      return;
-    }
-
-    let liquidityMismatch = false;
-
+    // Step 1 - During token selection we check for a deviation in the quote prices of the tokens selected (for stable pools).
     if (
-      poolType === PoolType.Stable ||
+      currentStep === PoolCreationStep.SELECT_TOKENS &&
       poolType === PoolType.ComposableStable
     ) {
-      const averageLiquidityUSD = totalLiquidityUSD / tokenUSDValues.length;
+      const normalizedUSDPrices = tokenUSDPrices.map(
+        (priceUSD) => priceUSD! / tokenUSDPrices[0]!, // always normalize on the first token's price
+      );
+      const maxDifference =
+        Math.max(...normalizedUSDPrices) - Math.min(...normalizedUSDPrices);
 
-      tokenUSDValues.forEach((value) => {
-        const absoluteDifference = Math.abs(value - averageLiquidityUSD);
-        const percentageDifference = absoluteDifference / averageLiquidityUSD;
+      if (maxDifference > liquidityMismatchTolerancePercent) {
+        setLiquidityMismatchInfo({
+          title: "Selected tokens have a significant price deviation",
+          message: "Did you mean to create a Weighted pool instead?",
+          suggestWeighted: true,
+        });
+      } else {
+        setLiquidityMismatchInfo({ title: null, message: null });
+      }
 
-        if (percentageDifference > liquidityMismatchTolerancePercent) {
-          liquidityMismatch = true;
-          totalMismatchedLiquidityUSD += absoluteDifference;
-        }
-      });
-    } else if (poolType === PoolType.Weighted) {
-      tokenUSDValues.forEach((value, index) => {
-        const weightProportion = Number(weights[index]) / Number(BigInt(1e18));
-        const expectedWeightUSD = totalLiquidityUSD * weightProportion;
-
-        const absoluteDifference = Math.abs(value - expectedWeightUSD);
-        const percentageDifference = absoluteDifference / expectedWeightUSD;
-
-        if (percentageDifference > liquidityMismatchTolerancePercent) {
-          liquidityMismatch = true;
-          totalMismatchedLiquidityUSD += absoluteDifference;
-        }
-      });
+      return;
     }
 
-    // Check if the total mismatched liquidity exceeds the tolerance
-    const totalMismatchPercentage =
-      totalMismatchedLiquidityUSD / totalLiquidityUSD;
-
+    // Validation During Liquidity Input and onwards.
     if (
-      !liquidityMismatch ||
-      totalMismatchPercentage <= liquidityMismatchTolerancePercent
+      totalLiquidityUSD === 0 ||
+      tokenUSDAmounts.some((value) => value === 0)
     ) {
+      // User has not yet entered fully their liquidity values, so return early.
       setLiquidityMismatchInfo({ title: null, message: null });
       return;
     }
 
-    setLiquidityMismatchInfo({
-      title: `You could lose up to $${totalMismatchedLiquidityUSD.toFixed(
-        2,
-      )} (${(totalMismatchPercentage * 100).toFixed(2)}%)`,
-      message: `Based on the market token prices, the value of tokens does not align with the specified pool weights. 
-      This discrepancy could expose you to potential losses from arbitrageurs.`,
-    });
+    // Simulate arbitrage for the pool to determine potential losses from arbitrageurs.
+    // NOTE: we assume shortfalls and excesses are losses, but in reality the actual losses would be more complex to realise.
+    // Balancer does this similarily https://github.com/balancer/frontend-v2/blob/8563b8d33b6bff266148bd48d7ebc89f921374f4/src/components/cards/CreatePool/InitialLiquidity.vue#L75
+    let totalLossUSD = 0;
+    if (poolType === PoolType.ComposableStable) {
+      const expectedPerTokenLiquidityUSD = totalLiquidityUSD / numTokens;
+      tokenUSDAmounts.forEach((value) => {
+        totalLossUSD += Math.abs(expectedPerTokenLiquidityUSD - value);
+      });
+    } else if (poolType === PoolType.Weighted) {
+      tokenUSDAmounts.forEach((value, index) => {
+        const weightProportion = Number(weights[index]) / 1e18;
+        const expectedValueUSD = totalLiquidityUSD * weightProportion;
+        totalLossUSD += Math.abs(expectedValueUSD - value);
+      });
+    }
+
+    // We'll show a total loss if it's 90% or more
+    const isTotalLoss = totalLossUSD >= totalLiquidityUSD * 0.9;
+    totalLossUSD = Math.min(totalLossUSD, totalLiquidityUSD);
+    const totalLossPercentage = totalLossUSD / totalLiquidityUSD;
+
+    if (totalLossPercentage > liquidityMismatchTolerancePercent) {
+      setLiquidityMismatchInfo({
+        // If it's a total loss we dont display a percentage
+        title: isTotalLoss
+          ? "You could lose all of your initial liquidity"
+          : `You could lose $${totalLossUSD.toFixed(2)} (~${(
+              totalLossPercentage * 100
+            ).toFixed(2)}%)`,
+        message: `Based on the market token prices, the value of tokens does not align with the specified pool weights. 
+          This discrepancy could expose you to potential losses from arbitrageurs. ${
+            poolType === PoolType.ComposableStable
+              ? "Did you mean to create a Weighted pool instead?"
+              : ""
+          }`,
+        suggestWeighted: poolType === PoolType.ComposableStable,
+      });
+    } else {
+      // All good bb bb
+      setLiquidityMismatchInfo({ title: null, message: null });
+    }
   }, [
+    currentStep,
     tokenPrices,
+    isLoadingTokenPrices,
     tokens,
     weights,
     weightsError,
     poolType,
     liquidityMismatchTolerancePercent,
   ]);
-
   return liquidityMismatchInfo;
 };

@@ -42,34 +42,34 @@ export function SelectToken({
         className={cn(
           "flex h-10 w-full shrink-0 gap-1 border-border bg-background p-2 text-secondary-foreground shadow",
           btnClassName,
-          !selectable && "!cursor-default pointer-events-none",
+          !selectable && "pointer-events-none !cursor-default",
         )}
         variant={"outline"}
         onClick={() => selectable && setOpen(true)}
       >
         {token ? (
-          <div className="justify-start flex flex-row gap-1 items-center">
+          <div className="flex flex-row items-center justify-start gap-1">
             <TokenIcon address={token.address} />
-            <span className="w-fit max-w-[140px] overflow-hidden truncate">
+            <span className="w-fit max-w-[140px] overflow-hidden truncate text-base">
               {token?.symbol}{" "}
             </span>
             {token.weight && (
-              <span className="text-muted-foreground ml-1">
+              <span className="ml-1 text-muted-foreground">
                 {(token.weight * 100).toFixed(0)}%
               </span>
             )}
           </div>
         ) : (
           <p
-            className="flex flex-row items-center whitespace-nowrap px-1 text-base font-medium"
+            className="flex flex-row items-center px-1 text-base font-medium whitespace-nowrap"
             suppressHydrationWarning
           >
             {" "}
-            Select <span className="ml-1 hidden md:inline"> a token</span>
-            {/* <Icons.chevronDown className="ml-1 h-4 w-4" />{" "} */}
+            Select <span className="hidden ml-1 md:inline"> a token</span>
+            {/* <Icons.chevronDown className="w-4 h-4 ml-1" />{" "} */}
           </p>
         )}
-        {selectable && <Icons.chevronDown className="h-4 w-4" />}
+        {selectable && <Icons.chevronDown className="w-4 h-4" />}
       </Button>
 
       {selectable && (

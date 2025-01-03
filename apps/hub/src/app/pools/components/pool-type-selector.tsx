@@ -16,16 +16,16 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
 }) => {
   return (
     <section className="flex w-full flex-col gap-4">
-      <h2 className="self-start text-3xl font-semibold">Select a Pool Type</h2>
-      <div className="flex w-full flex-row gap-6">
+      <h2 className="self-start text-xl font-semibold">Select a Pool Type</h2>
+      <div className="flex w-full flex-col gap-4">
         <Card
           onClick={() => onPoolTypeChange(PoolType.ComposableStable)}
           className={cn(
             "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            poolType === PoolType.ComposableStable && "border-info-foreground ",
+            poolType === PoolType.ComposableStable && "border-info-foreground",
           )}
         >
-          <span className="text-lg font-semibold">Stable</span>
+          <span className="text-base font-semibold">Stable</span>
           <span className="-mt-1 text-sm text-muted-foreground">
             Suggested for stable pairs
           </span>
@@ -34,24 +34,12 @@ const PoolTypeSelector: React.FC<PoolTypeSelectorProps> = ({
           onClick={() => onPoolTypeChange(PoolType.Weighted)}
           className={cn(
             "flex w-full cursor-pointer flex-col gap-0 border border-border p-4",
-            poolType === PoolType.Weighted && "border-info-foreground ",
+            poolType === PoolType.Weighted && "border-info-foreground",
           )}
         >
-          <span className="text-lg font-semibold">Weighted</span>
+          <span className="text-sm font-semibold">Weighted</span>
           <span className="-mt-1 text-sm text-muted-foreground">
             Customizable pool tokens and weights
-          </span>
-        </Card>
-        <Card
-          onClick={() => {}} // Disabled for now
-          className={cn(
-            "flex w-full cursor-not-allowed flex-col gap-0 border border-border p-4 opacity-50",
-            poolType === PoolType.MetaStable && "border-info-foreground ",
-          )}
-        >
-          <span className="text-lg font-semibold">MetaStable</span>
-          <span className="-mt-1 text-sm text-muted-foreground">
-            Dynamic rates for highly correlated tokens
           </span>
         </Card>
       </div>

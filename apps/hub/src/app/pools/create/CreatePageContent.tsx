@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Oracle,
+  OracleMode,
+  PoolCreationStep,
   balancerComposableStablePoolFactoryV6,
   balancerPoolCreationHelperAbi,
   useBeraJs,
   useCreatePool,
   useLiquidityMismatch,
   useSubgraphTokenInformations,
+  useTokenCurrentPrices,
   wBeraToken,
   wrapNativeToken,
-  wrapNativeTokens,
   type Token,
   type TokenInput as TokenInputType,
 } from "@bera/berajs";
@@ -21,6 +24,7 @@ import {
 } from "@bera/config";
 import {
   ActionButton,
+  FadeSlides,
   TokenInput,
   useAnalytics,
   useTxn,
@@ -38,42 +42,39 @@ import {
   vaultV2Abi,
   weightedPoolFactoryV4Abi_V2,
 } from "@berachain-foundation/berancer-sdk";
-import { decodeEventLog, isAddress, zeroAddress } from "viem";
+import { Address, decodeEventLog, isAddress, zeroAddress } from "viem";
 import { usePublicClient } from "wagmi";
 
+import {
+  DEFAULT_ALGORITHMIC_AMPLIFICATION,
+  DEFAULT_AMPLIFICATION,
+  DEFAULT_LIQUIDITY,
+  DEFAULT_ORACLES,
+  DEFAULT_OWNER,
+  DEFAULT_OWNERSHIP_TYPE,
+  DEFAULT_PARAMETER_PRESET,
+  DEFAULT_POOL_TYPE,
+  DEFAULT_TOKENS,
+  DEFAULT_USD_BACKED_AMPLIFICATION,
+  DEFAULT_WEIGHTS,
+  POOL_CREATION_STEPS,
+  ParameterPreset,
+  emptyOracle,
+  emptyToken,
+  emptyTokenInput,
+} from "~/utils/constants";
 import { isBera, isBeratoken } from "~/utils/isBeraToken";
-import BeraTooltip from "~/components/bera-tooltip";
 import { usePoolWeights } from "~/b-sdk/usePoolWeights";
 import useMultipleTokenApprovalsWithSlippage from "~/hooks/useMultipleTokenApprovalsWithSlippage";
 import CreatePoolInput from "../components/create-pool-input";
 import DynamicPoolCreationPreview from "../components/dynamic-pool-create-preview";
-import OwnershipInput, { OwnershipType } from "../components/ownership-input";
+import OracleInput from "../components/oracle-input";
+import ParametersInput, { OwnershipType } from "../components/parameters-input";
+import PoolCreationSummary from "../components/pool-creation-summary";
 import PoolTypeSelector from "../components/pool-type-selector";
+import ProcessSteps, { VerifiedSteps } from "../components/process-steps";
 import { getPoolUrl } from "../fetchPools";
-
-const emptyTokenInput: TokenInputType = {
-  address: "" as `0x${string}`,
-  amount: "0",
-  decimals: 18,
-  exceeding: false,
-  name: "",
-  symbol: "",
-};
-const emptyToken: Token = {
-  address: "" as `0x${string}`,
-  decimals: 18,
-  name: "",
-  symbol: "",
-};
-
-const DEFAULT_SWAP_FEE = 0.1;
-const DEFAULT_POOL_TYPE = PoolType.ComposableStable;
-const DEFAULT_AMPLIFICATION = 1;
-const DEFAULT_OWNER = ZERO_ADDRESS;
-const DEFAULT_OWNERSHIP_TYPE = OwnershipType.Fixed;
-const DEFAULT_TOKENS = [emptyToken, emptyToken];
-const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
-const DEFAULT_WEIGHTS = [500000000000000000n, 500000000000000000n];
+import { getStepVerification } from "../getStepVerification";
 
 export default function CreatePageContent() {
   const router = useRouter();
@@ -88,13 +89,14 @@ export default function CreatePageContent() {
     useState<TokenInputType[]>(DEFAULT_LIQUIDITY);
 
   const [poolType, setPoolType] = useState<PoolType>(DEFAULT_POOL_TYPE);
-  const [swapFee, setSwapFee] = useState<number>(DEFAULT_SWAP_FEE);
   const [poolName, setPoolName] = useState<string>("");
   const [poolSymbol, setPoolSymbol] = useState<string>("");
   const [amplification, setAmplification] = useState<number>(
     DEFAULT_AMPLIFICATION,
   ); // NOTE: min is 1 max is 5000
-  const [owner, setOwner] = useState<string>(DEFAULT_OWNER);
+  const [amplificationInvalid, setAmplificationInvalid] =
+    useState<boolean>(false);
+  const [owner, setOwner] = useState<Address>(DEFAULT_OWNER);
   const [ownershipType, setOwnerShipType] = useState<OwnershipType>(
     DEFAULT_OWNERSHIP_TYPE,
   );
@@ -102,6 +104,28 @@ export default function CreatePageContent() {
     string | null
   >(null);
   const [isPreviewOpen, setPreviewOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(PoolCreationStep.POOL_TYPE);
+  const [completedSteps, setCompletedSteps] = useState<PoolCreationStep[]>([]);
+  const [nextButtonDisabled, setNextButtonDisabled] = useState(false);
+  const [parameterPreset, setParameterPreset] = useState<ParameterPreset>(
+    DEFAULT_PARAMETER_PRESET,
+  );
+  const [oracles, setOracles] = useState<Oracle[]>(DEFAULT_ORACLES);
+  const isLastStep =
+    currentStep === POOL_CREATION_STEPS[POOL_CREATION_STEPS.length - 1];
+
+  const { data: bexTokenPrices, isLoading: isLoadingBexTokenPrices } =
+    useTokenCurrentPrices();
+
+  const predefinedFees =
+    poolType === PoolType.ComposableStable ? [0.01, 0.05, 0.1] : [0.3, 0.5, 1];
+  const initialFee = poolType === PoolType.ComposableStable ? 0.01 : 0.3;
+  const [swapFeeIsInvalid, setSwapFeeIsInvalid] = useState<boolean>(false);
+  const [swapFee, setSwapFee] = useState<number>(initialFee);
+
+  useEffect(() => {
+    setSwapFee(initialFee);
+  }, [poolType]);
 
   const { data: tokenPrices, isLoading: isLoadingTokenPrices } =
     useSubgraphTokenInformations({
@@ -142,12 +166,21 @@ export default function CreatePageContent() {
         return null;
       }
 
+      // @ts-ignore
       return event.args.poolId ?? null;
     } catch (error) {
       console.error(error);
       return null;
     }
   }
+
+  const onOracleChange = (index: number, updates: Partial<Oracle>) => {
+    setOracles((prevOracles) => {
+      const updatedOracles = [...prevOracles];
+      updatedOracles[index] = { ...prevOracles[index], ...updates };
+      return updatedOracles;
+    });
+  };
 
   const handleOwnershipTypeChange = (type: OwnershipType) => {
     setOwnerShipType(type);
@@ -160,7 +193,19 @@ export default function CreatePageContent() {
     );
   };
 
-  const handleOwnerChange = (address: string) => {
+  // NOTE: this is effectively only used for stable pools since weighted ones don't support this parameter.
+  const handleParameterPresetChange = (type: ParameterPreset) => {
+    setParameterPreset(type);
+    setAmplification(
+      type === ParameterPreset.USDBACKED
+        ? DEFAULT_USD_BACKED_AMPLIFICATION
+        : type === ParameterPreset.ALGORITHMIC
+          ? DEFAULT_ALGORITHMIC_AMPLIFICATION
+          : 1,
+    );
+  };
+
+  const handleOwnerChange = (address: Address) => {
     setOwner(address);
     setInvalidAddressErrorMessage(
       isAddress(address) ? null : "Invalid custom address",
@@ -169,7 +214,7 @@ export default function CreatePageContent() {
 
   // handle max/min tokens per https://docs.balancer.fi/concepts/pools/more/configuration.html
   const minTokensLength = 2; // i.e. for meta/stable/weighted it's 2
-  const maxTokensLength = poolType === PoolType.Weighted ? 8 : 5; // i.e. for meta/stable it's 5
+  const maxTokensLength = poolType === PoolType.Weighted ? 2 : 5; // NOTE: yes weighted supports more but this is what UI will support for now.
 
   // check for token approvals
   const { needsApproval: tokensNeedApproval, refresh: refreshAllowances } =
@@ -197,6 +242,7 @@ export default function CreatePageContent() {
         emptyTokenInput,
       ]);
       addWeight();
+      setOracles((prevOracles) => [...prevOracles, emptyOracle]);
     }
   };
 
@@ -209,6 +255,7 @@ export default function CreatePageContent() {
         prevTokens.filter((_, i) => i !== index),
       );
       removeWeight(index);
+      setOracles((prevOracles) => prevOracles.filter((_, i) => i !== index));
     }
   };
 
@@ -237,8 +284,8 @@ export default function CreatePageContent() {
     setInitialLiquidityTokens((prevTokens) => {
       const updatedTokens = [...prevTokens];
       updatedTokens[index] = {
-        ...updatedTokens[index], // Preserve existing properties
-        ...updates, // Apply partial updates
+        ...updatedTokens[index],
+        ...updates,
       };
       return updatedTokens;
     });
@@ -261,6 +308,7 @@ export default function CreatePageContent() {
     poolSymbol,
     owner,
     amplification,
+    oracles,
   });
 
   // Synchronize the generated pool name and symbol with state
@@ -288,7 +336,6 @@ export default function CreatePageContent() {
         poolSymbol: poolSymbol,
       });
       const poolId = await getPoolIdFromTx(txHash as `0x${string}`);
-      console.log("poolId", poolId);
       if (poolId) {
         setPoolId(poolId);
       }
@@ -312,7 +359,7 @@ export default function CreatePageContent() {
       setpoolCreateTokens(DEFAULT_TOKENS);
       setInitialLiquidityTokens(DEFAULT_LIQUIDITY);
       setPoolType(DEFAULT_POOL_TYPE);
-      setSwapFee(DEFAULT_SWAP_FEE);
+      setSwapFee(initialFee);
       setPoolName("");
       setPoolSymbol("");
       setAmplification(DEFAULT_AMPLIFICATION);
@@ -327,17 +374,110 @@ export default function CreatePageContent() {
 
   // Determine if there are any liquidity mismatches in the pool (supply imbalances in terms of pool weights)
   const liquidityMismatchInfo = useLiquidityMismatch({
-    tokenPrices,
-    isLoadingTokenPrices,
+    currentStep,
+    tokenPrices: bexTokenPrices,
+    isLoadingTokenPrices: isLoadingBexTokenPrices,
     tokens: initialLiquidityTokens,
     weights,
     weightsError,
     poolType,
+    oracles,
   });
 
+  const [verifiedSteps, setVerifiedSteps] = useState<
+    ReturnType<typeof getStepVerification>
+  >(
+    getStepVerification(
+      poolCreateTokens,
+      initialLiquidityTokens,
+      poolType,
+      weights,
+      oracles,
+      OracleMode,
+      owner,
+      ownershipType,
+      swapFeeIsInvalid,
+      amplificationInvalid,
+      amplification,
+      poolName,
+      poolSymbol,
+    ),
+  );
+
+  const isVerificationFailure = Object.values(verifiedSteps.steps).some(
+    (step) => !step,
+  );
+  const [finalStepErrorMessage, setFinalStepErrorMessage] = useState<
+    string | null
+  >(null);
+
+  // TODO: we might move this into a custom use-hook
+  useEffect(() => {
+    const verifiedSteps = getStepVerification(
+      poolCreateTokens,
+      initialLiquidityTokens,
+      poolType,
+      weights,
+      oracles,
+      OracleMode,
+      owner,
+      ownershipType,
+      swapFeeIsInvalid,
+      amplificationInvalid,
+      amplification,
+      poolName,
+      poolSymbol,
+    );
+    setNextButtonDisabled(!verifiedSteps.steps[currentStep]);
+    setVerifiedSteps(verifiedSteps);
+    setFinalStepErrorMessage(
+      Object.values(verifiedSteps.errors)
+        .filter((error) => error !== null)
+        .map((error) => `• ${error}`)
+        .join("\n") || null,
+    );
+  }, [
+    poolType,
+    poolCreateTokens,
+    poolName,
+    poolSymbol,
+    owner,
+    weights,
+    ownershipType,
+    currentStep,
+    initialLiquidityTokens,
+    oracles,
+  ]);
+
   return (
-    <div className="flex w-full max-w-[600px] flex-col items-center justify-center gap-6">
+    <div className="flex w-full flex-col items-center justify-center gap-6">
       {ModalPortal}
+      <DynamicPoolCreationPreview
+        open={isPreviewOpen}
+        setOpen={setPreviewOpen}
+        poolCreateTokens={poolCreateTokens}
+        initialLiquidityTokens={initialLiquidityTokens}
+        tokenPrices={tokenPrices} // TODO (BFE-409): we should bundle TokenInput and Price properly as token.usdValue
+        weights={weights}
+        poolName={poolName}
+        poolSymbol={poolSymbol}
+        poolType={poolType}
+        poolId={poolId}
+        swapFee={swapFee}
+        ownerAddress={owner}
+        ownershipType={ownershipType}
+        amplification={amplification}
+        isLoadingCreatePoolTx={isLoadingCreatePoolTx}
+        isSubmittingCreatePoolTx={isSubmittingCreatePoolTx}
+        writeCreatePool={() => {
+          console.log("createPoolArgs", createPoolArgs);
+          writeCreatePool(createPoolArgs);
+        }}
+        isSuccessCreatePoolTx={isSuccessCreatePoolTx}
+        createPoolErrorMessage={createPoolErrorMessage}
+        tokensNeedApproval={tokensNeedApproval}
+        refreshAllowances={refreshAllowances}
+      />
       <Button
         variant={"ghost"}
         size="sm"
@@ -345,253 +485,298 @@ export default function CreatePageContent() {
         onClick={() => router.push("/pools")}
       >
         <Icons.arrowLeft className="h-4 w-4" />
-        <div className="text-sm font-medium">All Pools</div>
+        <div className="text-sm font-medium">Back to Pools</div>
       </Button>
-      <div className="flex w-full flex-col items-center justify-center gap-16">
-        <PoolTypeSelector poolType={poolType} onPoolTypeChange={setPoolType} />
+      <h2 className="self-start text-3xl font-semibold">Create a Pool</h2>
+      <div className="flex w-full flex-col justify-center xl:flex-row">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+          <ProcessSteps
+            stepEnum={PoolCreationStep}
+            className="xl:col-span-2"
+            selectedStep={currentStep}
+            completedSteps={completedSteps}
+            setCurrentStep={setCurrentStep}
+            verifiedSteps={verifiedSteps}
+          />
+          <div className="flex w-full flex-col xl:col-span-6">
+            {currentStep === PoolCreationStep.POOL_TYPE && (
+              <PoolTypeSelector
+                poolType={poolType}
+                onPoolTypeChange={setPoolType}
+              />
+            )}
+            {currentStep === PoolCreationStep.SELECT_TOKENS && (
+              <section className="flex w-full flex-col gap-4">
+                <h2 className="self-start text-xl font-semibold">{`Select Tokens ${
+                  poolType === PoolType.Weighted ? "& Weighting" : ""
+                }`}</h2>
+                <div className="flex w-full flex-col gap-2">
+                  {poolCreateTokens.map((token, index) => (
+                    <CreatePoolInput
+                      // NOTE: WBERA and BERA are mutually exclusive options, we wrap BERA -> WBERA in poolCreationHelper
+                      key={`token-${index}`}
+                      token={token}
+                      selectedTokens={poolCreateTokens}
+                      weight={weights[index]}
+                      displayWeight={poolType === PoolType.Weighted}
+                      locked={lockedWeights[index]}
+                      displayRemove={poolCreateTokens.length > minTokensLength}
+                      index={index}
+                      onTokenSelection={(selectedToken) => {
+                        if (selectedToken) {
+                          handlePoolTokenChange(index, selectedToken);
+                        }
+                      }}
+                      onWeightChange={handleWeightChange}
+                      onOracleChange={onOracleChange}
+                      onLockToggle={toggleLock}
+                      onRemoveToken={handleRemoveToken}
+                      poolType={poolType}
+                      oracle={oracles[index]}
+                    />
+                  ))}
+                  {
+                    <div className="flex w-full flex-col gap-6 pt-4">
+                      {poolType === PoolType.ComposableStable &&
+                        oracles.map(
+                          (oracle, index) =>
+                            oracle.mode === OracleMode.Custom &&
+                            poolCreateTokens[index].symbol && (
+                              <OracleInput
+                                key={`oracle-${index}`}
+                                oracle={oracle}
+                                token={poolCreateTokens[index]}
+                                index={index}
+                                onOracleChange={onOracleChange}
+                              />
+                            ),
+                        )}
+                    </div>
+                  }
+                </div>
 
-        <section className="flex w-full flex-col gap-4">
-          <h2 className="self-start text-3xl font-semibold">{`Select Tokens ${
-            poolType === PoolType.Weighted ? "& Weighting" : ""
-          }`}</h2>
-          <div className="flex w-full flex-col gap-2">
-            {poolCreateTokens.map((token, index) => (
-              <CreatePoolInput
-                // NOTE: WBERA and BERA are mutually exclusive options, we wrap BERA -> WBERA in poolCreationHelper
-                key={`token-${index}`}
-                token={token}
-                selectedTokens={poolCreateTokens}
-                weight={weights[index]}
-                displayWeight={poolType === PoolType.Weighted}
-                locked={lockedWeights[index]}
-                displayRemove={poolCreateTokens.length > minTokensLength}
-                index={index}
-                onTokenSelection={(selectedToken) => {
-                  if (selectedToken) {
-                    // FIXME: how is this needing to be handled??
-                    handlePoolTokenChange(index, selectedToken);
+                {poolCreateTokens.length < maxTokensLength && (
+                  <>
+                    <Separator className="text-muted-foreground opacity-50" />
+                    <div className="mr-auto -translate-x-4">
+                      <Button
+                        onClick={handleAddToken}
+                        variant="ghost"
+                        className="text-foreground"
+                      >
+                        <Icons.plusCircle className="h-6 w-6" />
+                        <p className="pl-2"> Add Token</p>
+                      </Button>
+                    </div>
+                  </>
+                )}
+                {weightsError && (
+                  <Alert variant="destructive" className="my-4">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{weightsError}</AlertDescription>
+                  </Alert>
+                )}
+
+                {isDupePool && dupePool && (
+                  <Alert variant="destructive">
+                    <AlertTitle>Similar Pool Exists</AlertTitle>
+                    <AlertDescription className="space-y-4">
+                      <p>
+                        {`Please note that a ${poolType} pool with the same tokens 
+                exists, consider adding liquidity instead of creating a new pool:`}
+                      </p>
+                      <a
+                        href={getPoolUrl(dupePool)}
+                        className="text-sky-600 underline"
+                      >
+                        Existing pool
+                      </a>
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </section>
+            )}
+            {currentStep === PoolCreationStep.DEPOSIT_LIQUIDITY && (
+              <section className="flex w-full flex-col gap-4">
+                <h2 className="self-start text-xl font-semibold">
+                  Set Initial Liquidity
+                </h2>
+                <div className="flex flex-col gap-4">
+                  <ul className="divide-y divide-border rounded-lg border">
+                    {initialLiquidityTokens.map((token, index) => (
+                      // NOTE: prices for BERA (wrapped create) must be given in WBERA as that is the wrapped token's value.
+                      <TokenInput
+                        key={`liq-${index}`}
+                        selected={token}
+                        amount={token.amount}
+                        isActionLoading={isLoadingTokenPrices}
+                        customTokenList={
+                          isBera(token) || isBeratoken(token)
+                            ? [wBeraToken, beraToken]
+                            : undefined
+                        }
+                        price={Number(
+                          tokenPrices?.[wrapNativeToken(token)?.address] ?? 0,
+                        )} // TODO (BFE-409): this would make more sense as token.usdValue
+                        hidePrice={
+                          !tokenPrices?.[wrapNativeToken(token)?.address]
+                        }
+                        disabled={false}
+                        setAmount={(amount) =>
+                          handleAddLiquidityTokenChange(index, { amount })
+                        }
+                        onExceeding={(isExceeding) =>
+                          handleAddLiquidityTokenChange(index, {
+                            exceeding: isExceeding,
+                          })
+                        }
+                        onTokenSelection={(selectedToken) => {
+                          // NOTE: this is specifically used for if the user wants to select BERA or WBERA
+                          selectedToken &&
+                            handleAddLiquidityTokenChange(index, selectedToken);
+                        }}
+                        showExceeding
+                        selectable={isBera(token) || isBeratoken(token)}
+                        forceShowBalance={true}
+                        hideMax={false}
+                        className={cn(
+                          "w-full grow border-0 bg-transparent pr-4 text-right text-2xl font-semibold outline-none",
+                          token.exceeding && "text-destructive-foreground",
+                        )}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            )}
+            {currentStep === PoolCreationStep.SET_PARAMETERS && (
+              <ParametersInput
+                amplification={amplification}
+                onAmplificationChange={setAmplification}
+                onInvalidAmplification={setAmplificationInvalid}
+                parameterPreset={parameterPreset}
+                onChangeParameterPresetType={handleParameterPresetChange}
+                ownershipType={ownershipType}
+                owner={owner}
+                onChangeOwnershipType={handleOwnershipTypeChange}
+                onOwnerChange={handleOwnerChange}
+                invalidAddressErrorMessage={invalidAddressErrorMessage}
+                onSwapFeeChange={setSwapFee}
+                poolType={poolType}
+                swapFee={swapFee}
+                onInvalidSwapFee={setSwapFeeIsInvalid}
+                predefinedFees={predefinedFees}
+              />
+            )}
+            {currentStep === PoolCreationStep.SET_INFO && (
+              <section className="flex w-full flex-col gap-4">
+                <InputWithLabel
+                  label="Pool Name"
+                  variant="black"
+                  className="bg-transparent"
+                  value={poolName}
+                  maxLength={85}
+                  onChange={(e) => {
+                    setPoolName(e.target.value);
+                  }}
+                />
+
+                <InputWithLabel
+                  label="Pool Symbol"
+                  variant="black"
+                  className="bg-transparent"
+                  value={poolSymbol}
+                  maxLength={85}
+                  onChange={(e) => {
+                    setPoolSymbol(e.target.value.replace(" ", "-"));
+                  }}
+                />
+              </section>
+            )}
+            {/* {currentStep === 5 && (  // TODO (#BFE-410): instead of using dynamic preview we do the tx & success as a step.
+            <section>
+              <Button>View Pool</Button>
+              <Button>Back to all Pools</Button>
+            </section>
+          )} */}
+
+            {liquidityMismatchInfo.message &&
+              (currentStep === PoolCreationStep.SELECT_TOKENS ||
+                currentStep === PoolCreationStep.DEPOSIT_LIQUIDITY) && (
+                <Alert
+                  variant="warning"
+                  className={cn(
+                    "my-4",
+                    liquidityMismatchInfo.suggestWeighted && "cursor-pointer",
+                  )}
+                  onClick={() => {
+                    if (liquidityMismatchInfo.suggestWeighted) {
+                      setCurrentStep(PoolCreationStep.POOL_TYPE);
+                      // setPoolType(PoolType.Weighted);
+                    }
+                  }}
+                >
+                  <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
+                  <AlertDescription>
+                    {liquidityMismatchInfo.message}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+            {isLastStep && isVerificationFailure && (
+              <div className="pt-4">
+                <Alert variant="destructive">
+                  <AlertTitle>Cannot Create Pool</AlertTitle>
+                  <AlertDescription className="whitespace-pre-line">
+                    {finalStepErrorMessage}
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
+            <ActionButton className="w-32 self-end pt-4">
+              <Button
+                onClick={() => {
+                  if (isLastStep) {
+                    setPreviewOpen(true);
+                  } else {
+                    setCurrentStep(
+                      POOL_CREATION_STEPS[
+                        POOL_CREATION_STEPS.indexOf(currentStep) + 1
+                      ],
+                    );
+                    setCompletedSteps([...completedSteps, currentStep]);
                   }
                 }}
-                onWeightChange={handleWeightChange}
-                onLockToggle={toggleLock}
-                onRemoveToken={handleRemoveToken}
-              />
-            ))}
-          </div>
-
-          {poolCreateTokens.length < maxTokensLength && (
-            <>
-              <Separator className="text-muted-foreground opacity-50" />
-              <div className="mr-auto -translate-x-4">
-                <Button
-                  onClick={handleAddToken}
-                  variant="ghost"
-                  className="text-foreground"
-                >
-                  <Icons.plusCircle className="h-6 w-6" />
-                  <p className="pl-2"> Add Token</p>
-                </Button>
-              </div>
-            </>
-          )}
-          {weightsError && (
-            <Alert variant="destructive" className="my-4">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{weightsError}</AlertDescription>
-            </Alert>
-          )}
-
-          {isDupePool && dupePool && (
-            <Alert variant="destructive">
-              <AlertTitle>Similar Pool Exists</AlertTitle>
-              <AlertDescription className="space-y-4">
-                <p>
-                  {`Please note that a ${poolType} pool with the same tokens 
-                exists, consider adding liquidity instead of creating a new pool:`}
-                </p>
-                <a
-                  href={getPoolUrl(dupePool)}
-                  className="text-sky-600 underline"
-                >
-                  Existing pool
-                </a>
-              </AlertDescription>
-            </Alert>
-          )}
-        </section>
-
-        <section className="flex w-full flex-col gap-4">
-          <h2 className="self-start text-3xl font-semibold">
-            Set Initial Liquidity
-          </h2>
-          <div className="flex flex-col gap-4">
-            <ul className="divide-y divide-border rounded-lg border">
-              {initialLiquidityTokens.map((token, index) => (
-                // NOTE: prices for BERA (wrapped create) must be given in WBERA as that is the wrapped token's value.
-                <TokenInput
-                  key={`liq-${index}`}
-                  selected={token}
-                  amount={token.amount}
-                  isActionLoading={isLoadingTokenPrices}
-                  customTokenList={
-                    isBera(token) || isBeratoken(token)
-                      ? [wBeraToken, beraToken]
-                      : undefined
-                  }
-                  price={Number(
-                    tokenPrices?.[wrapNativeToken(token)?.address] ?? 0,
-                  )} // TODO (#): this would make more sense as token.usdValue
-                  hidePrice={!tokenPrices?.[wrapNativeToken(token)?.address]}
-                  disabled={false}
-                  setAmount={(amount) =>
-                    handleAddLiquidityTokenChange(index, { amount })
-                  }
-                  onExceeding={(isExceeding) =>
-                    handleAddLiquidityTokenChange(index, {
-                      exceeding: isExceeding,
-                    })
-                  }
-                  onTokenSelection={(selectedToken) => {
-                    // NOTE: this is specifically used for if the user wants to select BERA or WBERA
-                    selectedToken &&
-                      handleAddLiquidityTokenChange(index, selectedToken);
-                  }}
-                  showExceeding
-                  selectable={isBera(token) || isBeratoken(token)}
-                  forceShowBalance={true}
-                  hideMax={false}
-                  className={cn(
-                    "w-full grow border-0 bg-transparent pr-4 text-right text-2xl font-semibold outline-none",
-                    token.exceeding && "text-destructive-foreground",
-                  )}
-                />
-              ))}
-            </ul>
-            {!weightsError && liquidityMismatchInfo.message && (
-              <Alert variant="warning" className="my-4">
-                <AlertTitle>{liquidityMismatchInfo.title}</AlertTitle>
-                <AlertDescription>
-                  {liquidityMismatchInfo.message}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        </section>
-
-        <OwnershipInput
-          // NOTE: disabling this means that the default (fixed) ownership type is used always
-          ownershipType={ownershipType}
-          owner={owner}
-          onChangeOwnershipType={handleOwnershipTypeChange}
-          onOwnerChange={handleOwnerChange}
-          invalidAddressErrorMessage={invalidAddressErrorMessage}
-          swapFee={swapFee}
-          onSwapFeeChange={setSwapFee}
-          poolType={poolType}
-        />
-
-        <section className="flex w-full flex-col gap-4">
-          <InputWithLabel
-            label="Pool Name"
-            variant="black"
-            className="bg-transparent"
-            value={poolName}
-            maxLength={85}
-            onChange={(e) => {
-              setPoolName(e.target.value);
-            }}
-          />
-
-          <InputWithLabel
-            label="Pool Symbol"
-            variant="black"
-            className="bg-transparent"
-            value={poolSymbol}
-            maxLength={85}
-            onChange={(e) => {
-              setPoolSymbol(e.target.value.replace(" ", "-"));
-            }}
-          />
-
-          {(poolType === PoolType.ComposableStable ||
-            poolType === PoolType.MetaStable) && (
-            <InputWithLabel
-              label="Amplification"
-              variant="black"
-              className="bg-transparent"
-              value={amplification}
-              maxLength={4}
-              onChange={(e) => {
-                // NOTE: for some reason max/min dont seem to work in InputWithLabel
-                const value = Number(e.target.value);
-                if (value >= 1 && value <= 5000) {
-                  setAmplification(value);
+                disabled={
+                  isLastStep ? isVerificationFailure : nextButtonDisabled
                 }
-              }}
-              tooltip={
-                <BeraTooltip
-                  size="lg"
-                  wrap={true}
-                  text={`
-                  Controls the pool's sensitivity to imbalances between assets. A higher value causes slippage to occur sooner 
-                  as assets diverge from balance, helping to preserve accurate pricing by discouraging extreme imbalances. 
-                  This is often ideal for stable pairs, as it maintains tighter spreads when token values are close, but 
-                  increases slippage more rapidly for large disparities, supporting the pool's economic stability.`}
-                />
-              }
-            />
-          )}
-        </section>
+                className={cn(
+                  "w-32 self-end pr-4",
+                  nextButtonDisabled
+                    ? "cursor-not-allowed opacity-50"
+                    : "opacity-100",
+                )}
+              >
+                {isLastStep ? "Create Pool" : "Next"}
+              </Button>
+            </ActionButton>
+          </div>
 
-        <ActionButton>
-          <Button
-            onClick={() => setPreviewOpen(true)}
-            className="w-full"
-            disabled={
-              !poolName ||
-              !poolSymbol ||
-              !owner ||
-              !isAddress(owner) ||
-              !(poolCreateTokens.length === initialLiquidityTokens.length) ||
-              !initialLiquidityTokens.every(
-                (token) =>
-                  token.address && Number(token.amount) > 0 && !token.exceeding,
-              ) ||
-              (poolType === PoolType.Weighted
-                ? !weights.every((weight) => weight > 0n)
-                : !amplification)
-            }
-          >
-            Preview
-          </Button>
-        </ActionButton>
-
-        <DynamicPoolCreationPreview
-          open={isPreviewOpen}
-          setOpen={setPreviewOpen}
-          poolCreateTokens={poolCreateTokens}
-          initialLiquidityTokens={initialLiquidityTokens}
-          tokenPrices={tokenPrices} // TODO: it would make more sense to set these inside TokenInput.usdValue
-          weights={weights}
-          poolName={poolName}
-          poolSymbol={poolSymbol}
-          poolType={poolType}
-          poolId={poolId}
-          swapFee={swapFee}
-          ownerAddress={owner}
-          ownershipType={ownershipType}
-          amplification={amplification}
-          isLoadingCreatePoolTx={isLoadingCreatePoolTx}
-          isSubmittingCreatePoolTx={isSubmittingCreatePoolTx}
-          writeCreatePool={() => {
-            console.log("createPoolArgs", createPoolArgs);
-            writeCreatePool(createPoolArgs);
-          }}
-          isSuccessCreatePoolTx={isSuccessCreatePoolTx}
-          createPoolErrorMessage={createPoolErrorMessage}
-          tokensNeedApproval={tokensNeedApproval}
-          refreshAllowances={refreshAllowances}
-        />
+          <PoolCreationSummary
+            className="xl:col-span-4"
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            poolType={poolType}
+            ownershipType={ownershipType}
+            tokens={initialLiquidityTokens}
+            tokenPrices={tokenPrices}
+            swapFee={swapFee}
+            ownersAddress={owner}
+            name={poolName}
+            symbol={poolSymbol}
+          />
+        </div>
       </div>
     </div>
   );

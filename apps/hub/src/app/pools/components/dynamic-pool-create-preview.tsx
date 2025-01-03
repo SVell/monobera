@@ -7,6 +7,7 @@ import {
   balancerVaultAbi,
   formatUsd,
   getSafeNumber,
+  truncateHash,
   useBeraJs,
   wrapNativeToken,
   type Token,
@@ -37,7 +38,7 @@ import { formatUnits, parseUnits } from "viem";
 
 import { usePollPoolCreationRelayerApproval } from "~/hooks/usePollPoolCreationRelayerApproval";
 import { getPoolUrl } from "../fetchPools";
-import { OwnershipType } from "./ownership-input";
+import { OwnershipType } from "./parameters-input";
 
 type Props = {
   open: boolean;
@@ -141,10 +142,9 @@ export default function DynamicPoolCreationPreview({
     }
   }, [isRelayerApprovalError]);
 
-  const formattedOwnerAddress = `${ownerAddress.slice(
-    0,
-    6,
-  )}...${ownerAddress.slice(-4)} (${ownershipType})`;
+  const formattedOwnerAddress = `${ownershipType} (${
+    ownerAddress && truncateHash(ownerAddress, undefined, undefined, true)
+  })`;
 
   const poolDetails = [
     { label: "Pool Name", value: poolName },
@@ -152,7 +152,6 @@ export default function DynamicPoolCreationPreview({
     { label: "Pool Type", value: poolType },
     { label: "Swap Fee", value: `${swapFee}%` },
     { label: "Owner Address", value: formattedOwnerAddress },
-    // TODO (#): we will want to display rate providers here
   ];
 
   if (

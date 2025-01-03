@@ -1,3 +1,14 @@
+import {
+  Oracle,
+  OracleMode,
+  PoolCreationStep,
+  type Token,
+  type TokenInput as TokenInputType,
+} from "@bera/berajs";
+import { PoolType, ZERO_ADDRESS } from "@berachain-foundation/berancer-sdk";
+
+import { OwnershipType } from "~/app/pools/components/parameters-input";
+
 export enum LOCAL_STORAGE_KEYS {
   CONNECTOR_ID = "CONNECTOR_ID",
   SLIPPAGE_TOLERANCE = "SLIPPAGE_TOLERANCE",
@@ -194,3 +205,114 @@ export enum POLLING {
   NORMAL = 20000,
   SLOW = 200000,
 }
+
+export enum ParameterPreset {
+  USDBACKED = "USD-Backed Stablecoin",
+  ALGORITHMIC = "Algorithmic Stablecoin",
+}
+
+/**
+ * Default pool amplification factor (responsiveness to price fluctuations) for USD-backed stablecoins.
+ * @constant {number}
+ */
+export const DEFAULT_USD_BACKED_AMPLIFICATION = 2500;
+
+/**
+ * Default pool amplification factor (responsiveness to price fluctuations) for algorithmic stablecoins.
+ * @constant {number}
+ */
+export const DEFAULT_ALGORITHMIC_AMPLIFICATION = 200;
+
+/**
+ * Default pool type for pools is a composable stable pool, which can be referred to as a 'stable pool'.
+ * @constant {PoolType}
+ */
+export const DEFAULT_POOL_TYPE = PoolType.ComposableStable;
+
+/**
+ * Default amplification factor for pools is a higher value for USD-backed stablecoin pools (max 5k).
+ * @constant {number}
+ */
+export const DEFAULT_AMPLIFICATION = DEFAULT_USD_BACKED_AMPLIFICATION;
+
+/**
+ * Default owner for pools is fixed type, which is the 0x0 address.
+ * @constant {Address}
+ */
+export const DEFAULT_OWNER = ZERO_ADDRESS;
+
+/**
+ * Default ownership type for pools is Fixed which yields the 0x0 owner address.
+ * @constant {OwnershipType}
+ */
+export const DEFAULT_OWNERSHIP_TYPE = OwnershipType.Fixed;
+
+/**
+ * Default weights for pools is an event split since we default to two tokens.
+ * @constant {bigint[]}
+ */
+export const DEFAULT_WEIGHTS = [500000000000000000n, 500000000000000000n];
+
+/**
+ * Default parameter preset for pools is USD-backed stablecoin preset.
+ * @constant {ParameterPreset}
+ */
+export const DEFAULT_PARAMETER_PRESET = ParameterPreset.USDBACKED;
+
+export const emptyTokenInput: TokenInputType = {
+  address: "" as `0x${string}`,
+  amount: "0",
+  decimals: 18,
+  exceeding: false,
+  name: "",
+  symbol: "",
+};
+export const emptyToken: Token = {
+  address: "" as `0x${string}`,
+  decimals: 18,
+  name: "",
+  symbol: "",
+};
+
+/**
+ * Default tokens for pools is two empty tokens.
+ * NOTE: if in the future we streamline the token selection process, we might consider tying this closer to TokenInputs
+ * @constant {Token[]}
+ */
+export const DEFAULT_TOKENS = [emptyToken, emptyToken];
+
+/**
+ * Default liquidity for pools is two empty tokens.
+ * @constant {TokenInputType[]}
+ */
+export const DEFAULT_LIQUIDITY = [emptyTokenInput, emptyTokenInput];
+
+/**
+ * If a rate provider (oracle) is provided, this is the default update interval in seconds (using block.timestamp internally).
+ * @constant {number}
+ */
+export const DEFAULT_ORACLE_CACHE_DURATION = 100;
+
+export const emptyOracle: Oracle = {
+  mode: OracleMode.None,
+  address: ZERO_ADDRESS,
+  tokenAddress: "",
+  cacheDuration: DEFAULT_ORACLE_CACHE_DURATION, // NOTE: even if we dont use an oracle, we pass a safe value for this to pool create
+};
+
+/**
+ * Default oracles for pools is two empty oracles.
+ * @constant {Oracle[]}
+ */
+export const DEFAULT_ORACLES: Oracle[] = [emptyOracle, emptyOracle];
+
+/**
+ * This is the order of steps that the next button traverses to create a pool.
+ */
+export const POOL_CREATION_STEPS = [
+  PoolCreationStep.POOL_TYPE,
+  PoolCreationStep.SELECT_TOKENS,
+  PoolCreationStep.DEPOSIT_LIQUIDITY,
+  PoolCreationStep.SET_PARAMETERS,
+  PoolCreationStep.SET_INFO,
+];

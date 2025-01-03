@@ -34,6 +34,7 @@ interface UseCreatePoolProps {
   poolName: string;
   amplification: number;
   weightsDuplicationThreshold?: number;
+  oracles: Oracle[]; // NOTE: the default state for oracles should be 0x0 address for each token with cache duration of ~100
 }
 
 interface UseCreatePoolReturn {
@@ -46,6 +47,18 @@ interface UseCreatePoolReturn {
   errorLoadingPools: boolean;
 }
 
+export enum OracleMode {
+  None = "None",
+  Custom = "Custom",
+}
+
+export interface Oracle {
+  mode: OracleMode;
+  address: string;
+  tokenAddress: string;
+  cacheDuration: number;
+}
+
 const createStablePoolArgs = (
   poolCreateTokens: Token[],
   initialLiquidityTokens: TokenInput[],
@@ -55,6 +68,7 @@ const createStablePoolArgs = (
   poolSymbol: string,
   owner: string,
   amplification: number,
+  oracles: Oracle[],
   gasLimit: bigint = DEFAULT_METAMASK_GAS_LIMIT,
 ) => {
   // Map and sort pool creation token addresses NOTE: we should never see BERA in this array.
@@ -62,22 +76,33 @@ const createStablePoolArgs = (
     .map((token) => token.address.toLowerCase())
     .sort((a, b) => (a < b ? -1 : 1));
 
-  // Match sorted pool creation tokens with initial liquidity amounts
-  const sortedAmountsIn = sortedPoolCreateAddresses.map((address) => {
-    const liquidityToken = initialLiquidityTokens.find((token) => {
-      return (
+  const combinedData = sortedPoolCreateAddresses.map((address) => {
+    // Match with initial liquidity tokens
+    const liquidityToken = initialLiquidityTokens.find(
+      (token) =>
         token.address.toLowerCase() === address ||
         (address === beraTokenAddress.toLowerCase() &&
-          token.address.toLowerCase() === nativeTokenAddress)
-      );
-    });
+          token.address.toLowerCase() === nativeTokenAddress),
+    );
 
-    if (!liquidityToken) {
-      return 0n; // Ensure 0 amount if no matching liquidity token is found (tx will fail)
-    }
+    const amountIn = liquidityToken
+      ? parseUnits(liquidityToken.amount, liquidityToken.decimals)
+      : 0n; // FIXME we need to throw errors from here if zipping fails.
 
-    return parseUnits(liquidityToken.amount, liquidityToken.decimals);
+    // Match with oracles
+    const oracle = oracles.find(
+      (oracle) => oracle.tokenAddress.toLowerCase() === address.toLowerCase(),
+    );
+    const rateProvider = oracle ? oracle.address : ADDRESS_ZERO;
+    const cacheDuration = oracle ? BigInt(oracle.cacheDuration) : BigInt(100);
+
+    return { amountIn, rateProvider, cacheDuration };
   });
+
+  // Extract results into separate arrays
+  const sortedAmountsIn = combinedData.map((data) => data.amountIn);
+  const sortedRateProviders = combinedData.map((data) => data.rateProvider);
+  const sortedCacheDurations = combinedData.map((data) => data.cacheDuration);
 
   // Determine if native token (BERA) is included, and if so calculate its value, that is the value of this tx
   const nativeTokenIndex = initialLiquidityTokens.findIndex(
@@ -92,13 +117,6 @@ const createStablePoolArgs = (
       : 0n;
   const joinWBERAPoolWithBERA = value > 0n;
 
-  const rateProviders = Array(sortedPoolCreateAddresses.length).fill(
-    ADDRESS_ZERO,
-  );
-  const cacheDurations = Array(sortedPoolCreateAddresses.length).fill(
-    BigInt(100),
-  );
-
   return {
     address: balancerPoolCreationHelper,
     abi: balancerPoolCreationHelperAbi,
@@ -108,8 +126,8 @@ const createStablePoolArgs = (
       poolSymbol,
       sortedPoolCreateAddresses,
       BigInt(amplification),
-      rateProviders,
-      cacheDurations,
+      sortedRateProviders,
+      sortedCacheDurations,
       false, // Exempt from yield protocol fee NOTE: this should be false for stable pools if rate providers are 0x0
       swapFeePercentage,
       sortedAmountsIn,
@@ -203,6 +221,7 @@ export const useCreatePool = ({
   swapFee,
   owner,
   amplification,
+  oracles,
   weightsDuplicationThreshold = DEFAULT_WEIGHTS_DUPLICATION_THRESHOLD,
 }: UseCreatePoolProps): UseCreatePoolReturn => {
   // 1. identify if the pool is a duplicate
@@ -327,6 +346,7 @@ export const useCreatePool = ({
         poolSymbol,
         owner,
         amplification,
+        oracles,
       );
     }
 
@@ -341,6 +361,7 @@ export const useCreatePool = ({
     poolSymbol,
     owner,
     amplification,
+    oracles,
   ]);
 
   return {

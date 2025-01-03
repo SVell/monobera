@@ -21,3 +21,13 @@ export const truncateDecimal = (
   const [integerPart = "0", decimalPart = "0"] = `${value}`.split(".");
   return Number(`${integerPart}.${decimalPart.substring(0, maxDecimal)}`);
 };
+
+export function formatMaxLength(num: number, maxLength: number): string {
+  const numStr = num.toString();
+
+  // If the number exceeds the max length, format it in scientific notation
+  if (numStr.length > maxLength) {
+    return num.toExponential(maxLength - 5); // Adjust for "e+XX"
+  }
+  return numStr;
+}
