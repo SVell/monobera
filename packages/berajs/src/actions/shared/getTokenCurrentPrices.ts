@@ -55,6 +55,6 @@ export const getTokenCurrentPrices = async (): Promise<
     return tokenCurrentPriceMap;
   } catch (e) {
     console.error("Failed to fetch token prices:", e);
-    return undefined;
+    throw e;
   }
 };
