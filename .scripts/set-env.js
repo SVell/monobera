@@ -30,9 +30,20 @@ if (fs.existsSync(path.resolve(process.cwd(), "secrets", `.env.${env}`))) {
   throw new Error(`No env file found for ${env}`);
 }
 
-fs.symlinkSync(
-  path.resolve(process.cwd(), ".env"),
-  path.resolve(process.cwd(), "apps/hub", ".env"),
+const hasLocalEnv = fs.existsSync(path.resolve(process.cwd(), ".env.local"));
+
+fs.globSync(path.resolve(process.cwd(), "apps/*/next.config.mjs")).forEach(
+  (file) => {
+    const envFile = path.resolve(process.cwd(), path.dirname(file), ".env");
+
+    if (!fs.existsSync(envFile)) {
+      fs.symlinkSync(path.resolve(process.cwd(), ".env"), envFile);
+    }
+
+    if (hasLocalEnv && !fs.existsSync(envLocalFile)) {
+      fs.symlinkSync(path.resolve(process.cwd(), ".env.local"), envLocalFile);
+    }
+  },
 );
 
 /**

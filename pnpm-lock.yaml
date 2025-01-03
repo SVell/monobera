@@ -172,9 +172,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.19(postcss@8.4.38)
-      dotenv-cli:
-        specifier: ^7.2.1
-        version: 7.4.2
       postcss:
         specifier: ^8.4.23
         version: 8.4.38
@@ -308,9 +305,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.19(postcss@8.4.39)
-      dotenv-cli:
-        specifier: ^7.2.1
-        version: 7.4.2
       postcss:
         specifier: ^8.4.23
         version: 8.4.39
@@ -414,9 +408,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.19(postcss@8.4.38)
-      dotenv-cli:
-        specifier: ^7.2.1
-        version: 7.4.2
       postcss:
         specifier: ^8.4.23
         version: 8.4.38
@@ -532,9 +523,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.19(postcss@8.4.38)
-      dotenv-cli:
-        specifier: ^7.2.1
-        version: 7.4.2
       postcss:
         specifier: ^8.4.23
         version: 8.4.38
@@ -8974,10 +8962,6 @@ packages:
 
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
-
-  dotenv-cli@7.4.2:
-    resolution: {integrity: sha512-SbUj8l61zIbzyhIbg0FwPJq6+wjbzdn9oEtozQpZ6kW2ihCcapKVZj49oCT3oPM+mgQm+itgvUQcG5szxVrZTA==}
-    hasBin: true
 
   dotenv-expand@10.0.0:
     resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
@@ -25508,13 +25492,6 @@ snapshots:
     dependencies:
       no-case: 3.0.4
       tslib: 2.8.1
-
-  dotenv-cli@7.4.2:
-    dependencies:
-      cross-spawn: 7.0.3
-      dotenv: 16.4.5
-      dotenv-expand: 10.0.0
-      minimist: 1.2.8
 
   dotenv-expand@10.0.0: {}
 
