@@ -35,6 +35,9 @@ fs.symlinkSync(
   path.resolve(process.cwd(), "apps/hub", ".env"),
 );
 
+/**
+ * This fixes a bug where sentry variables are not set on vercel in next.config.mjs files
+ */
 if (process.env.VERCEL && process.env.SENTRY_PROJECT) {
   fs.appendFileSync(
     path.resolve(process.cwd(), ".env.local"),
