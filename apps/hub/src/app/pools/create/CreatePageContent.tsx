@@ -277,6 +277,18 @@ export default function CreatePageContent() {
     });
   };
 
+  // Handle the quantity of tokens (limit) if we are swapping between the types
+  useEffect(() => {
+    if (poolCreateTokens.length > maxTokensLength) {
+      setpoolCreateTokens((prevTokens) => prevTokens.slice(0, maxTokensLength));
+      setInitialLiquidityTokens((prevTokens) =>
+        prevTokens.slice(0, maxTokensLength),
+      );
+      setOracles((prevOracles) => prevOracles.slice(0, maxTokensLength));
+      resetWeights(weights.slice(0, maxTokensLength));
+    }
+  }, [poolType, maxTokensLength]);
+
   const handleAddLiquidityTokenChange = (
     index: number,
     updates: Partial<TokenInputType>,
