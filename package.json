@@ -2,8 +2,15 @@
   "name": "monobera",
   "private": true,
   "engines": {
-    "node": ">=v18.18.0",
+    "node": "^22.12",
     "pnpm": ">=9"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "<19",
+      "react-dom": "<19",
+      "@types/react": "<19"
+    }
   },
   "packageManager": "pnpm@9.1.4",
   "scripts": {
@@ -11,29 +18,23 @@
     "clean": "turbo clean && git clean -xdf node_modules",
     "pullenv": "vercel env pull --environment=production",
     "setenv": "node ./.scripts/set-env.js",
-    "setenv:artio": "pnpm run setenv artio",
     "setenv:bartio": "pnpm run setenv bartio",
-    "dev": "turbo dev --concurrency=20",
-    "build:hub": "turbo build --filter=hub --filter='./packages/*' --concurrency=20",
-    "build:honey": "turbo build --filter=honey --filter='./packages/*' --concurrency=20",
-    "build:storybook": "turbo build --filter=storybook --filter='./packages/*' --concurrency=20  --filter='!b-sdk'",
-    "build:lend": "turbo build --filter=lend --filter='./packages/*' --concurrency=20 --filter='!b-sdk'",
-    "build:perp": "turbo build --filter=perp --filter='./packages/*' --concurrency=20 --filter='!b-sdk'",
-    "build:berajs-docs": "turbo build --filter=berajs-docs --filter='./packages/*' --concurrency=20",
+    "build:ipfs": "NEXT_PUBLIC_HOST=ipfs turbo build --filter=@bera/hub --filter=@bera/honey --filter='./packages/*' --concurrency=20",
+    "build:hub": "turbo build --filter=@bera/hub --filter='./packages/*' --concurrency=20",
+    "build:honey": "turbo build --filter=@bera/honey --filter='./packages/*' --concurrency=20",
+    "build:storybook": "turbo build --filter=@bera/storybook --filter='./packages/*' --concurrency=20  --filter='!@berachain-foundation/berancer-sdk'",
+    "build:lend": "turbo build --filter=@bera/lend --filter='./packages/*' --concurrency=20 --filter='!@berachain-foundation/berancer-sdk'",
+    "build:perp": "turbo build --filter=@bera/perp --filter='./packages/*' --concurrency=20 --filter='!@berachain-foundation/berancer-sdk'",
+    "build:berajs-docs": "turbo build --filter=@bera/berajs-docs --filter='./packages/*' --concurrency=20",
     "build:pkg": "turbo build --filter='./packages/*' --concurrency=20",
-    "dev:hub": "turbo dev --filter=hub --filter='./packages/*' --concurrency=20",
-    "dev:honey": "turbo dev --filter=honey --filter='./packages/*' --concurrency=20",
-    "dev:storybook": "turbo dev --filter=storybook --filter='./packages/*' --concurrency=20",
-    "dev:lend": "turbo dev --filter=lend --filter='./packages/*' --concurrency=20",
-    "dev:perp": "turbo dev --filter=perp --filter='./packages/*' --concurrency=20",
-    "dev:docs": "turbo dev --filter=berajs-docs --filter='./packages/*' --concurrency=20",
+    "dev:pkg": "turbo dev --filter='./packages/*' --concurrency=20",
     "check-types": "turbo check-types",
-    "lint": "biome lint . ",
+    "lint": "biome lint .",
     "format:check": "biome format .",
     "format": "biome format --write .",
+    "postformat": "cd ./packages/b-sdk && pnpm format",
     "check": "biome check .",
     "prepare": "husky install",
-    "upsertenv": "node ./scripts/upsertVercelEnv.js",
     "knip": "knip --exclude binaries"
   },
   "dependencies": {
@@ -44,13 +45,12 @@
     "husky": "^8.0.0",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8",
-    "turbo": "^1.10.15",
+    "turbo": "2.3.3",
     "typescript": "^5.0.4",
     "vocs": "latest"
   },
   "devDependencies": {
     "@biomejs/biome": "1.5.3",
-    "@types/mixpanel-browser": "^2.49.0",
     "jscpd": "^3.5.10",
     "knip": "^5.7.0",
     "next": "^14.2.11",

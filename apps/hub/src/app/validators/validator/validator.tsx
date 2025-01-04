@@ -2,11 +2,11 @@
 
 import React from "react";
 import { notFound } from "next/navigation";
-import { useSelectedValidator } from "@bera/berajs";
+import { useValidator } from "@bera/berajs";
 import { type Address } from "viem";
 
-import { ValidatorTabs } from "../components/validator-tabs";
-import ValidatorDetails from "./validator-details";
+import { ValidatorTabs } from "../components/ValidatorTabs";
+import ValidatorDetails from "./components/ValidatorDetails";
 
 export default function Validator({
   validatorAddress,
@@ -15,22 +15,18 @@ export default function Validator({
 }) {
   const {
     data: validator,
-    isLoading,
-    isValidating,
-  } = useSelectedValidator(validatorAddress);
+    isLoading: isValidatorLoading,
+    error,
+  } = useValidator({ pubkey: validatorAddress });
 
-  if (!isLoading && !isValidating && !validator) return notFound();
+  if (!isValidatorLoading && !validator) return notFound();
 
-  return (
+  return validator?.operator ? (
     <>
-      {validator ? (
-        <div className="relative flex flex-col">
-          <ValidatorDetails validator={validator} />
-          <ValidatorTabs validator={validator} />
-        </div>
-      ) : (
-        <div>Loading...</div>
-      )}
+      <div className="relative flex flex-col">
+        <ValidatorDetails validator={validator} />
+        <ValidatorTabs validator={validator} />
+      </div>
     </>
-  );
+  ) : null;
 }

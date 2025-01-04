@@ -17,7 +17,7 @@ export const useIsFriendOfTheChef = (address?: Address) => {
       return publicClient!.readContract({
         address: beraChefAddress,
         abi: BERA_CHEF_ABI,
-        functionName: "isFriendOfTheChef",
+        functionName: "isWhitelistedVault",
         args: [address!],
       });
     },

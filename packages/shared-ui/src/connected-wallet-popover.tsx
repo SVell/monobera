@@ -19,9 +19,11 @@ import { WalletBalanceInUs } from "./wallet-balance-in-us";
 export default function ConnectedWalletPopover({
   isHoney = false,
   isPopover = true,
+  disableThemeToggle = false,
 }: {
   isHoney?: boolean;
   isPopover?: boolean;
+  disableThemeToggle?: boolean;
 }) {
   const [openPopover, setOpenPopover] = React.useState(false);
   const [openModal, setOpenModal] = React.useState(false);
@@ -140,7 +142,11 @@ export default function ConnectedWalletPopover({
           </Tabs>
         </>
       ) : (
-        <Setting goback={() => setSetting(false)} isHoney={isHoney} />
+        <Setting
+          goback={() => setSetting(false)}
+          isHoney={isHoney}
+          disableThemeToggle={disableThemeToggle}
+        />
       )}
     </>
   );

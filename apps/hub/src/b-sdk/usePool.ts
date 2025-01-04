@@ -1,60 +1,33 @@
-import { DefaultHookReturnType } from "@bera/berajs";
-import { bexSubgraphClient } from "@bera/graphql";
-import {
-  GetSubgraphPool,
-  GetSubgraphPoolQuery,
-  SubgraphPoolFragment,
-} from "@bera/graphql/dex/subgraph";
-import { POLLING } from "@bera/shared-ui";
-import { PoolStateWithBalancesAndDynamicData } from "@berachain-foundation/berancer-sdk";
-import useSWR from "swr";
+import { useMemo } from "react";
 
-import { balancerApi } from "./b-sdk";
+import { useOnChainPoolData } from "./useOnChainPoolData";
+import { useSubgraphPool } from "./useSubgraphPool";
 
-export const usePool = ({
-  id,
-}: {
-  id: string;
-}): DefaultHookReturnType<
-  [
-    SubgraphPoolFragment | undefined,
-    PoolStateWithBalancesAndDynamicData | undefined,
-  ]
-> => {
-  const subgraph = useSWR(
-    id ? `usePool-subgraph-${id}` : null,
-    async () => {
-      const res = await bexSubgraphClient.query<GetSubgraphPoolQuery>({
-        query: GetSubgraphPool,
-        variables: { id },
-      });
+export const usePool = ({ poolId }: { poolId: string }) => {
+  const { data, isLoading: isPoolLoading } = useSubgraphPool({
+    id: poolId,
+  });
 
-      return res.data?.pool;
-    },
-    {
-      refreshInterval: POLLING.NORMAL,
-    },
-  );
+  const { data: onChainPool } = useOnChainPoolData(poolId);
 
-  const v3Pool = useSWR(
-    id ? `usePool-api-${id}` : null,
-    async () => {
-      return balancerApi.pools.fetchPoolStateWithBalances(id);
-    },
-    {
-      refreshInterval: POLLING.NORMAL,
-    },
-  );
+  const [subgraphPool, v3Pool] = data ?? [];
+
+  const pool = useMemo(() => {
+    if (!subgraphPool) return onChainPool;
+
+    const merge = { ...subgraphPool };
+
+    if (onChainPool) {
+      merge.swapFee = onChainPool.swapFee;
+      merge.totalShares = onChainPool.totalShares;
+      merge.createTime = onChainPool.createTime ?? merge.createTime;
+    }
+
+    return merge;
+  }, [onChainPool, subgraphPool]);
 
   return {
-    isLoading: subgraph.isLoading || v3Pool.isLoading,
-    isValidating: subgraph.isValidating || v3Pool.isValidating,
-
-    data: [subgraph.data ?? undefined, v3Pool.data],
-    error: subgraph.error || v3Pool.error,
-    refresh: () => {
-      subgraph.mutate();
-      v3Pool.mutate();
-    },
+    data: [pool, v3Pool] as const,
+    isLoading: isPoolLoading,
   };
 };

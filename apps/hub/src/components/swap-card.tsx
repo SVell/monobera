@@ -4,10 +4,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   BGT_ABI,
+  IContractWrite,
   // Vault
   // @ts-ignore - ignore Token typing import error
   Token,
   TransactionActionType,
+  balancerVaultAbi,
+  getErrorMessage,
   useBeraJs,
   useBgtUnstakedBalance,
   usePollWalletBalances,
@@ -23,6 +26,7 @@ import {
 } from "@bera/config";
 import {
   ActionButton,
+  AddTokenDialog,
   ApproveButton,
   BREAKPOINTS,
   TokenInput,
@@ -32,14 +36,20 @@ import {
   useSlippage,
   useTxn,
 } from "@bera/shared-ui";
-import { AddTokenDialog } from "@bera/shared-ui";
 import { cn } from "@bera/ui";
 import { Alert, AlertDescription, AlertTitle } from "@bera/ui/alert";
 import { Button } from "@bera/ui/button";
 import { Card } from "@bera/ui/card";
 import { Icons } from "@bera/ui/icons";
 import { SwapBuildOutputExactIn } from "@berachain-foundation/berancer-sdk";
-import { formatUnits, isAddress, parseUnits } from "viem";
+import {
+  ContractFunctionArgs,
+  ContractFunctionName,
+  decodeFunctionData,
+  formatUnits,
+  isAddress,
+  parseUnits,
+} from "viem";
 
 import { WRAP_TYPE, useSwap } from "~/hooks/useSwap";
 import { SwapCardHeader } from "./swap-card-header";
@@ -151,6 +161,7 @@ export function SwapCard({
     isLoading: isBalancesLoading,
     useSelectedWalletBalance,
   } = usePollWalletBalances();
+
   const safeFromAmount =
     Number(fromAmount) > Number.MAX_SAFE_INTEGER
       ? Number.MAX_SAFE_INTEGER
@@ -194,10 +205,18 @@ export function SwapCard({
     actionType: TransactionActionType.SWAP,
     message: `Swap ${selectedFrom?.symbol} to ${selectedTo?.symbol}`,
     onSuccess: () => {
-      track("swap_token_success", {
-        tokenFrom: selectedFrom?.symbol,
-        tokenTo: selectedTo?.symbol,
-      });
+      if (!selectedFrom?.symbol || !selectedTo?.symbol) {
+        captureException(new Error("swap_with_unknown_symbols"));
+      } else if (!fromAmount || !toAmount) {
+        captureException(new Error("swap_with_unknown_amounts"));
+      } else {
+        track("swap", {
+          tokenFrom: selectedFrom.symbol,
+          tokenTo: selectedTo.symbol,
+          fromAmount: fromAmount,
+          toAmount: toAmount,
+        });
+      }
       setFromAmount(undefined);
       setSwapAmount("");
       setToAmount(undefined);
@@ -209,11 +228,11 @@ export function SwapCard({
       setOpenPreview(false);
     },
     onError: (e: Error | undefined) => {
-      track("swap_token_failed", {
+      track("swap_failed", {
         tokenFrom: selectedFrom?.symbol,
         tokenTo: selectedTo?.symbol,
       });
-      captureException(new Error("swap_token_failed"), {
+      captureException(new Error("swap_failed"), {
         data: {
           tokenFrom: selectedFrom?.symbol,
           tokenTo: selectedTo?.symbol,
@@ -278,7 +297,15 @@ export function SwapCard({
   } = useTxn({
     message: "Redeeming BGT for BERA",
     actionType: TransactionActionType.REDEEM_BGT,
+    onError: () => {
+      captureException("redeem_error");
+    },
     onSuccess: () => {
+      try {
+        track("redeem", { fromAmount: fromAmount, toAmount: toAmount });
+      } catch (e) {
+        captureException(e);
+      }
       refreshBalance();
       setFromAmount("");
       setToAmount("");
@@ -381,10 +408,23 @@ export function SwapCard({
             setOpen={setOpenPreview}
             write={() => {
               const calldata = swapInfo.buildCall(slippage ?? 0);
-              // @ts-expect-error export args from buildCall so we can simulate
+              // NOTE: the decode and write here is a kludge to avoid re-writing the way the balancer SDK builds txs so we can simulate
+              const decodedData = decodeFunctionData({
+                abi: balancerVaultAbi,
+                data: calldata.callData,
+              });
+
               write({
                 address: calldata.to,
-                data: calldata.callData,
+                abi: balancerVaultAbi,
+                functionName: decodedData.functionName as ContractFunctionName<
+                  typeof balancerVaultAbi,
+                  "payable" | "nonpayable"
+                >,
+                params: decodedData.args as ContractFunctionArgs<
+                  typeof balancerVaultAbi,
+                  "payable" | "nonpayable"
+                >,
                 value: calldata.value,
               });
             }}
@@ -631,7 +671,7 @@ export function SwapCard({
                     <Alert variant="destructive">
                       <AlertTitle>Error</AlertTitle>
                       <AlertDescription className="text-xs">
-                        {`Swap query failed due to '${error}'`}
+                        {getErrorMessage(error)}
                       </AlertDescription>
                     </Alert>
                   )}

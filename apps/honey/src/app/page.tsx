@@ -1,17 +1,16 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { cloudinaryUrl } from "@bera/config";
-import { cn } from "@bera/ui";
 
 import Data from "~/components/data";
 import { HoneyChart } from "~/components/honey-chart";
 import HoneyPage from "~/components/honey-page";
 import HoneyTransactionsTable from "~/components/honey-transactions-table";
 import { LoadingBee } from "~/components/loadingBee";
-import ModeSwitch from "~/components/mode-switch";
+import { cn } from "@bera/ui";
+// import ModeSwitch from "~/components/mode-switch";
 
 export default function Page() {
   return (
@@ -22,20 +21,14 @@ export default function Page() {
 }
 
 const Content = () => {
-  const [arcade, setArcade] = useState<boolean>(false);
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    const mode = searchParams.get("mode");
-    if (mode === "arcade") setArcade(true);
-    else setArcade(false);
-  }, [searchParams]);
+  const arcade = false;
   return (
     <div
       className={cn(
         arcade ? "bg-backgroundSecondary font-honey" : "pro-mode-background",
       )}
     >
-      <ModeSwitch arcade={arcade} />
+      {/* <ModeSwitch arcade={arcade} /> */}
       <HoneyPage arcade={arcade} />
       <div
         className={cn(

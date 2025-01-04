@@ -29,6 +29,7 @@ const config = {
         encoding: "utf-8",
       }),
     ) as PackageJson;
+
     pkgJson.exports = {
       ".": {
         import: "./dist/index.js",

@@ -5,7 +5,7 @@ export * from "./usePollProposalThreshold";
 export * from "./useGetPastVotes";
 export * from "./useProposalSnapshot";
 export * from "./usePollProposalVotes";
-export * from "./useCancellerRole";
+export * from "./useIsCanceller";
 export * from "./useProposalState";
 export * from "./useProposalTimelockState";
 export * from "./useHasVoted";

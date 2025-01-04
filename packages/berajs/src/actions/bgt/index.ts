@@ -1,3 +1,3 @@
-export * from "./getBgtApy";
 export * from "./getUserVaultsReward";
-export * from "./getGauge";
+export * from "./getRewardVault";
+export * from "./getRewardVaultIncentives";

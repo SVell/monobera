@@ -51,9 +51,13 @@
       "import": "./dist/modules/chain/chain.codegen.js",
       "types": "./dist/modules/chain/chain.codegen.d.ts"
     },
-    "./pol": {
-      "import": "./dist/modules/pol/pol.codegen.js",
-      "types": "./dist/modules/pol/pol.codegen.d.ts"
+    "./pol/subgraph": {
+      "import": "./dist/modules/pol/subgraph.codegen.js",
+      "types": "./dist/modules/pol/subgraph.codegen.d.ts"
+    },
+    "./pol/api": {
+      "import": "./dist/modules/pol/api.codegen.js",
+      "types": "./dist/modules/pol/api.codegen.d.ts"
     },
     "./dex/subgraph": {
       "import": "./dist/modules/dex/subgraph.codegen.js",
@@ -80,6 +84,12 @@
       ],
       "dex/api": [
         "./dist/modules/dex/api.codegen.d.ts"
+      ],
+      "pol/subgraph": [
+        "./dist/modules/pol/subgraph.codegen.d.ts"
+      ],
+      "pol/api": [
+        "./dist/modules/pol/api.codegen.d.ts"
       ]
     }
   }

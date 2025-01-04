@@ -8,6 +8,10 @@ fragment ProposalSelection on Proposal {
   createdAtBlock
   unverifiedForumLink
   quorum
+  succeededAt
+  timelock {
+    id
+  }
   pollResult {
     for
     forVotersCount
@@ -27,6 +31,7 @@ fragment ProposalSelection on Proposal {
   }
   voteEndBlock
   voteStartBlock
+  queueStart
   queueEnd
   canceledAt
   canceledAt
@@ -59,7 +64,9 @@ fragment ProposalWithVotes on Proposal {
     ...ExecutableCallSubset
   }
 
-  timelockId
+  timelock {
+    id
+  }
 
   votes(orderBy: weight, orderDirection: desc) {
     ...ProposalVote

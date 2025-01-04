@@ -12,7 +12,7 @@ import { Icons } from "@bera/ui/icons";
 export const Resources = () => {
   return (
     <div className="grid w-full auto-rows-[348px] grid-cols-1 justify-center gap-4 lg:grid-cols-2">
-      <div className="z-3 relative flex w-full flex-1 flex-col justify-center gap-6 rounded-xl border border-border px-4 py-3">
+      <div className="z-3 bg-background relative flex w-full flex-1 flex-col justify-center gap-6 rounded-xl border border-border px-4 py-3">
         <div className="text-4xl font-bold">
           Dive Into The <br />
           Documentation.

@@ -30,6 +30,8 @@ const fontHoney = Jua({
 
 export const metadata: Metadata = {
   metadataBase: new URL(honeyUrl),
+  title: "Honey",
+  description: "Mint, redeem, and trade Honey",
 };
 
 export default function RootLayout(props: { children: React.ReactNode }) {
@@ -56,7 +58,6 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           fontHoney.variable,
         )}
       >
-        {" "}
         <TermOfUseModal />
         <HoneyProviders>
           <Header

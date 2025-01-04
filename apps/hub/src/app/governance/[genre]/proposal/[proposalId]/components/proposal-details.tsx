@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { FC, useMemo } from "react";
+import React, { FC } from "react";
 import {
   Vote,
   useBeraJs,
@@ -79,6 +79,9 @@ export default function ProposalDetails({
 
   const { isLoading, data: subgraphProposal } = usePollProposal(
     proposalId ?? txProposal?.id,
+    {
+      autoRefresh: true,
+    },
   );
 
   const proposal = {

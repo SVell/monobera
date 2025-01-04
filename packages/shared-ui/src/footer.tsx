@@ -5,8 +5,6 @@ import {
   blockExplorerUrl,
   blogUrl,
   careersUrl,
-  dexName,
-  dexUrl,
   discord,
   docsUrl,
   github,
@@ -26,24 +24,12 @@ import { Icons } from "@bera/ui/icons";
 const footerNavigation = {
   ecosystem: [
     {
-      name: dexName,
-      href: dexUrl,
-    },
-    {
       name: hubName,
       href: hubUrl,
     },
     {
       name: honeyName,
       href: honeyUrl,
-    },
-    {
-      name: lendName,
-      href: lendUrl,
-    },
-    {
-      name: perpsName,
-      href: perpsUrl,
     },
     {
       name: blockExplorerName,

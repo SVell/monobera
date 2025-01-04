@@ -1,7 +1,9 @@
 import { SwapRequest, useBeraJs, type DefaultHookOptions } from "@bera/berajs";
 import { beraTokenAddress, chainId } from "@bera/config";
+import { useDeadline } from "@bera/shared-ui";
 import {
   Address,
+  MAX_UINT256,
   Path,
   Slippage,
   SorHop,
@@ -15,10 +17,12 @@ import {
   TokenAmount,
   ZERO_ADDRESS,
 } from "@berachain-foundation/berancer-sdk";
+import { TRANSACTION_MODE } from "node_modules/@bera/shared-ui/src/settings";
 import useSWR from "swr";
 import { formatUnits } from "viem";
 import { usePublicClient } from "wagmi";
 
+import { DEFAULT_DEADLINE } from "~/utils/constants";
 import { balancerApi, nativeToken } from "./b-sdk";
 
 type IUsePollSwapsArgs = SwapRequest;
@@ -35,7 +39,6 @@ export interface SwapInfoV4 {
   amountInFormatted: string;
   buildCall: (
     slippagePercent: number,
-    deadlineIn?: number, // defaults to 30 seconds
   ) => SwapBuildOutputExactIn | SwapBuildOutputExactOut;
   swapPaths: Path[];
   routes: SorRoute[];
@@ -62,7 +65,7 @@ function getEmptyResponse(): SwapInfoV4 {
     expectedAmountOutFormatted: "0",
     amountInFormatted: "0",
     priceImpactPercentage: 0,
-    buildCall: (slippagePercent: number, deadlineIn?: number) =>
+    buildCall: (slippagePercent: number) =>
       ({
         swapAmount: BigInt(0),
         returnAmount: BigInt(0),
@@ -108,7 +111,7 @@ export const usePollBalancerSwap = (
 
   const publicClient = usePublicClient();
   const { account, config: beraConfig } = useBeraJs();
-  const defaultDeadlineIn = 30; // seconds
+  const { deadline, deadlineMode } = useDeadline();
 
   const config = options?.beraConfigOverride ?? beraConfig;
   const QUERY_KEY =
@@ -123,7 +126,7 @@ export const usePollBalancerSwap = (
     isZero(amount) || // TODO: it would be nice to strengthen the string formatting for inputs
     options?.isTyping
       ? null // Prevent fetching when required data is missing
-      : [tokenIn, tokenOut, amount];
+      : [tokenIn, tokenOut, amount, deadline];
 
   return useSWR<SwapInfoV4>(
     QUERY_KEY,
@@ -221,15 +224,18 @@ export const usePollBalancerSwap = (
             queryOutput.amountIn.amount,
             tokenInDecimals,
           ),
-          buildCall: (
-            slippagePercent: number,
-            deadlineIn = defaultDeadlineIn,
-          ) =>
+          buildCall: (slippagePercent: number) =>
             swap.buildCall({
               slippage: Slippage.fromPercentage(
                 slippagePercent.toString() as `${number}`,
               ),
-              deadline: BigInt(Math.round(Date.now() / 1000) + deadlineIn),
+              deadline:
+                deadlineMode === TRANSACTION_MODE.INFINITY
+                  ? MAX_UINT256
+                  : BigInt(
+                      Math.round(Date.now() / 1000) +
+                        (deadline ? deadline : DEFAULT_DEADLINE),
+                    ),
               queryOutput,
               sender: account,
               recipient: account,

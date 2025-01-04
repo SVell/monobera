@@ -15,7 +15,7 @@ const _PoolStaticPage = () => {
   const searchParams = useSearchParams();
   const poolId = searchParams.get("address");
 
-  if (!poolId || !isAddress(poolId)) {
+  if (!poolId) {
     return notFound();
   }
   return <PoolPageContent poolId={poolId} />;

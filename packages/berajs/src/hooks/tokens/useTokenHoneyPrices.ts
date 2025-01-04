@@ -23,7 +23,7 @@ export const useTokenHoneyPrices = (
   const swrResponse = useSWR(
     QUERY_KEY,
     async () => {
-      return getTokenHoneyPrices({
+      return await getTokenHoneyPrices({
         tokenAddresses,
         config: options?.beraConfigOverride ?? beraConfig,
       });

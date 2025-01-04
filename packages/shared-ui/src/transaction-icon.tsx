@@ -91,6 +91,8 @@ export const TransactionIcon = ({
         return <Icons.delegate_oct />;
       case TransactionActionType.REVOKE_OCT:
         return <Icons.revoke_oct />;
+      case TransactionActionType.CREATE_REWARDS_VAULT:
+        return <Icons.add />;
       default:
         return <Icons.success />;
     }

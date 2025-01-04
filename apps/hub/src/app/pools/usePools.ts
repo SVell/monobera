@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
-import { useBeraJs, useBgtInflation, type PoolV2 } from "@bera/berajs";
+import { useMemo } from "react";
+import { useBeraJs } from "@bera/berajs";
+import { balancerApiChainName } from "@bera/config";
 import { bexApiGraphqlClient } from "@bera/graphql";
 import {
   GetPools,
   GetPoolsQuery,
   GetPoolsQueryVariables,
-  MinimalPoolInListFragment,
+  GqlChain,
 } from "@bera/graphql/dex/api";
 import { POLLING } from "@bera/shared-ui";
 import useSWR from "swr";
@@ -19,12 +20,17 @@ export const usePools = ({ keyword }: { keyword: string }) => {
   } = useSWR(
     ["useAllPools", keyword],
     async () => {
-      const pools = await bexApiGraphqlClient.query<GetPoolsQuery>({
+      const pools = await bexApiGraphqlClient.query<
+        GetPoolsQuery,
+        GetPoolsQueryVariables
+      >({
         query: GetPools,
         variables: {
           textSearch: keyword,
+          chain: balancerApiChainName as GqlChain,
         },
       });
+
       return pools.data?.poolGetPools ?? [];
     },
     {
@@ -47,6 +53,7 @@ export const usePools = ({ keyword }: { keyword: string }) => {
         variables: {
           textSearch: keyword,
           userAddress: account,
+          chain: balancerApiChainName as GqlChain,
         },
       });
       return pools.data?.poolGetPools ?? [];

@@ -1,4 +1,4 @@
-import { type GetAllValidatorBlockCountQuery } from "@bera/graphql/pol";
+import { type GetAllValidatorBlockCountQuery } from "@bera/graphql/pol/subgraph";
 import { mutate } from "swr";
 import useSWRImmutable from "swr/immutable";
 
@@ -19,7 +19,6 @@ export const usePollValidatorAllBlockStats = (
     async () => {
       return await getValidatorAllBlockStats({
         config,
-        timestamp: Math.floor(Date.now() - 60 * 120 * 1000) * 1000, // 2 hours ago to get the latest timestamp from an hour ago
       });
     },
     {

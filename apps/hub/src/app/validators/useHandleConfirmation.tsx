@@ -25,7 +25,7 @@ export const useHandleConfirmation = () => {
       setTimeout(() => {
         refresh();
         refreshBalance();
-        setHasSubmittedTxn({} as any);
+        setHasSubmittedTxn({});
       }, 5000);
     },
   });

@@ -1,4 +1,5 @@
 import { Address, PublicClient } from "viem";
+
 import { BERA_VAULT_REWARDS_ABI } from "~/abi";
 
 export interface GetUserVaultsInfo {
@@ -16,16 +17,10 @@ export const getUserVaultsReward = async ({
   if (!account) throw new Error("Missing user account");
   if (!vaultAddress) throw new Error("Missing vault address");
 
-  try {
-    const result = await publicClient.readContract({
-      address: vaultAddress,
-      abi: BERA_VAULT_REWARDS_ABI,
-      functionName: "earned",
-      args: [account as `0x${string}`],
-    });
-    return result as bigint;
-  } catch (error) {
-    console.log(error);
-    return 0n;
-  }
+  return await publicClient.readContract({
+    address: vaultAddress,
+    abi: BERA_VAULT_REWARDS_ABI,
+    functionName: "earned",
+    args: [account as `0x${string}`],
+  });
 };

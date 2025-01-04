@@ -28,10 +28,11 @@ export default function Page({
 
   const { validatorAddress } = params;
 
-  if (!validatorAddress || !isAddress(validatorAddress)) {
+  if (!validatorAddress) {
     notFound();
   }
-  return <Validator {...{ validatorAddress }} />;
+
+  return <Validator validatorAddress={validatorAddress} />;
 }
 
 export function generateStaticParams() {

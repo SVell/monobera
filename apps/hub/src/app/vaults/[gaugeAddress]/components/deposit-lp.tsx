@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   BERA_VAULT_REWARDS_ABI,
-  type Gauge,
   type Token,
   TransactionActionType,
   usePollWalletBalances,
@@ -12,52 +11,73 @@ import {
   ActionButton,
   ApproveButton,
   TokenInput,
+  useAnalytics,
   useTxn,
 } from "@bera/shared-ui";
 import { Button } from "@bera/ui/button";
 import BigNumber from "bignumber.js";
-import { parseUnits } from "viem";
+import { Address, parseUnits } from "viem";
+import { ApiVaultFragment } from "@bera/graphql/pol/api";
 
 export const DepositLP = ({
   lpToken,
-  gauge,
+  rewardVault,
 }: {
   lpToken: Token;
-  gauge: Gauge;
+  rewardVault: ApiVaultFragment;
 }) => {
-  const { useSelectedWalletBalance } = usePollWalletBalances({
-    externalTokenList: [lpToken],
-  });
+  const { useSelectedWalletBalance, refresh: refreshWalletBalances } =
+    usePollWalletBalances({
+      externalTokenList: [lpToken],
+    });
+
   const balance = useSelectedWalletBalance(lpToken.address);
   const [depositAmount, setDepositAmount] = useState("");
   const validAmount =
     BigNumber(depositAmount).gt(0) &&
     BigNumber(depositAmount).lte(balance?.formattedBalance ?? "0");
 
-  const { refresh } = usePollVaultsInfo({
-    vaultAddress: gauge.vaultAddress,
+  const { refresh: refreshVaultInfo } = usePollVaultsInfo({
+    vaultAddress: rewardVault.vaultAddress as Address,
   });
 
+  const { captureException, track } = useAnalytics();
   const { write, ModalPortal } = useTxn({
-    message: "Deposit LP Tokens",
+    message: "Stake LP Tokens", // AKA 'stake'
     actionType: TransactionActionType.ADD_LIQUIDITY,
     onSuccess: () => {
-      refresh();
+      try {
+        track("stake", {
+          quantity: depositAmount,
+          token: lpToken.symbol,
+          vault: rewardVault.vaultAddress,
+        });
+        setDepositAmount("");
+      } catch (e) {
+        captureException(e);
+      }
+      refreshWalletBalances();
+      refreshVaultInfo();
+    },
+    onError: (e: Error | undefined) => {
+      track("stake_failed");
+      captureException(e);
     },
   });
 
   const { data: allowance } = usePollAllowance({
-    spender: gauge.vaultAddress,
+    spender: rewardVault.vaultAddress as Address,
     token: lpToken,
   });
 
   const [exceeding, setExceeding] = useState(false);
+
   return (
     <div className="flex flex-col gap-4 rounded-md border border-border p-4">
       <div>
-        <div className="text-lg font-semibold leading-7">Deposit Tokens</div>
+        <div className="text-lg font-semibold leading-7">Stake Tokens</div>
         <div className="mt-1 text-sm leading-5">
-          Deposit your tokens to start earning BGT rewards
+          Stake your tokens to start earning BGT rewards
         </div>
         <div className="mt-4 rounded-md border border-border bg-muted">
           <TokenInput
@@ -85,7 +105,7 @@ export const DepositLP = ({
         !exceeding ? (
           <ApproveButton
             token={lpToken}
-            spender={gauge.vaultAddress}
+            spender={rewardVault.vaultAddress as Address}
             amount={parseUnits(depositAmount, lpToken.decimals)}
           />
         ) : (
@@ -94,14 +114,14 @@ export const DepositLP = ({
             disabled={!validAmount || exceeding}
             onClick={() =>
               write({
-                address: gauge.vaultAddress,
+                address: rewardVault.vaultAddress as Address,
                 abi: BERA_VAULT_REWARDS_ABI,
                 functionName: "stake",
                 params: [parseUnits(depositAmount, lpToken.decimals)],
               })
             }
           >
-            Deposit
+            Stake
           </Button>
         )}
       </ActionButton>

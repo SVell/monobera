@@ -1,5 +1,9 @@
 import { bgtClient } from "@bera/graphql";
-import { GetGauges, type GetGaugesQuery } from "@bera/graphql/pol";
+import {
+  GetGauges,
+  GetGaugesQueryVariables,
+  type GetGaugesQuery,
+} from "@bera/graphql/pol/subgraph";
 
 import { type BeraConfig } from "~/types";
 
@@ -9,7 +13,10 @@ export const getGaugesData = async ({
   config: BeraConfig;
 }): Promise<GetGaugesQuery | undefined> => {
   try {
-    const result = await bgtClient.query<GetGaugesQuery>({
+    const result = await bgtClient.query<
+      GetGaugesQuery,
+      GetGaugesQueryVariables
+    >({
       query: GetGauges,
     });
 

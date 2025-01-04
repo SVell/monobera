@@ -35,6 +35,7 @@ export interface useContractWriteApi {
   isSuccess: boolean;
   isError: boolean;
   write: (props: IContractWrite) => Promise<void>;
+  reset: () => void;
 }
 
 export interface useTxnSendWriteApi {

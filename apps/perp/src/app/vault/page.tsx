@@ -17,6 +17,7 @@ export function generateMetadata(): Metadata {
     title: `Vault | ${perpsName}`,
   };
 }
+
 export default async function Vault() {
   const depositText = (
     <div className="flex flex-col items-start pr-4">

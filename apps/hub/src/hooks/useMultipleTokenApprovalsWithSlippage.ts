@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { usePollAllowances, type Token } from "@bera/berajs";
-import { beraTokenAddress } from "@bera/config";
+import { useMemo } from "react";
+import { usePollAllowances, type Token, type TokenInput } from "@bera/berajs";
 import { Address, parseUnits } from "viem";
-
-import { type TokenInput } from "./useMultipleTokenInput";
 
 export type NeedsApprovalToken = Token & {
   maxAmountIn: bigint;
@@ -20,6 +17,7 @@ const useMultipleTokenApprovalsWithSlippage = (
     () =>
       tokenInput
         .filter((token: TokenInput) => token !== undefined)
+        .filter((token) => token.amount !== "0")
         .map((token) => token),
     [tokenInput],
   );

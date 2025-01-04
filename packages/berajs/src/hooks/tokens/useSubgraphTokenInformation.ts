@@ -1,10 +1,10 @@
 import useSWR, { mutate } from "swr";
 
 import { getTokenHoneyPrice } from "~/actions/honey";
+import { getSubgraphTokenInformation } from "~/actions/shared/getSubgraphTokenInformation";
 import POLLING from "~/enum/polling";
 import { DefaultHookOptions, DefaultHookReturnType } from "~/types/global";
 import { Token, useBeraJs } from "../..";
-import { getSubgraphTokenInformation } from "~/actions/shared/getSubgraphTokenInformation";
 
 /**
  *
@@ -25,10 +25,11 @@ export const useSubgraphTokenInformation = (
   const swrResponse = useSWR<Token | undefined>(
     QUERY_KEY,
     async () => {
-      return getSubgraphTokenInformation({
+      const token = await getSubgraphTokenInformation({
         tokenAddress: args.tokenAddress,
         config: options?.beraConfigOverride ?? beraConfig,
       });
+      return token;
     },
     {
       ...options,

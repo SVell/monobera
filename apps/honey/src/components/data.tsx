@@ -4,17 +4,27 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@apollo/client";
-import { cloudinaryUrl, dexUrl } from "@bera/config";
+import { honeyAbi } from "@bera/berajs";
+import { cloudinaryUrl, honeyTokenAddress, hubUrl } from "@bera/config";
 import { GetGlobalData } from "@bera/graphql";
 import { FormattedNumber } from "@bera/shared-ui";
 import { Icons } from "@bera/ui/icons";
+import { formatEther } from "viem";
+import { useReadContract } from "wagmi";
 
 import DataCard from "./data-card";
 
 export default function Data({ arcade }: { arcade: boolean }) {
   const { loading, data } = useQuery(GetGlobalData);
+  const { data: totalHoneySupply } = useReadContract({
+    address: honeyTokenAddress,
+    abi: honeyAbi,
+    functionName: "totalSupply",
+  });
   const dailyVolume = data?.honeyVolumeDayDatas[0]?.amount ?? "0";
-  const totalHoneySupply = data?.honeySupplyHourDatas[0]?.amount ?? "0";
+  const formattedTotalHoneySupply = formatEther(
+    (totalHoneySupply as bigint) ?? 0,
+  );
   return (
     <section className="py-4 lg:py-16" id="stats">
       {arcade ? (
@@ -25,7 +35,7 @@ export default function Data({ arcade }: { arcade: boolean }) {
               title="Total Honey Supply"
               value={
                 <FormattedNumber
-                  value={totalHoneySupply}
+                  value={formattedTotalHoneySupply}
                   symbol="USD"
                   compact={false}
                 />
@@ -62,7 +72,7 @@ export default function Data({ arcade }: { arcade: boolean }) {
             title="Total Honey Supply"
             value={
               <FormattedNumber
-                value={totalHoneySupply}
+                value={formattedTotalHoneySupply}
                 symbol="USD"
                 compact={false}
                 compactThreshold={9_999_999_999}
@@ -82,15 +92,15 @@ export default function Data({ arcade }: { arcade: boolean }) {
                 compactThreshold={9_999_999_999}
               />
             }
-            icon={<Icons.candleStick />}
             arcade={arcade}
+            icon={<Icons.candleStick className="h-5 w-5" />}
             isLoading={loading}
           />
           <DataCard
             title="Honey Price"
             value="$1.00"
-            icon={<Icons.honey className="h-6 w-6" />}
             arcade={arcade}
+            icon={<Icons.honey className="h-5 w-5" />}
             isLoading={loading}
           />
         </div>
@@ -111,7 +121,7 @@ const ArcadeData = () => {
       </div>
       <Link
         className="mt-4 flex h-11 w-20 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-yellow-900 px-3 py-2 text-xl text-yellow-50"
-        href={`${dexUrl}/pools`}
+        href={`${hubUrl}/pools`}
         target="_blank"
       >
         Add

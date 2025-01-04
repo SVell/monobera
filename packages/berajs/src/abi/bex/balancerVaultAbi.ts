@@ -754,4 +754,4 @@ export const balancerVaultAbi = [
     type: "function",
   },
   { stateMutability: "payable", type: "receive" },
-];
+] as const;

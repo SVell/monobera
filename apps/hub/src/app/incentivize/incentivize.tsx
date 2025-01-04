@@ -7,10 +7,11 @@ import {
   TransactionActionType,
   truncateHash,
   usePollAllowance,
-  usePollIncentivesInfo,
-  useSelectedGauge,
+  useRewardVaultIncentives,
+  useRewardVault,
   useTokenInformation,
   type Token,
+  useMultipleTokenInformation,
 } from "@bera/berajs";
 import { blockExplorerUrl } from "@bera/config";
 import {
@@ -35,24 +36,19 @@ export const Incentivize = () => {
   const selectedToken = sp.get("token") as Address | null;
   //is valid pool address
 
-  if (
-    !gauge ||
-    !isAddress(gauge) ||
-    !selectedToken ||
-    !isAddress(selectedToken)
-  )
-    return notFound();
-
   const {
     data: gaugeInfo,
     isLoading: isGaugeLoading,
     isValidating: isGaugeValidating,
-  } = useSelectedGauge(gauge);
-  if (!gauge && !isGaugeLoading && !isGaugeValidating) return notFound();
+  } = useRewardVault(gauge as Address);
+
+  const { data: incentiveInfo } = useRewardVaultIncentives({
+    address: gauge as Address,
+  });
 
   const [token, setToken] = useState<Token | undefined>(undefined);
   const { data: tokenT, isLoading: isTokenLoading } = useTokenInformation({
-    address: selectedToken,
+    address: selectedToken as Address | undefined,
   });
 
   useMemo(() => {
@@ -62,11 +58,9 @@ export const Incentivize = () => {
   const [totalAmount, setTotalAmount] = useState("0");
   const [incentiveRate, setIncentiveRate] = useState("0");
 
-  const whiteListedTokens = useMemo(() => {
-    return gaugeInfo
-      ? gaugeInfo.vaultWhitelist.whitelistedTokens.map((t) => t.token)
-      : [];
-  }, [gaugeInfo]);
+  const { data: whiteListedTokens } = useMultipleTokenInformation({
+    addresses: incentiveInfo ? incentiveInfo.map((t) => t.token) : [],
+  });
 
   const amountOfProposals = useMemo(
     () => BigNumber(totalAmount).div(incentiveRate, 18).toString(),
@@ -74,12 +68,16 @@ export const Incentivize = () => {
   );
 
   const { data: allowance } = usePollAllowance({
-    spender: gaugeInfo?.vaultAddress ?? "0x",
+    spender: (gaugeInfo?.address as Address) ?? "0x",
     token: token,
   });
 
-  const { data: incentive, isLoading: isIncentiveLoading } =
-    usePollIncentivesInfo(token?.address ?? "0x", gauge ?? "0x");
+  const { data: incentives, isLoading: isIncentiveLoading } =
+    useRewardVaultIncentives({
+      address: gauge as Address,
+    });
+
+  const incentive = incentives?.find((i) => i.token === token?.address);
 
   const {
     write,
@@ -118,11 +116,11 @@ export const Incentivize = () => {
             title={
               <>
                 <GaugeIcon
-                  address={gauge}
+                  address={gauge as Address}
                   size="xl"
                   overrideImage={gaugeInfo?.metadata?.logoURI ?? ""}
                 />
-                {gaugeInfo?.metadata?.name ?? truncateHash(gauge)}
+                {gaugeInfo?.metadata?.name ?? truncateHash(gauge ?? "0x")}
               </>
             }
             subtitles={[
@@ -132,10 +130,10 @@ export const Incentivize = () => {
                   <>
                     {" "}
                     <MarketIcon
-                      market={gaugeInfo?.metadata?.product ?? ""}
+                      market={gaugeInfo?.metadata?.productName ?? ""}
                       size={"md"}
                     />
-                    {gaugeInfo?.metadata?.product ?? "OTHER"}
+                    {gaugeInfo?.metadata?.productName ?? "OTHER"}
                   </>
                 ),
                 externalLink: gaugeInfo?.metadata?.url ?? "",
@@ -168,7 +166,7 @@ export const Incentivize = () => {
         <input
           className="cursor-not-allowed rounded-md border border-border px-3 py-2 text-sm	"
           disabled
-          placeholder={gauge}
+          placeholder={gauge ?? ""}
         />
       </div>
 
@@ -186,7 +184,7 @@ export const Incentivize = () => {
               disabled={isLoading || !token}
               selected={token}
               amount={totalAmount}
-              customTokenList={[...whiteListedTokens]}
+              customTokenList={[...(whiteListedTokens ?? [])]}
               setAmount={(amount) => setTotalAmount(amount as `${number}`)}
               onTokenSelection={(token: Token | undefined) => setToken(token)}
               onExceeding={(exceeding) => setExceeding(exceeding)}
@@ -219,10 +217,7 @@ export const Incentivize = () => {
           <div className="text-right text-xs font-semibold text-muted-foreground">
             Minimum Incentive Rate:{" "}
             <FormattedNumber
-              value={formatUnits(
-                incentive?.minIncentiveRate,
-                token?.decimals ?? 18,
-              )}
+              value={incentive?.minIncentiveRate}
               compact
               symbol={token?.symbol ?? ""}
             />
@@ -230,8 +225,7 @@ export const Incentivize = () => {
         )}
       </div>
 
-      {parseUnits(incentiveRate, token?.decimals ?? 18) <
-        (incentive?.minIncentiveRate ?? 0n) &&
+      {incentiveRate < (incentive?.minIncentiveRate ?? "0") &&
         incentiveRate !== "" &&
         incentiveRate !== "0" && (
           <Alert variant="destructive">Minimum incentive rate not meet</Alert>
@@ -278,7 +272,7 @@ export const Incentivize = () => {
         token ? (
           <ApproveButton
             token={token}
-            spender={gaugeInfo?.vaultAddress ?? "0x"}
+            spender={gaugeInfo?.vaultAddress as Address}
             amount={parseUnits(totalAmount, token?.decimals ?? 18)}
           />
         ) : (
@@ -297,7 +291,7 @@ export const Incentivize = () => {
             }
             onClick={() =>
               write({
-                address: gaugeInfo?.vaultAddress ?? "0x",
+                address: gaugeInfo?.vaultAddress as Address,
                 abi: BERA_VAULT_REWARDS_ABI,
                 functionName: "addIncentive",
                 params: [

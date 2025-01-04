@@ -12,7 +12,10 @@ import { DefaultHookOptions, DefaultHookReturnType } from "~/types";
 
 export interface UseCollateralsRatesResponse
   extends DefaultHookReturnType<CollateralRatesMap | undefined> {
-  getCollateralRate: (collateral: string) => CollateralRates | undefined;
+  getCollateralRate: (
+    collateral: string,
+    isBasketMode: boolean,
+  ) => CollateralRates | undefined;
 }
 
 export const useCollateralsRates = (
@@ -30,8 +33,8 @@ export const useCollateralsRates = (
     async () => {
       if (!publicClient) throw new Error("publicClient is not defined");
       if (!config) throw new Error("missing beraConfig");
-      if (!config.contracts?.honeyRouterAddress)
-        throw new Error("missing contract address honeyRouterAddress");
+      if (!config.contracts?.honeyFactoryAddress)
+        throw new Error("missing contract address honeyFactoryAddress");
       if (!config.contracts?.multicallAddress)
         throw new Error("missing contract address multicallAddress");
       return await getCollateralRates({
@@ -43,8 +46,13 @@ export const useCollateralsRates = (
     { ...options?.opts },
   );
 
-  const getCollateralRate = (collateral: string): CollateralRates | undefined =>
-    swrResponse.data?.[getAddress(collateral)];
+  const getCollateralRate = (
+    collateral: string,
+    isBasketMode: boolean,
+  ): CollateralRates | undefined =>
+    isBasketMode
+      ? swrResponse.data?.basket
+      : swrResponse.data?.single[getAddress(collateral)];
 
   return {
     ...swrResponse,

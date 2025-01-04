@@ -5,16 +5,13 @@ import type { Token } from "./dex";
 
 export interface BeraConfig {
   endpoints?: {
-    dexIndexer?: string;
     tokenList?: string;
     validatorList?: string;
     marketList?: string;
     validatorInfo?: string;
-    polEndpoint?: string;
   };
   subgraphs?: {
     honeySubgraph?: string;
-    dexSubgraph?: string;
     lendSubgraph?: string;
     polSubgraph?: string;
     governanceSubgraph?: string;
@@ -30,7 +27,8 @@ export interface BeraConfig {
     lendPoolProxyAddress?: Address;
     lendUIDataProviderAddress?: Address;
     lendRewardsAggregatorAddress?: Address;
-    honeyRouterAddress?: Address;
+    honeyFactoryAddress?: Address;
+    honeyFactoryReaderAddress?: Address;
     perpsTradingContractAddress?: Address;
     governance?: {
       governor: Address;

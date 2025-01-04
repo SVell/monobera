@@ -1,9 +1,9 @@
-import { type GetValidatorTokenRewardUsagesQuery } from "@bera/graphql/pol";
+import { type GetValidatorIncentivesReceivedsQuery } from "@bera/graphql/pol/subgraph";
 import { mutate } from "swr";
 import useSWRImmutable from "swr/immutable";
 import { Address } from "viem";
 
-import { getValidatorTokenRewardUsages } from "~/actions/pol";
+import { getValidatorIncentivesReceiveds } from "~/actions/pol";
 import { useBeraJs } from "~/contexts";
 import { DefaultHookOptions, DefaultHookReturnType } from "~/types";
 
@@ -11,7 +11,7 @@ export const usePollValidatorTokenRewards = (
   address: Address,
   daysRange: number,
   options?: DefaultHookOptions,
-): DefaultHookReturnType<GetValidatorTokenRewardUsagesQuery | undefined> => {
+): DefaultHookReturnType<GetValidatorIncentivesReceivedsQuery | undefined> => {
   const { config: beraConfig } = useBeraJs();
   const config = options?.beraConfigOverride ?? beraConfig;
   const QUERY_KEY = [
@@ -20,7 +20,7 @@ export const usePollValidatorTokenRewards = (
     daysRange,
   ];
   const swrResponse = useSWRImmutable<
-    GetValidatorTokenRewardUsagesQuery | undefined
+    GetValidatorIncentivesReceivedsQuery | undefined
   >(
     QUERY_KEY,
     async () => {
@@ -30,7 +30,7 @@ export const usePollValidatorTokenRewards = (
         );
       }
 
-      return await getValidatorTokenRewardUsages({
+      return await getValidatorIncentivesReceiveds({
         config,
         address,
         daysRange,

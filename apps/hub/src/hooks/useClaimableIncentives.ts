@@ -2,7 +2,7 @@ import { Token, useBeraJs } from "@bera/berajs";
 import { POLLING } from "@bera/shared-ui";
 import useSWR from "swr";
 
-export const useClaimableIncetives = (): any => {
+export const useClaimableIncetives = () => {
   const { account } = useBeraJs();
   const QUERY_KEY = ["useClaimableIncetives", account];
   const swrResponse = useSWR<

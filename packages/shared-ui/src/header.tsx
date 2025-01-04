@@ -12,6 +12,7 @@ import { MainNav } from "./main-nav";
 import { MobileDropdown } from "./mobile-nav";
 import { BGTStatusBtn } from "./bgt-status";
 import { useBeraJs } from "@bera/berajs";
+import { hubName } from "@bera/config";
 
 const ThemeToggleMobile = dynamic(
   () => import("./theme-toggle-mobile").then((mod) => mod.ThemeToggleMobile),
@@ -63,9 +64,13 @@ export function Header({
           >
             <Icons.faucetFav className="h-10 w-10 hover:opacity-80" />
           </Link> */}
-          {isReady && <BGTStatusBtn />}
+          {isReady && <BGTStatusBtn isHub={appName === hubName} />}
           {!hideConnectBtn && (
-            <ConnectButton isNavItem={true} isHoney={isHoney} />
+            <ConnectButton
+              isNavItem={true}
+              isHoney={isHoney}
+              disableThemeToggle={hideTheme}
+            />
           )}
           <MobileDropdown navItems={isHoney ? mobileNavItems : navItems} />
         </div>

@@ -1,16 +1,11 @@
-import { type GetValidatorBgtStakedQuery } from "@bera/graphql/pol";
+import { type GetValidatorBgtStakedQuery } from "@bera/graphql/pol/subgraph";
 import { mutate } from "swr";
 import useSWRImmutable from "swr/immutable";
 import { Address } from "viem";
 
 import { getValidatorBgtStaked } from "~/actions/pol";
 import { useBeraJs } from "~/contexts";
-import {
-  DefaultHookOptions,
-  DefaultHookReturnType,
-  // TODO: remove this once we have the type
-  // ValidatorBgtStaked,
-} from "~/types";
+import { DefaultHookOptions, DefaultHookReturnType } from "~/types";
 
 export const usePollValidatorBgtStaked = (
   address: Address,

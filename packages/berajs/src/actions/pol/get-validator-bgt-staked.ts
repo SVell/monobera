@@ -1,8 +1,9 @@
 import { bgtClient } from "@bera/graphql";
 import {
   GetValidatorBgtStaked,
+  GetValidatorBgtStakedQueryVariables,
   type GetValidatorBgtStakedQuery,
-} from "@bera/graphql/pol";
+} from "@bera/graphql/pol/subgraph";
 import { Address } from "viem";
 
 import { type BeraConfig } from "~/types";
@@ -14,7 +15,10 @@ export const getValidatorBgtStaked = async ({
   daysRange,
 }: {
   config: BeraConfig;
-  address: Address;
+  /**
+   * Validator pubkey
+   */
+  address: string;
   daysRange: number;
 }): Promise<GetValidatorBgtStakedQuery | undefined> => {
   try {
@@ -22,10 +26,13 @@ export const getValidatorBgtStaked = async ({
       throw new Error("pol subgraph uri is not found in config");
     }
 
-    const result = await bgtClient.query<GetValidatorBgtStakedQuery>({
+    const result = await bgtClient.query<
+      GetValidatorBgtStakedQuery,
+      GetValidatorBgtStakedQueryVariables
+    >({
       query: GetValidatorBgtStaked,
       variables: {
-        address: address.toLowerCase(),
+        pubKey: address.toLowerCase(),
         timestamp: formatDaysToTimestamps(daysRange),
       },
     });

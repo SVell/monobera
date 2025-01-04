@@ -38,6 +38,10 @@ const useOctContractWrite = (
     },
   );
 
+  const reset = useCallback(() => {
+    dispatch({ type: ActionEnum.RESET });
+  }, []);
+
   const write = useCallback(
     async ({
       address,
@@ -151,6 +155,7 @@ const useOctContractWrite = (
     isSuccess: state.confirmState === "success",
     isError: state.confirmState === "fail",
     write: write as any,
+    reset,
   };
 };
 

@@ -1,21 +1,38 @@
 import React from "react";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
-import { isIPFS } from "@bera/config";
+import { balancerVaultAddress, isIPFS } from "@bera/config";
+import { readContract } from "@wagmi/core";
 
 import PoolPageContent, { PoolPageWrapper } from "./PoolPageContent";
-import { bexApiGraphqlClient, bexSubgraphClient } from "@bera/graphql";
+import { bexSubgraphClient } from "@bera/graphql";
 import {
   GetSubgraphPool,
   GetSubgraphPoolQuery,
 } from "@bera/graphql/dex/subgraph";
-import { GetPools, GetPoolsQuery } from "@bera/graphql/dex/api";
+import { wagmiConfig } from "@bera/wagmi/config";
+import { vaultV2Abi } from "@berachain-foundation/berancer-sdk";
+import { Address, erc20Abi } from "viem";
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({
+  params,
+}: {
+  params: { poolId: string };
+}): Promise<Metadata> {
+  if (isIPFS || !params.poolId) return { title: "Pool" };
+
+  const poolName = await readContract(wagmiConfig, {
+    address: params.poolId.slice(0, 42) as Address,
+    abi: erc20Abi,
+    functionName: "name",
+  });
+
   return {
-    title: "Pool",
+    title: poolName,
   };
 }
+
+export const revalidate = 120;
 
 // THIS IS NOT COMPATIBLE WITH IPFS. CHECK THIS CAUSES BUGS
 // export const dynamic = "force-dynamic";
@@ -30,28 +47,39 @@ export default async function PoolPage({
   }
 
   try {
-    // if (!isAddress(params.poolId)) {
-    //   notFound();
-    // }
-
-    const res = await bexSubgraphClient.query<GetSubgraphPoolQuery>({
+    const subgraphPromise = bexSubgraphClient.query<GetSubgraphPoolQuery>({
       query: GetSubgraphPool,
       variables: {
         id: params.poolId,
       },
     });
 
-    if (!res.data?.pool) {
+    const pool = await readContract(wagmiConfig, {
+      address: balancerVaultAddress,
+      abi: vaultV2Abi,
+      functionName: "getPool",
+      args: [params.poolId as Address],
+    });
+
+    if (!pool) {
+      console.error("Pool not found");
       notFound();
     }
 
+    let subgraphPool;
+    try {
+      subgraphPool = (await subgraphPromise).data.pool;
+    } catch (e) {
+      console.error("Subgraph pool not found");
+    }
+
     return (
-      <PoolPageWrapper pool={res.data.pool}>
+      <PoolPageWrapper pool={subgraphPool}>
         <PoolPageContent poolId={params.poolId} />
       </PoolPageWrapper>
     );
   } catch (e) {
-    console.log(`Error fetching pools: ${e}`);
+    console.error(`Error fetching pools: ${e}`);
     notFound();
   }
 }
@@ -64,11 +92,12 @@ export async function generateStaticParams() {
       },
     ];
   }
-  const res = await bexApiGraphqlClient.query<GetPoolsQuery>({
-    query: GetPools,
-  });
+  return [];
+  // const res = await bexApiGraphqlClient.query<GetPoolsQuery>({
+  //   query: GetPools,
+  // });
 
-  return res.data.poolGetPools.map((pool) => ({
-    poolId: pool.id,
-  }));
+  // return res.data.poolGetPools.map((pool) => ({
+  //   poolId: pool.id,
+  // }));
 }

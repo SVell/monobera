@@ -10,7 +10,6 @@ import {
 import {
   cloudinaryUrl,
   honeyTokenAddress,
-  isIPFS,
   peripheryDebtToken,
   vdHoneyTokenAddress,
 } from "@bera/config";

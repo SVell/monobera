@@ -6,20 +6,20 @@ import { Input, InputWithLabel } from "@bera/ui/input";
 import { TextArea } from "@bera/ui/text-area";
 import { formatAbiItem } from "abitype";
 import {
-  ChangeEventHandler,
   Dispatch,
   SetStateAction,
   useCallback,
   useEffect,
   useState,
 } from "react";
-import { Abi, AbiFunction, isAddress, parseAbiItem } from "viem";
+import { Abi, AbiFunction, parseAbiItem } from "viem";
 import {
   CustomProposalActionErrors,
   ProposalAction,
   ProposalErrorCodes,
   ProposalTypeEnum,
 } from "~/app/governance/types";
+import { AbiInput } from "./abi-input";
 import { checkProposalField } from "~/hooks/useCreateProposal";
 export function CustomAction({
   idx,
@@ -70,14 +70,17 @@ export function CustomAction({
   }, [action.ABI]);
 
   const handleUpdateCallData = useCallback(
-    (idx: number): ChangeEventHandler<HTMLInputElement> =>
-      (event) => {
+    (idx: number): ((v: any) => void) =>
+      (newInput) => {
         const supposedType = abiItems?.inputs[idx].type;
         switch (supposedType) {
           case "address":
             setErrors((e) => {
               const prev = e?.calldata || [];
-              prev[idx] = checkProposalField("address", event.target.value);
+              prev[idx] = checkProposalField({
+                fieldOrType: "address",
+                value: newInput,
+              });
               return {
                 ...e,
                 calldata: prev,
@@ -89,10 +92,10 @@ export function CustomAction({
             try {
               setErrors((e) => {
                 const prev = e?.calldata || [];
-                prev[idx] = checkProposalField(
-                  supposedType as any,
-                  event.target.value,
-                );
+                prev[idx] = checkProposalField({
+                  fieldOrType: supposedType as any,
+                  value: newInput,
+                });
                 return {
                   ...e,
                   calldata: prev,
@@ -109,7 +112,7 @@ export function CustomAction({
 
           const cd = [...(prev.calldata || [])];
 
-          cd[idx] = event.target.value;
+          cd[idx] = newInput;
 
           return {
             ...prev,
@@ -141,11 +144,11 @@ export function CustomAction({
         variant="black"
         label="Enter Target"
         error={
-          errors.target === ProposalErrorCodes.REQUIRED
+          errors?.target === ProposalErrorCodes.REQUIRED
             ? "Target is required."
-            : errors.target === ProposalErrorCodes.INVALID_ADDRESS
+            : errors?.target === ProposalErrorCodes.INVALID_ADDRESS
               ? "Invalid target address."
-              : errors.target
+              : errors?.target
         }
         id={`proposal-target--${idx}`}
         placeholder={truncateHash("0x00000000000000")}
@@ -158,15 +161,15 @@ export function CustomAction({
         }
       />
       <InputWithLabel
-        type="text"
+        type="number-enhanced"
         variant="black"
         label="Value (in wei)"
         error={
-          errors.value === ProposalErrorCodes.REQUIRED
+          errors?.value === ProposalErrorCodes.REQUIRED
             ? "Value is required."
-            : errors.value === ProposalErrorCodes.INVALID_AMOUNT
+            : errors?.value === ProposalErrorCodes.INVALID_AMOUNT
               ? "Invalid value format."
-              : errors.value
+              : errors?.value
         }
         id={`proposal-value--${idx}`}
         placeholder={"0"}
@@ -174,10 +177,22 @@ export function CustomAction({
         onChange={(e: any) => {
           setValue(e.target.value);
           try {
-            setAction((prev) => ({
-              ...prev,
-              value: BigInt(e.target.value),
-            }));
+            const valueBN = BigInt(e.target.value);
+            if (valueBN < 0n) {
+              setErrors((e) => ({
+                ...e,
+                value: ProposalErrorCodes.NEGATIVE_AMOUNT,
+              }));
+            } else {
+              setAction((prev) => ({
+                ...prev,
+                value: valueBN,
+              }));
+              setErrors((e) => ({
+                ...e,
+                value: null,
+              }));
+            }
           } catch (error) {
             setErrors((e) => ({
               ...e,
@@ -191,11 +206,11 @@ export function CustomAction({
         label="Enter ABI"
         variant="black"
         error={
-          errors.ABI === ProposalErrorCodes.REQUIRED
+          errors?.ABI === ProposalErrorCodes.REQUIRED
             ? "ABI is required."
-            : errors.ABI === ProposalErrorCodes.INVALID_ABI
+            : errors?.ABI === ProposalErrorCodes.INVALID_ABI
               ? "Invalid ABI"
-              : errors.ABI
+              : errors?.ABI
         }
         id={`proposal-abi--${idx}`}
         placeholder={JSON.stringify(
@@ -255,20 +270,20 @@ export function CustomAction({
           }
         />
         <FormError>
-          {errors.functionSignature === ProposalErrorCodes.REQUIRED
+          {errors?.functionSignature === ProposalErrorCodes.REQUIRED
             ? "A Method Must Be chosen"
-            : errors.functionSignature}
+            : errors?.functionSignature}
         </FormError>
       </div>
       {abiItems?.inputs?.map((input, i) => {
         return (
-          <InputWithLabel
-            label={`Enter ${input.name}`}
-            error={errors.calldata?.[i]}
+          <AbiInput
+            input={input}
+            errors={errors?.calldata?.[i]}
+            key={`proposal-calldata--${idx}-${i}-${input.name}`}
             id={`proposal-calldata--${idx}-${i}-${input.name}`}
-            placeholder={input.type}
             value={action.calldata?.[i]}
-            onChange={handleUpdateCallData(i)}
+            onChange={(e) => handleUpdateCallData(i)(e)}
           />
         );
       })}

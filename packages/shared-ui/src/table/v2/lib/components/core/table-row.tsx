@@ -9,6 +9,9 @@ export interface TableRowProps<TData> {
   className?: string;
   flexTable?: boolean;
   onRowClick?: (row: any) => void;
+  onRowHover?: (row: any) => void;
+  lastRowBorder?: boolean;
+  lastRow?: boolean;
 }
 
 export const TableRow: <TData>(
@@ -17,15 +20,22 @@ export const TableRow: <TData>(
   row,
   style,
   onRowClick,
+  onRowHover,
   className,
   children,
   flexTable,
+  lastRowBorder,
+  lastRow,
 }) => {
   return (
     <TableRowComponent
       key={row.id}
-      style={{ borderBottomWidth: "1px", ...(style ?? {}) }}
+      style={{
+        borderBottomWidth: !lastRowBorder && lastRow ? "0px" : "1px",
+        ...(style ?? {}),
+      }}
       onClick={() => onRowClick?.(row as any)}
+      onMouseOver={() => onRowHover?.(row as any)}
       data-state={row.getIsSelected() && "selected"}
       className={cn(
         flexTable ? "flex inline-flex" : "table-row",

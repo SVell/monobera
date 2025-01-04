@@ -19,6 +19,8 @@
 In order to setup your local environment, run
 
 ```
+git submodule init
+git submodule update
 pnpm i
 pnpm setenv bartio
 ```
@@ -38,10 +40,21 @@ All Berachain dapps are built to be single chain applications.
 | --------------------- | ---------------------------------------------------------------------------------------------- |
 | `.env.bartio` | Environment variables for Berachain bartio testnet |
 
+## Development Tips
+
+Sometimes your VSCode will not correctly pick up type information from `/packages`.  
+
+```bash
+pnpm build:pkg # This will build all packages
+pnpm format    # This will format all packages
+```
+
+Then in VSCode press `CMD+Shift+P` to open the command pallette and type `>` then type `Restart TS Server` and press enter. This will 
+restart the typescript server and should pick up the new types.
 
 ## Commands
 
-Monobera requires node 18.18.2+.
+Monobera requires node 22.12+.
 
 | Script                   | Description                                                                                              |
 | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -54,12 +67,7 @@ Monobera requires node 18.18.2+.
 | `pnpm build:perp`        | Builds only the `Berps` and related packages.                                                            |
 | `pnpm build:berajs-docs` | Builds only the `Berajs Docs` and related packages.                                                      |
 | `pnpm build:pkg`         | Builds all packages.                                                                                     |
-| `pnpm dev`               | Runs all packages and apps in dev mode. Not recommended as it takes large amounts of memory              |
-| `pnpm dev:hub`           | Runs `Hub` and related packages in dev mode.                                                             |
-| `pnpm dev:honey`         | Runs `Honey` and related packages in dev mode.                                                           |
-| `pnpm dev:lend`          | Runs `Bend` and related packages in dev mode.                                                            |
-| `pnpm dev:perp`          | Runs `Berps` and related packages in dev mode.                                                           |
-| `pnpm dev:berajs-docs`   | Runs `Berajs Docs` and related packages in dev mode.                                                     |
+| `pnpm dev:pkg`           | Runs all packages in dev mode.                                                                           |
 | `pnpm clean`             | Cleans the project using turbo clean and removes untracked files with git clean, including node_modules. |
 | `pnpm pullenv`           | Pulls production environment variables from Vercel. Requires Vercel Login                                |
 | `pnpm check-types`       | Runs type-checking across all apps and packages.                                                         |

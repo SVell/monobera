@@ -25,7 +25,7 @@ export default function GaugeTables() {
   }, [typingTimer]);
 
   return (
-    <Tabs defaultValue="all-gauges" className="flex flex-col gap-4">
+    <Tabs defaultValue="all-gauges" className="flex flex-col gap-4 mt-4">
       <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
         <TabsList className="w-full md:w-fit" variant="ghost">
           <TabsTrigger value="all-gauges" className="w-full md:w-fit">
@@ -59,7 +59,7 @@ export default function GaugeTables() {
               //     setKeywords("");
               //   }
               // }}
-              className="w-full md:w-[300px]"
+              className="w-full bg-background md:w-[300px]"
             />
 
             <MarketSelector {...{ markets, setMarkets }} />

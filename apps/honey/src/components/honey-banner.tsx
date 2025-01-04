@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import {
   cloudinaryUrl,
-  dexUrl,
+  hubUrl,
   lendUrl,
   perpsName,
   perpsUrl,
@@ -50,7 +50,7 @@ export default function HoneyBanner() {
             Add Liquidity to Earn BGT Rewards{" "}
           </h3>
           <div
-            onClick={() => window.open(`${dexUrl}/pools`, "_blank")}
+            onClick={() => window.open(`${hubUrl}/pools`, "_blank")}
             className="inline-flex gap-2 rounded-full bg-green-600 px-4 py-2 text-sm text-white"
           >
             <Icons.plus />

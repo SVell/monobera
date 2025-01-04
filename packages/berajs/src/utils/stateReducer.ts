@@ -5,13 +5,15 @@ export enum ActionEnum {
   SUCCESS = "confirm_receipt",
   LOADING = "confirm_sending",
   SUBMITTING = "confirm_submitting",
+  RESET = "confirm_reset",
 }
 
 type Action =
   | { type: ActionEnum.LOADING }
   | { type: ActionEnum.SUCCESS }
   | { type: ActionEnum.ERROR }
-  | { type: ActionEnum.SUBMITTING };
+  | { type: ActionEnum.SUBMITTING }
+  | { type: ActionEnum.RESET };
 
 interface State {
   confirmState: LoadingState;
@@ -46,6 +48,11 @@ export const reducer = (state: State, actions: Action): State => {
       return {
         ...state,
         confirmState: "submitting",
+      };
+    // NOTE: if we are resetting the state of the useTxn/useWriteContract hook, we need to reset the state to the initial state
+    case ActionEnum.RESET:
+      return {
+        ...initialState,
       };
     default:
       return state;

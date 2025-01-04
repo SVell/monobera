@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getErrorMessage, tryMatchBalancerErrorCode } from "@bera/berajs";
 import { chainId, jsonRpcUrl } from "@bera/config";
 import {
   AddLiquidity,
@@ -17,6 +18,12 @@ export interface UseAddLiquidityArgs {
   wethIsEth: boolean;
 }
 
+export type AddLiquidityError = {
+  error?: unknown;
+  balanceError?: `BAL#${string}`; // NOTE: we drill these into the UI so we can display addLiquidity-specific messages there.
+  message?: string;
+};
+
 export const useAddLiquidity = ({ pool, wethIsEth }: UseAddLiquidityArgs) => {
   const [type, setType] = useState<AddLiquidityKind>(
     AddLiquidityKind.Unbalanced,
@@ -30,11 +37,7 @@ export const useAddLiquidity = ({ pool, wethIsEth }: UseAddLiquidityArgs) => {
   >([]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<{
-    error?: unknown;
-    balanceError?: string;
-    message?: string;
-  }>();
+  const [error, setError] = useState<AddLiquidityError>();
 
   const [priceImpact, setPriceImpact] = useState<PriceImpactAmount>();
 
@@ -121,6 +124,7 @@ export const useAddLiquidity = ({ pool, wethIsEth }: UseAddLiquidityArgs) => {
       setPriceImpact(priceImpact);
       setQueryOutput(queryOutput);
     } catch (error) {
+      console.error("Error", error);
       if (
         typeof error === "object" &&
         error !== null &&
@@ -130,8 +134,8 @@ export const useAddLiquidity = ({ pool, wethIsEth }: UseAddLiquidityArgs) => {
         const e = error as ContractFunctionExecutionError;
         setError({
           error: e,
-          balanceError: e?.shortMessage?.split("\n").at(1),
-          message: e.shortMessage,
+          balanceError: tryMatchBalancerErrorCode(e?.shortMessage),
+          message: getErrorMessage(e),
         });
       } else {
         setError({ message: String(error), error });
@@ -139,7 +143,7 @@ export const useAddLiquidity = ({ pool, wethIsEth }: UseAddLiquidityArgs) => {
     } finally {
       setIsLoading(false);
     }
-  }, [pool, input]);
+  }, [pool, input, type]);
 
   const getCallData = useCallback(
     ({ slippage, sender }: { slippage: number; sender: Address }) => {

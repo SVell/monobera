@@ -32,9 +32,11 @@ export enum TRANSACTION_MODE {
 export const Setting = ({
   goback,
   isHoney,
+  disableThemeToggle,
 }: {
   goback: () => void;
   isHoney: boolean;
+  disableThemeToggle?: boolean;
 }) => {
   const [slippageMode, setSlippageMode] = useLocalStorage<SLIPPAGE_MODE>(
     SLIPPAGE_TOLERANCE_TYPE,
@@ -64,7 +66,7 @@ export const Setting = ({
       <div
         className={cn(
           "flex flex-col gap-2 text-sm font-medium",
-          isHoney && "pointer-events-none opacity-50",
+          (isHoney || disableThemeToggle) && "pointer-events-none opacity-50",
         )}
       >
         Theme

@@ -1,0 +1,196 @@
+fragment ApiVaultIncentive on GqlRewardVaultIncentive {
+  active
+  amountRemaining
+  incentiveRate
+  tokenAddress
+  token {
+    address
+    name
+    symbol
+    decimals
+  }
+}
+
+fragment ApiVault on GqlRewardVault {
+  id: vaultAddress
+  vaultAddress
+  address: vaultAddress
+  isVaultWhitelisted
+
+  dynamicData {
+    allTimeBGTReceived
+    apy
+    bgtCapturePercentage
+    activeIncentivesValueUsd
+  }
+
+  stakingToken {
+    address
+    name
+    symbol
+    decimals
+  }
+
+  metadata {
+    name
+    name
+    logoURI
+    url
+    productName
+  }
+
+  activeIncentives {
+    ...ApiVaultIncentive
+  }
+}
+
+query GetVaults(
+  $where: GqlRewardVaultFilter
+  $pageSize: Int
+  $skip: Int
+  $orderBy: GqlRewardVaultOrderBy
+  $orderDirection: GqlRewardVaultOrderDirection
+  $search: String
+) {
+  polGetRewardVaults(
+    where: $where
+    first: $pageSize
+    skip: $skip
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    search: $search
+  ) {
+    pagination {
+      currentPage
+      totalCount
+    }
+    vaults {
+      ...ApiVault
+    }
+  }
+}
+
+fragment ApiValidator on GqlValidator {
+  id
+  pubkey
+  operator
+  metadata {
+    name
+    logoURI
+    website
+    description
+  }
+  dynamicData {
+    amountDelegated
+    usersDelegated
+    amountQueued
+    usersQueued
+    apy
+    bgtCapturePercentage
+    bgtEmittedAllTime
+    rewardRate
+    depositStakedAmount
+  }
+  rewardAllocationWeights {
+    ...ApiRewardAllocationWeight
+  }
+}
+
+fragment ApiRewardAllocationWeight on GqlValidatorRewardAllocationWeight {
+  percentageNumerator
+  validatorId
+  receivingVault {
+    ...ApiVault
+  }
+  receiver
+  startBlock
+}
+
+query GetValidators(
+  $where: GqlValidatorFilter
+  $sortBy: GqlValidatorOrderBy = bgtCapturePercentage
+  $sortOrder: GqlValidatorOrderDirection = desc
+  $pageSize: Int
+  $skip: Int
+  $search: String
+) {
+  validators: polGetValidators(
+    where: $where
+    orderBy: $sortBy
+    orderDirection: $sortOrder
+    first: $pageSize
+    skip: $skip
+    search: $search
+  ) {
+    pagination {
+      currentPage
+      totalCount
+    }
+    validators {
+      ...ApiValidator
+    }
+  }
+}
+
+query GetVaultValidators($vaultId: String!) {
+  validators: polGetValidators(where: { vaultAddress: $vaultId }) {
+    pagination {
+      currentPage
+      totalCount
+    }
+    validators {
+      ...ApiValidator
+    }
+  }
+}
+
+query GetRewardVault($vaultId: String!, $chain: GqlChain!) {
+  rewardVault: polGetRewardVault(vaultAddress: $vaultId, chain: $chain) {
+    ...ApiVault
+  }
+}
+
+query GlobalData($chain: GqlChain!) {
+  top3EmittingValidators: polGetValidators(
+    orderBy: bgtCapturePercentage
+    orderDirection: desc
+    first: 3
+  ) {
+    pagination {
+      currentPage
+      totalCount
+    }
+    validators {
+      ...ApiValidator
+    }
+  }
+
+  polGetGlobalInfo(chain: $chain) {
+    totalBGTQueued
+    totalBGTDelegated
+    totalValidators
+    totalWhitelistedRewardVaults
+    totalActiveRewardVaults
+    totalActiveIncentives
+    totalActiveIncentivesValueUSD
+  }
+}
+
+query GetUserVaults($userId: String!, $chain: GqlChain!) {
+  userVaultDeposits: polGetUserVaultDeposits(
+    userAddress: $userId
+    chain: $chain
+  ) {
+    pagination {
+      currentPage
+      totalCount
+    }
+    deposits {
+      amount
+      vaultAddress
+      vault {
+        ...ApiVault
+      }
+    }
+  }
+}

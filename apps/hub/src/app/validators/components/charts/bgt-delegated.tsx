@@ -15,14 +15,14 @@ const CustomBgtDelegatedTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="flex min-w-[8rem] flex-col items-start gap-1.5 rounded-md border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
         <p className="">{date.toISOString().split("T")[0]}</p>
-        <p className="">{"BGT Delegated: "}</p>
+        <p className="">{"Boosts: "}</p>
         <FormattedNumber
           value={payload[0].payload.bgtStaked}
           className="text-sm font-semibold text-foreground"
         />
-        <p className="">{"All Time BGT Delegated: "}</p>
+        <p className="">{"All Time Boosts: "}</p>
         <FormattedNumber
-          value={payload[0].payload.allTimeBgtStaked}
+          value={payload[0].payload.allTimeBGTStaked}
           className="text-sm font-semibold text-foreground"
         />
       </div>
@@ -39,7 +39,7 @@ export const BgtDelegated = ({
 }) => {
   const chartConfig = {
     bgt: {
-      label: "Bgt Delegated",
+      label: "Boosts",
       color: "hsl(142, 69%, 58%)",
     },
   } satisfies ChartConfig;
@@ -59,10 +59,10 @@ export const BgtDelegated = ({
     <div className="flex w-full flex-col gap-12 p-4">
       <div className="flex items-center gap-1">
         <Icons.bgt className="h-4 w-4" />
-        <span className="text-md mr-2 font-semibold">BGT Delegated</span>
+        <span className="text-md mr-2 font-semibold">BGT Boosted</span>
         <span className="text-sm text-muted-foreground">{"All Time:"}</span>
         <FormattedNumber
-          value={lastRecordedUsage ? lastRecordedUsage?.allTimeBgtStaked : ""}
+          value={lastRecordedUsage ? lastRecordedUsage?.allTimeBGTStaked : ""}
           className="text-sm text-muted-foreground"
         />
         <span className="text-sm text-muted-foreground">
@@ -121,12 +121,12 @@ export const BgtDelegated = ({
                   }}
                 />
                 <YAxis
-                  dataKey={(v) => parseInt(v.allTimeBgtStaked)}
+                  dataKey={(v) => parseInt(v.allTimeBGTStaked)}
                   type="number"
                   padding={{ top: 0, bottom: 0 }}
                 />
                 <ChartTooltip content={<CustomBgtDelegatedTooltip />} />
-                <Bar dataKey={"allTimeBgtStaked"} fill={"var(--color-bgt)"} />
+                <Bar dataKey={"allTimeBGTStaked"} fill={"var(--color-bgt)"} />
               </BarChart>
             </ChartContainer>
           }

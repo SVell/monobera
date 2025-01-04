@@ -8,7 +8,6 @@ import Balancer from "react-wrap-balancer";
 
 import { Spinner } from "./spinner";
 import { TokenIconList } from "./token-icon-list";
-import { getRewardsVaultUrl } from "./utils/getHubUrls";
 
 interface IModal {
   title: string;
@@ -168,29 +167,45 @@ export const LoadingModal = ({
   );
 };
 
-export const AddLiquiditySuccess = ({ onClose, open = false, pool }: any) => {
+export const AddLiquiditySuccess = ({
+  onClose,
+  open = false,
+  amount,
+  pool,
+  poolUrl,
+  rewardsVaultUrl,
+}: any) => {
   if (!pool) return undefined;
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="flex w-80 flex-col items-center justify-center gap-3 py-12">
-        <TokenIconList tokenList={pool.tokens} size="2xl" />
+        <TokenIconList
+          tokenList={pool.tokens.filter((t: any) => t.address !== pool.address)}
+          size="2xl"
+        />
         <span className="text-center text-xl font-medium">
-          Deposit your {pool.name} Receipt Tokens
+          Your liquidity has been successfully deposited.
         </span>
         <span className="my-2 text-center text-xs text-muted-foreground">
-          Deposit your receipt tokens in the gauge vault to start earning
-          <span className="inline-flex items-center">
-            <Icons.bgt className="mx-1 h-3 w-3" />
-          </span>
-          BGT Rewards
+          You’ve received{" "}
+          <span className="font-medium text-foreground">
+            {amount} LP receipt tokens
+          </span>{" "}
+          for <span className="font-medium text-foreground">{pool.name}</span>
         </span>
-        <Link
-          href={getRewardsVaultUrl(pool.vaultAddress)}
-          onClick={(e) => e.stopPropagation()}
+        {rewardsVaultUrl ? (
+          <Button as={Link} href={rewardsVaultUrl} className="w-full">
+            Stake in reward vault
+          </Button>
+        ) : null}
+        <Button
+          as={Link}
+          href={poolUrl}
           className="w-full"
+          variant={rewardsVaultUrl ? "outline" : undefined}
         >
-          <Button className="w-full">Deposit</Button>
-        </Link>
+          Back to pool
+        </Button>
       </DialogContent>
     </Dialog>
   );

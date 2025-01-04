@@ -41,6 +41,7 @@ const client = [
   "./src/pagination.tsx",
   "./src/table/index.ts",
   "./src/table/legacy/index.ts",
+  "./src/custom-avatar.tsx",
 ];
 
 const server = [
@@ -52,6 +53,7 @@ const server = [
   "./src/toast.tsx",
   "./src/skeleton.tsx",
   "./src/multiple-selector.tsx",
+  "./src/radio-group.tsx",
 ];
 
 export default defineConfig((opts) => {

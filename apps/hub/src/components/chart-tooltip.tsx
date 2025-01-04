@@ -1,8 +1,10 @@
-import { truncateHash, type CuttingBoardWeight } from "@bera/berajs";
+import { truncateHash } from "@bera/berajs";
+import { ApiRewardAllocationWeightFragment } from "@bera/graphql/pol/api";
 import { GaugeIcon, MarketIcon } from "@bera/shared-ui";
 import uniqolor from "uniqolor";
+import { Address } from "viem";
 
-export type CuttingBoardWeightMega = CuttingBoardWeight & {
+export type CuttingBoardWeightMega = ApiRewardAllocationWeightFragment & {
   percentage: number;
   id: number;
 };
@@ -31,17 +33,18 @@ export function ChartTooltip({
         <div className="flex flex-col items-start justify-center gap-1">
           <div className="text-forgeound flex flex-row items-center gap-2 whitespace-nowrap font-bold leading-5">
             <GaugeIcon
-              address={gauge.receiverMetadata?.vaultAddress ?? "0x"}
-              overrideImage={gauge.receiverMetadata?.logoURI ?? ""}
+              address={gauge.receiver as Address}
+              overrideImage={gauge.receivingVault?.metadata?.logoURI ?? ""}
             />{" "}
-            {gauge.receiverMetadata?.name ?? truncateHash(gauge.receiver)}
+            {gauge.receivingVault?.metadata?.name ??
+              truncateHash(gauge.receiver)}
           </div>
           <div className="flex items-center gap-1 whitespace-nowrap text-xs leading-4 text-muted-foreground">
             <MarketIcon
-              market={gauge.receiverMetadata?.product ?? ""}
+              market={gauge.receivingVault?.metadata?.productName ?? ""}
               className="h-4 w-4"
             />{" "}
-            {gauge.receiverMetadata?.product ?? "OTHER"}
+            {gauge.receivingVault?.metadata?.productName ?? "OTHER"}
           </div>
         </div>
       </div>

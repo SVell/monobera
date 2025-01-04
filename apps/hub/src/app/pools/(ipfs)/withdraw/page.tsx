@@ -1,41 +1,30 @@
-import { type Metadata } from "next";
-import { notFound } from "next/navigation";
-import { dexName, isIPFS } from "@bera/config";
-import { getMetaTitle } from "@bera/shared-ui";
+"use client";
+
+import { Suspense } from "react";
+import { notFound, useSearchParams } from "next/navigation";
+import { isIPFS } from "@bera/config";
 import { isAddress } from "viem";
 
 import WithdrawPageContent from "../../[poolId]/withdraw/WithdrawPageContent";
 
-export function generateMetadata(): Metadata {
-  return {
-    title: "Withdraw Liquidity",
-    description: `Withdraw your liquidity from ${dexName}`,
-  };
-}
-
-export const fetchCache = "force-no-store";
-
-export default async function Withdraw({
-  params,
-}: {
-  params: { shareAddress: string };
-}) {
-  if (isIPFS) {
-    return null;
+const _PoolStaticPage = () => {
+  if (!isIPFS) {
+    return notFound();
   }
 
-  try {
-    return <WithdrawPageContent poolId={params.shareAddress!} />;
-  } catch (e) {
-    console.log(`Error fetching pools: ${e}`);
-    notFound();
-  }
-}
+  const searchParams = useSearchParams();
+  const poolId = searchParams.get("address");
 
-export function generateStaticParams() {
-  return [
-    {
-      shareAddress: "0x",
-    },
-  ];
+  if (!poolId) {
+    return notFound();
+  }
+  return <WithdrawPageContent poolId={poolId} />;
+};
+
+export default function PoolStaticPage() {
+  return (
+    <Suspense>
+      <_PoolStaticPage />
+    </Suspense>
+  );
 }

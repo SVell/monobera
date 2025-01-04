@@ -47,7 +47,7 @@ export const HomePage = () => {
           GOVERNANCE
         </h1>
         <h2 className="text-5xl font-bold">
-          Berachain <br /> Governance Forum
+          Berachain <br /> Governance
         </h2>
       </div>
 

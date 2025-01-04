@@ -1,8 +1,10 @@
+import { isArray } from "lodash";
 import useSWR, { mutate } from "swr";
 import { Address } from "viem";
 import { usePublicClient } from "wagmi";
 
 import { getAllowance } from "~/actions/dex/getAllowance";
+import { ADDRESS_ZERO } from "~/config";
 import { useBeraJs } from "~/contexts";
 import POLLING from "~/enum/polling";
 import {
@@ -32,12 +34,19 @@ export const usePollAllowance = (
   const { account } = useBeraJs();
 
   const method = "allowance";
-  const QUERY_KEY = [
-    account,
-    args.token?.address.toLowerCase(),
-    args.spender.toLowerCase(),
-    method,
-  ];
+
+  const QUERY_KEY =
+    publicClient &&
+    args.token &&
+    !isArray(args.token) &&
+    args.token.address !== ADDRESS_ZERO
+      ? [
+          account,
+          args.token?.address.toLowerCase(),
+          args.spender.toLowerCase(),
+          method,
+        ]
+      : null;
 
   const swrResponse = useSWR(
     QUERY_KEY,

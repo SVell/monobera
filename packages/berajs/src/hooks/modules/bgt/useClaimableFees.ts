@@ -1,7 +1,8 @@
-import { usePublicClient } from "wagmi";
-import useSWR from "swr";
 import { bgtStaker } from "@bera/config";
+import useSWR from "swr";
 import { formatUnits } from "viem";
+import { usePublicClient } from "wagmi";
+
 import { getUserVaultsReward } from "~/actions";
 import { useBeraJs } from "~/contexts";
 import POLLING from "~/enum/polling";
@@ -9,7 +10,8 @@ import POLLING from "~/enum/polling";
 export const useClaimableFees = (): any => {
   const { account } = useBeraJs();
   const publicClient = usePublicClient();
-  const QUERY_KEY = ["useClaimableFees", account, publicClient];
+  const QUERY_KEY =
+    account && publicClient ? ["useClaimableFees", account] : null;
   const swrResponse = useSWR<string | undefined>(
     QUERY_KEY,
     async () => {

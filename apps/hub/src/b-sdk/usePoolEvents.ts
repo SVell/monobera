@@ -1,9 +1,11 @@
+import { balancerApiChainName } from "@bera/config";
 import { bexApiGraphqlClient } from "@bera/graphql";
 import {
   GetPoolEvents,
   GetPoolEventsQuery,
   GetPoolEventsQueryResult,
   GetPoolEventsQueryVariables,
+  GqlChain,
   GqlPoolEventType,
 } from "@bera/graphql/dex/api";
 import useSWR from "swr";
@@ -21,6 +23,7 @@ export const usePoolEvents = (poolId: string | undefined) => {
             GqlPoolEventType.Add,
             GqlPoolEventType.Remove,
           ],
+          chain: balancerApiChainName as GqlChain,
         } satisfies GetPoolEventsQueryVariables,
       });
       if (response.errors) {

@@ -52,6 +52,7 @@ export const ValidatorRewards = ({
       label: "Commission Earned",
       color: "hsl(142, 69%, 58%)",
     },
+
     distributed: {
       label: "Rewards Distributed",
       color: "hsl(220, 70%, 51%)",
@@ -121,17 +122,17 @@ export const ValidatorRewards = ({
                   });
                 }}
               />
-              <YAxis type="number" dataKey={(v) => parseInt(v.rewardRate)} />
+              <YAxis type="number" dataKey={(v) => parseInt(v.BGTEmitted)} />
               <ChartTooltip cursor={false} content={<CustomTooltip />} />
               <Line
-                dataKey="commissionRate"
+                dataKey="BGTEarned"
                 type="monotone"
                 stroke="var(--color-earned)"
                 strokeWidth={2}
                 dot={false}
               />
               <Line
-                dataKey="rewardRate"
+                dataKey="BGTEmitted"
                 type="monotone"
                 stroke="var(--color-distributed)"
                 strokeWidth={2}

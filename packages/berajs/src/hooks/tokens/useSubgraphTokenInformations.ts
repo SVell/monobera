@@ -1,12 +1,12 @@
 import useSWR, { mutate } from "swr";
 
+import {
+  SubgraphTokenInformations,
+  getSubgraphTokenInformations,
+} from "~/actions/shared/getSubgraphTokenInformations";
 import POLLING from "~/enum/polling";
 import { DefaultHookOptions, DefaultHookReturnType } from "~/types/global";
 import { useBeraJs } from "../..";
-import {
-  getSubgraphTokenInformations,
-  SubgraphTokenInformations,
-} from "~/actions/shared/getSubgraphTokenInformations";
 
 /**
  *

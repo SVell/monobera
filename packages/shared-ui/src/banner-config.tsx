@@ -1,7 +1,6 @@
 import React from "react";
 import {
   hubName,
-  dexName,
   faucetName,
   honeyName,
   lendName,
@@ -68,10 +67,10 @@ export const bannerConfig: BannerConfig = {
       bannerComponent: <NetworkCongestedBanner />,
     },
   },
-  BEX: {
+  HUB: {
     [DappBannerType.LAUNCH]: {
       enabled: false,
-      bannerComponent: <LaunchBanner appName={dexName} />,
+      bannerComponent: <LaunchBanner appName={hubName} />,
     },
     [DappBannerType.RPC]: {
       enabled: false,

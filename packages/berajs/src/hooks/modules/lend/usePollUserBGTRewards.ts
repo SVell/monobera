@@ -25,7 +25,7 @@ export const usePollLendUserBGTRewards = (options?: DefaultHookOptions) => {
             abi: BERA_VAULT_REWARDS_ABI,
             functionName: "getReward",
             account: account,
-            args: [account],
+            args: [account, account], // TODO: A second param is needed here for recipient. Added current account twice for now
           });
           return result;
         } catch (e) {

@@ -1,30 +1,27 @@
 /* eslint-disable no-restricted-imports */
 import {
   developmentAnalytics,
-  mixpanelProjectToken,
+  postHogHostAddress,
+  postHogProjectKey,
   projectName,
 } from "@bera/config";
 import {
   captureEvent as _captureEvent,
   captureException as _captureException,
 } from "@sentry/react";
-import mixpanel from "mixpanel-browser";
+import posthog from "posthog-js";
 
 const isDevelopmentWithoutAnalytics =
   process.env.NODE_ENV === "development" && !developmentAnalytics;
 
-const isMixpanelEnabled =
-  mixpanelProjectToken && !isDevelopmentWithoutAnalytics;
+// Initialize PostHog
+const isPosthogEnabled = postHogProjectKey && !isDevelopmentWithoutAnalytics;
 
-if (isMixpanelEnabled) {
-  mixpanel.init(mixpanelProjectToken, {
+if (isPosthogEnabled) {
+  posthog.init(postHogProjectKey, {
+    api_host: postHogHostAddress,
     debug: true,
-    track_pageview: true,
     persistence: "localStorage",
-  });
-  mixpanel.register({
-    project: projectName ?? "unknown",
-    env: process.env.NODE_ENV,
   });
 }
 
@@ -37,27 +34,22 @@ export const useAnalytics = () => {
   };
 
   const setAnalyticsUserId = (userId: string) => {
-    if (!isMixpanelEnabled) {
-      return;
+    if (isPosthogEnabled) {
+      posthog.reset();
+      posthog.identify(userId);
     }
-    mixpanel.reset();
-    mixpanel.identify(userId);
   };
 
   const unsetAnalyticsUserId = () => {
-    if (!isMixpanelEnabled) {
-      return;
+    if (isPosthogEnabled) {
+      posthog.reset();
     }
-    mixpanel.reset();
   };
 
   const track = (eventName: string, eventData?: { [key: string]: any }) => {
-    if (!isMixpanelEnabled) {
-      return;
+    if (isPosthogEnabled) {
+      posthog.capture(eventName, eventData);
     }
-    mixpanel.track(eventName, {
-      eventData,
-    });
   };
 
   return { track, setAnalyticsUserId, unsetAnalyticsUserId, captureException };

@@ -3,18 +3,8 @@ import useSWRImmutable from "swr/immutable";
 import { Address } from "viem";
 import { usePublicClient } from "wagmi";
 
+import { ProposalState } from "~/types";
 import { GOVERNANCE_ABI } from "../../../abi";
-
-enum ProposalState {
-  Pending = 0,
-  Active = 1,
-  Canceled = 2,
-  Defeated = 3,
-  Succeeded = 4,
-  Queued = 5,
-  Expired = 6,
-  Executed = 7,
-}
 
 const ProposalStateMap: Record<ProposalState, string> = {
   [ProposalState.Pending]: "pending",

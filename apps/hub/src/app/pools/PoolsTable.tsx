@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useBeraJs } from "@bera/berajs";
 import {
   ConnectWalletBear,
   NotFoundBear,
@@ -12,13 +13,10 @@ import {
 import { DataTableLoading } from "@bera/shared-ui/table/legacy";
 import { Button } from "@bera/ui/button";
 import { Icons } from "@bera/ui/icons";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@bera/ui/tabs";
 
-import MyPool from "./components/pools/my-pool";
 import { getPoolUrl } from "./fetchPools";
 import { usePoolTable } from "./usePoolTable";
-import { useBeraJs } from "@bera/berajs";
 
 export const PoolSearch = ({
   poolType = "allPools",
@@ -71,12 +69,12 @@ export const PoolSearch = ({
       id="poolstable"
     >
       <Tabs className="flex flex-col gap-4" value={poolType}>
-        <div className="flex w-full flex-col items-start justify-between  gap-2 lg:flex-row lg:items-center">
+        <div className="flex w-full flex-col items-start justify-between  gap-x-2 gap-y-8 lg:flex-row lg:items-center">
           <TabsList className="w-full  justify-start p-0" variant="ghost">
             <TabsTrigger
               value="allPools"
               className="w-full sm:w-fit"
-              variant="ghost"
+              variant="compact"
               onClick={handleClearSearch}
             >
               <Link href="/pools?pool=allPools">All Pools</Link>
@@ -84,7 +82,7 @@ export const PoolSearch = ({
             <TabsTrigger
               value="userPools"
               className="w-full sm:w-fit"
-              variant="ghost"
+              variant="compact"
               onClick={handleClearSearch}
             >
               <Link href="/pools/?pool=userPools">My Pools</Link>
@@ -92,7 +90,7 @@ export const PoolSearch = ({
           </TabsList>
 
           <TabsContent value="allPools" className="w-full text-center">
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex w-full gap-x-6 gap-y-3 sm:items-center">
               <SearchInput
                 value={search}
                 onChange={(e) => {
@@ -114,7 +112,7 @@ export const PoolSearch = ({
                 }}
                 isLoading={isTyping || (isLoading && keyword !== "")}
                 id="all-pool-search"
-                className="w-full sm:w-[400px]"
+                className="w-full bg-background sm:w-[400px]"
               />
               <Button
                 size="md"
@@ -128,7 +126,7 @@ export const PoolSearch = ({
             </div>
           </TabsContent>
           <TabsContent value="userPools" className="w-full text-center">
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex w-full gap-x-6 gap-y-3 sm:items-center">
               <SearchInput
                 value={search}
                 onChange={(e) => {
@@ -141,7 +139,7 @@ export const PoolSearch = ({
                   return;
                 }}
                 placeholder="Search..."
-                onKeyDown={(e: any) => {
+                onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     setKeyword(search);
                     clearTimeout(typingTimer);
@@ -179,6 +177,11 @@ export const PoolSearch = ({
                 table={table}
                 flexTable
                 dynamicFlex
+                variant="ghost"
+                mutedBackgroundOnHead={false}
+                onRowHover={(row) => {
+                  router.prefetch(getPoolUrl(row.original));
+                }}
                 onRowClick={(row) => router.push(getPoolUrl(row.original))}
                 wrapperClassName="bg-transparent border-none"
                 showToolbar={true}
@@ -189,7 +192,7 @@ export const PoolSearch = ({
           )}
         </TabsContent>
 
-        <TabsContent value="userPools">
+        <TabsContent value="userPools" className="mt-4 text-center">
           {!account ? (
             <ConnectWalletBear
               message="You need to connect your wallet to see deposited pools and
@@ -208,6 +211,8 @@ export const PoolSearch = ({
                 table={table}
                 flexTable
                 dynamicFlex
+                variant="ghost"
+                mutedBackgroundOnHead={false}
                 onRowClick={(row) => router.push(getPoolUrl(row.original))}
                 wrapperClassName="bg-transparent border-none"
                 showToolbar={true}
@@ -216,7 +221,6 @@ export const PoolSearch = ({
           ) : (
             <NotFoundBear title="No Pools found." />
           )}
-          {/* <MyPool keyword={keyword} /> */}
         </TabsContent>
       </Tabs>
     </div>

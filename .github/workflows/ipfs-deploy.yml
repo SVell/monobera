@@ -1,8 +1,8 @@
 name: Deploy on Fleek
 
 on:
-  push:
-    branches: [ "v2" ]
+  # push:
+  #   branches: [ "v2" ]
   workflow_dispatch:
 
 jobs:  
@@ -29,22 +29,19 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18.18.2        
+        node-version: 22.12
         cache: 'pnpm'
 
-    - name: Install dependencies
-      run: pnpm install
+    - name: Install
+      run: bash ./.scripts/vercel-install.sh ${{ secrets.ENV_NAME }}
 
     - name: Install Fleek CLI
-      run: pnpm i -g @fleek-platform/cli
-
-    - name: Set environment variables
-      run: pnpm setenv:bartio
+      run: pnpm i -g @fleek-platform/cli@3.5.2
       
     - name: Build all projects
       env:
         NODE_OPTIONS: "--max_old_space_size=8192"
-      run: NEXT_PUBLIC_HOST="ipfs" pnpm run build --filter='packages/*' --filter='apps/hub' --filter='apps/honey'
+      run: pnpm run build:ipfs
       
     # - name: Deploy Berps
     #   run: cd apps/perp && fleek sites deploy

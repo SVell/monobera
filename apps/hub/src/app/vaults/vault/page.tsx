@@ -2,10 +2,9 @@
 
 import { FC, Suspense } from "react";
 import { notFound, useSearchParams } from "next/navigation";
-import { useSelectedGauge } from "@bera/berajs";
 import { isAddress } from "viem";
 
-import { GaugeDetails } from "../[gaugeAddress]/components/gauge-details";
+import { VaultDetails } from "../[gaugeAddress]/components/VaultDetails";
 import Loading from "../[gaugeAddress]/loading";
 
 const Gauge: FC = () => {
@@ -15,7 +14,7 @@ const Gauge: FC = () => {
   if (!gaugeAddress || !isAddress(gaugeAddress)) {
     return notFound();
   }
-  return <GaugeDetails gaugeAddress={gaugeAddress} />;
+  return <VaultDetails address={gaugeAddress} />;
 };
 
 export default function GaugeStaticPage() {

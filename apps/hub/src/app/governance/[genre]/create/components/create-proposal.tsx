@@ -71,6 +71,10 @@ export const CreateProposal = () => {
   );
 
   const leaveBodyTab = useCallback(() => {
+    if (process.env.NODE_ENV === "development") {
+      setActiveTab(1);
+      return;
+    }
     const errors = getBodyErrors(proposal, currentTopic);
     if (Object.values(errors).some((v) => v)) {
       setErrors(errors);
@@ -97,11 +101,9 @@ export const CreateProposal = () => {
               {
                 title: "Code Actions",
                 onClick: leaveBodyTab,
-                disabled: !!(
-                  errors.title ||
-                  errors.description ||
-                  errors.forumLink
-                ),
+                disabled:
+                  !!(errors.title || errors.description || errors.forumLink) &&
+                  process.env.NODE_ENV !== "development",
               },
             ]}
           />

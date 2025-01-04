@@ -1,7 +1,11 @@
-query GetPoolEvents($poolId: String!, $typeIn: [GqlPoolEventType!]!) {
+query GetPoolEvents(
+  $poolId: String!
+  $typeIn: [GqlPoolEventType!]!
+  $chain: GqlChain!
+) {
   poolGetEvents(
     poolId: $poolId
-    chain: BARTIO
+    chain: $chain
     range: NINETY_DAYS
     typeIn: $typeIn
   ) {
@@ -75,8 +79,15 @@ fragment MinimalPool on GqlPoolBase {
     ...UserBalance
   }
 }
-query GetPools($textSearch: String, $userAddress: String) {
-  poolGetPools(textSearch: $textSearch, where: { userAddress: $userAddress }) {
+query GetPools(
+  $textSearch: String
+  $userAddress: String
+  $chain: [GqlChain!]!
+) {
+  poolGetPools(
+    textSearch: $textSearch
+    where: { userAddress: $userAddress, chainIn: $chain }
+  ) {
     ...MinimalPoolInList
   }
 }
@@ -87,8 +98,33 @@ query GetPoolsProvidedByWallet($userAddress: String) {
   }
 }
 
-query GetPool($id: String!, $userAddress: String) {
-  poolGetPool(id: $id, userAddress: $userAddress) {
+query GetPool($id: String!, $userAddress: String, $chain: GqlChain!) {
+  poolGetPool(id: $id, userAddress: $userAddress, chain: $chain) {
     ...MinimalPool
+  }
+}
+fragment PoolHistoricalData on GqlPoolSnapshot {
+  id
+  volume24h
+  totalSwapVolume
+  timestamp
+  totalLiquidity
+  fees24h
+  totalSwapFee
+}
+
+query GetPoolHistoricalData($poolId: String!, $chain: GqlChain!) {
+  poolGetSnapshots(id: $poolId, range: NINETY_DAYS, chain: $chain) {
+    ...PoolHistoricalData
+  }
+}
+
+query GetTokenCurrentPrices($chains: [GqlChain!]!, $addressIn: [String!]) {
+  tokenGetCurrentPrices(chains: $chains, addressIn: $addressIn) {
+    address
+    chain
+    price
+    updatedAt
+    updatedBy
   }
 }

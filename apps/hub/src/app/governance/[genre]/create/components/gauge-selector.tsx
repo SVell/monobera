@@ -21,7 +21,12 @@ export const GaugeSelector = ({
   setGauge,
 }: {
   selectedGauge:
-    | (ProposalAction & { type: ProposalTypeEnum.UPDATE_REWARDS_GAUGE })
+    | (ProposalAction & {
+        type: ProposalTypeEnum.BLACKLIST_REWARD_VAULT;
+      })
+    | (ProposalAction & {
+        type: ProposalTypeEnum.WHITELIST_REWARD_VAULT;
+      })
     | undefined;
   setGauge: Dispatch<SetStateAction<ProposalAction>>;
 }) => {
@@ -71,14 +76,14 @@ export const GaugeSelector = ({
                     </Link>
                     <span
                       className={cn(
-                        gauge.isFriend
+                        gauge.type === ProposalTypeEnum.WHITELIST_REWARD_VAULT
                           ? "text-success-foreground"
                           : "text-destructive-foreground",
                       )}
                     >
-                      {gauge.isFriend
-                        ? "Reciving Emissions"
-                        : "Not Reciving Emissions"}
+                      {gauge.type === ProposalTypeEnum.WHITELIST_REWARD_VAULT
+                        ? "Receiving Emissions"
+                        : "Not Receiving Emissions"}
                     </span>
                   </div>
                   <div className="text-sm font-medium text-muted-foreground">
@@ -94,7 +99,7 @@ export const GaugeSelector = ({
                 </div>
               ) : (
                 <div className="font-medium text-sm text-muted-foreground text-center cursor-pointer">
-                  No gauge selected
+                  No reward vault selected
                 </div>
               )}
             </div>
@@ -102,11 +107,11 @@ export const GaugeSelector = ({
         )}
       </div>
       <DialogContent>
-        <DialogTitle>Select a Gauge</DialogTitle>
+        <DialogTitle>Select a Reward Vault</DialogTitle>
         <SearchInput
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          placeholder="Search by staking token address or gauge address"
+          placeholder="Search by staking token address or reward vault address"
         />
         <div className="h-[60vh] overflow-scroll">
           {Vaults.map((vault: any) => {

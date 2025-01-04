@@ -8,6 +8,7 @@ fragment SubgraphPool on Pool {
   totalLiquidity
   createTime
   owner
+  type: poolType
 
   tokens {
     address
@@ -29,6 +30,26 @@ query GetSubgraphPool($id: ID!) {
   }
 }
 
+fragment SubgraphToken on Token {
+  usdValue: latestUSDPrice
+  address
+  name
+  symbol
+  decimals
+}
+
+query GetToken($id: ID!) {
+  token(id: $id) {
+    ...SubgraphToken
+  }
+}
+
+query GetTokens($ids: [String!]!) {
+  tokens(where: { address_in: $ids }) {
+    ...SubgraphToken
+  }
+}
+
 query GetDedupedSubgraphPools($tokens: [Bytes!]!, $type: String!) {
   pools(
     where: { tokensList_contains_nocase: $tokens, poolType: $type }
@@ -37,5 +58,38 @@ query GetDedupedSubgraphPools($tokens: [Bytes!]!, $type: String!) {
     orderBy: totalLiquidity
   ) {
     ...SubgraphPool
+  }
+}
+
+query GetTokenInformation($pricingAsset: Bytes, $asset: Bytes) {
+  tokenPrices(
+    where: {pricingAsset: $pricingAsset, asset: $asset}
+    first: 1
+    orderBy: timestamp
+    orderDirection: desc
+  ) {
+    amount
+    asset
+    block
+    id
+    price
+    pricingAsset
+    timestamp
+  }
+}
+
+query GetTokenInformations($pricingAsset: Bytes, $assets: [Bytes!]!) {
+  tokenPrices(
+    where: {pricingAsset: $pricingAsset, asset_in: $assets}
+    orderBy: timestamp
+    orderDirection: desc
+  ) {
+    amount
+    asset
+    block
+    id
+    price
+    pricingAsset
+    timestamp
   }
 }

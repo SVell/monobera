@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
-import { cloudinaryUrl, dexUrl, lendUrl, perpsUrl } from "@bera/config";
+import { cloudinaryUrl, lendUrl, perpsUrl } from "@bera/config";
 import { FadeSlides } from "@bera/shared-ui";
 import { Icons } from "@bera/ui/icons";
 import { cn } from "@bera/ui";
@@ -43,14 +43,9 @@ export const HowToEarn = () => {
       subtitle: (
         <>
           Deposit tokens in a{" "}
-          <a
-            href={dexUrl}
-            target="_blank"
-            className="underline"
-            rel="noreferrer"
-          >
+          <Link href={"/pools/"} className="underline" rel="noreferrer">
             BEX liquidity Pool
-          </a>
+          </Link>
         </>
       ),
     },
@@ -119,7 +114,7 @@ export const HowToEarn = () => {
             className="underline"
             rel="noreferrer"
           >
-            Rewards Vaults
+            Reward Vaults
           </Link>
         </>
       ),
@@ -136,7 +131,7 @@ export const HowToEarn = () => {
             className="underline"
             rel="noreferrer"
           >
-            Gauge Vault
+            Reward Vaults
           </Link>
         </>
       ),
@@ -153,7 +148,7 @@ export const HowToEarn = () => {
             className="underline"
             rel="noreferrer"
           >
-            Gauge Vault
+            Reward Vault
           </Link>
         </>
       ),
@@ -174,7 +169,7 @@ export const HowToEarn = () => {
   }, []);
 
   return (
-    <div>
+    <div className="z-10 ">
       <div className="leading-15 mb-6 text-5xl font-bold">
         How to earn{" "}
         <Icons.bgt className="inline-block drop-shadow-[0_5px_5px_rgba(251,191,36,0.5)] md:h-10 md:w-10" />{" "}

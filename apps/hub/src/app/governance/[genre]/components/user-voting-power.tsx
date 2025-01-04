@@ -111,7 +111,7 @@ export const UserVotingPower = () => {
       )}
       <ActionButton>
         <Button className="w-full" onClick={() => setIsOpen(true)}>
-          Update
+          Delegate
         </Button>
       </ActionButton>
       {!!data?.delegate && (

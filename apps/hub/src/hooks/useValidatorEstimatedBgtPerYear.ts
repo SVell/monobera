@@ -1,21 +1,23 @@
 import { useMemo } from "react";
-import {
-  useBlockTime,
-  usePollValidatorInfo,
-  type Validator,
-} from "@bera/berajs";
+import { useBlockTime, useAllValidators, type Validator } from "@bera/berajs";
 
 export const useValidatorEstimatedBgtPerYear = (
   validator: Validator,
 ): number => {
-  const { validatorCounts } = usePollValidatorInfo();
+  const { data } = useAllValidators();
+
+  const validatorCounts = data?.validators.validators.length ?? 0;
+
   const blockTime = useBlockTime();
   return useMemo(() => {
     if (!validatorCounts || !validator) return 0;
     const estimatedBlocksPerYear = (365 * 24 * 60 * 60) / blockTime;
     const estimatedValidatorBlocksPerYear =
       estimatedBlocksPerYear / validatorCounts;
-    return estimatedValidatorBlocksPerYear * parseFloat(validator.rewardRate);
+    return (
+      estimatedValidatorBlocksPerYear *
+      parseFloat(validator.dynamicData?.rewardRate ?? "0")
+    );
   }, [validatorCounts, validator]);
 };
 
@@ -28,5 +30,9 @@ export const getValidatorEstimatedBgtPerYear = (
   const estimatedBlocksPerYear = (365 * 24 * 60 * 60) / blockTime; // Ensure blockTime is defined somewhere in your code
   const estimatedValidatorBlocksPerYear =
     estimatedBlocksPerYear / validatorCounts;
-  return estimatedValidatorBlocksPerYear * parseFloat(validator.rewardRate);
+
+  return (
+    estimatedValidatorBlocksPerYear *
+    parseFloat(validator.dynamicData?.rewardRate ?? "0")
+  );
 };

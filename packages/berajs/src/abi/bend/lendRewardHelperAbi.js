@@ -6,7 +6,7 @@ export const lendRewardHelperAbi = [
   },
   {
     type: "function",
-    name: "REWARD_TOKEN",
+    name: "REWARD_TOKEN", // TODO: Is this the same bgt staker abi? /packages/berajs/src/abi/pol/bgtStaker.ts
     inputs: [],
     outputs: [
       {

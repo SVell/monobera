@@ -1,6 +1,15 @@
-import { GetPoolHistory, dexClient } from "@bera/graphql";
+import { bexApiGraphqlClient } from "@bera/graphql";
+import {
+  GetPoolHistoricalDataDocument,
+  GetPoolHistoricalDataQuery,
+  GetPoolHistoricalDataQueryVariables,
+  GqlChain,
+  PoolHistoricalDataFragment,
+} from "@bera/graphql/dex/api";
+
 import { BeraConfig } from "~/types";
 
+/** @deprecated */
 export type PoolDayData = {
   date: number;
   tvlUsd: string;
@@ -10,29 +19,25 @@ export type PoolDayData = {
 
 interface getPoolHistoricalDataProps {
   poolId: string;
+  chain: GqlChain;
   config: BeraConfig;
 }
 
 export const getPoolHistoricalData = async ({
   poolId,
+  chain,
   config,
-}: getPoolHistoricalDataProps): Promise<PoolDayData[] | undefined> => {
-  if (!config.subgraphs?.dexSubgraph) {
-    throw new Error(
-      "getPoolHistoricalData: one or more required values missing from config prop: config.endpoints.dexSubgraph",
-    );
-  }
+}: getPoolHistoricalDataProps): Promise<
+  PoolHistoricalDataFragment[] | undefined
+> => {
   if (!poolId) return undefined;
 
-  const res = await dexClient.query({
-    query: GetPoolHistory,
-    variables: {
-      poolId: poolId.toLowerCase(),
-    },
+  const { data } = await bexApiGraphqlClient.query<
+    GetPoolHistoricalDataQuery,
+    GetPoolHistoricalDataQueryVariables
+  >({
+    query: GetPoolHistoricalDataDocument,
+    variables: { poolId, chain },
   });
-
-  return res.data.poolUsages.map((dayData: any) => ({
-    ...dayData,
-    date: Number(dayData.date) / 1000000,
-  }));
+  return data.poolGetSnapshots;
 };

@@ -1,25 +1,25 @@
+import { type Token } from "@bera/berajs";
 import {
-  type BlockRewardStatsByValidators,
-  type Token,
-  type ValidatorBgtStaked,
-} from "@bera/berajs";
-import { type GetValidatorTokenRewardUsagesQuery } from "@bera/graphql/pol";
+  ValidatorStakedBgtsFragment,
+  type BlockRewardStatsByValidatorFragment,
+  type GetValidatorIncentivesReceivedsQuery,
+} from "@bera/graphql/pol/subgraph";
 import { addDays } from "date-fns";
 
 type GroupedValidatorRewardsData = {
-  [timestamp: string]: BlockRewardStatsByValidators;
+  [timestamp: string]: BlockRewardStatsByValidatorFragment;
 };
 
 type GroupedValidatorBgtStakedData = {
-  [timestamp: string]: ValidatorBgtStaked;
+  [timestamp: string]: ValidatorStakedBgtsFragment;
 };
 
 type GroupedValidatorBgtStakedDataDelta = {
-  [timestamp: string]: ValidatorBgtStaked;
+  [timestamp: string]: ValidatorStakedBgtsFragment;
 };
 
 type TokenInformation = Token & {
-  tokenRewarded: string;
+  tokenReceived: string;
   usdValueTokenRewarded: string;
 };
 
@@ -45,21 +45,28 @@ export type GroupedTokenRewardsData = {
 
 const generateValidatorRewardsEmptyData = (
   timestamp: string,
-): BlockRewardStatsByValidators => {
+): BlockRewardStatsByValidatorFragment => {
   return {
     timestamp: timestamp,
-    rewardRate: "0",
-    commissionRate: "0",
+    BGTEmitted: "0",
+    BGTEarned: "0",
+    allTimeBGTEmitted: "0",
+    allTimeBGTEarned: "0",
+    validator: {
+      id: "",
+      publicKey: "",
+      amountDelegated: "0",
+    },
   };
 };
 
 const generateValidatorBgtStakedEmptyData = (
   timestamp: string,
-): ValidatorBgtStaked => {
+): ValidatorStakedBgtsFragment => {
   return {
-    allTimeBgtStaked: "0",
-    bgtStaked: "0",
-    coinbase: "",
+    allTimeBGTStaked: "0",
+    BGTStaked: "0",
+    id: "",
     timestamp: timestamp,
   };
 };
@@ -77,12 +84,12 @@ const generatValidatorTokenRewardsUsageEmptyData = (
 };
 
 export const formatValidatorRewardsData = (
-  data: BlockRewardStatsByValidators[],
+  data: BlockRewardStatsByValidatorFragment[],
   days: number,
 ) => {
   const groupedData = {} as GroupedValidatorRewardsData;
 
-  data.forEach((item: BlockRewardStatsByValidators) => {
+  data.forEach((item) => {
     const timestamp = item.timestamp;
     const dateKey = new Date(parseInt(timestamp) / 1000)
       .toISOString()
@@ -110,20 +117,20 @@ export const formatValidatorRewardsData = (
 };
 
 export const formatValidatorBgtDelegated = (
-  data: ValidatorBgtStaked[],
+  data: ValidatorStakedBgtsFragment[],
   days: number,
 ) => {
   const groupedData = {} as GroupedValidatorBgtStakedData;
 
   let currentBgtTotal = 0;
 
-  data.forEach((item: ValidatorBgtStaked) => {
+  data.forEach((item: ValidatorStakedBgtsFragment) => {
     const timestamp = item.timestamp;
     const dateKey = new Date(parseInt(timestamp) / 1000)
       .toISOString()
       .split("T")[0];
 
-    currentBgtTotal += Number(item.bgtStaked);
+    currentBgtTotal += Number(item.BGTStaked);
     if (!groupedData[dateKey]) {
       groupedData[dateKey] = item;
     }
@@ -149,7 +156,7 @@ export const formatValidatorBgtDelegated = (
 };
 
 export const formatValidatorTokenRewardsUsage = (
-  data: GetValidatorTokenRewardUsagesQuery | undefined,
+  data: GetValidatorIncentivesReceivedsQuery | undefined,
   days: number,
 ) => {
   if (!data)
@@ -161,7 +168,7 @@ export const formatValidatorTokenRewardsUsage = (
   const groupedData = {} as GroupedTokenRewardsUsageData;
   const groupedTokens = {} as GroupedTokenRewardsData;
 
-  data.validatorTokenRewardUsages.forEach((item) => {
+  data.validatorIncentivesReceiveds.forEach((item) => {
     const timestamp = item.timestamp;
     const dateKey = new Date(parseInt(timestamp) / 1000)
       .toISOString()
@@ -173,6 +180,7 @@ export const formatValidatorTokenRewardsUsage = (
         timestamp: timestamp,
         totalTokenRewardedOnTimestamp: 0,
         totalUsdValueTokenRewardedOnTimestamp: 0,
+        // @ts-expect-error
         allTimeUsdValueTokenRewarded: item.allTimeUsdValueTokenRewarded,
       };
     }
@@ -181,29 +189,31 @@ export const formatValidatorTokenRewardsUsage = (
     if (!groupedTokens[address]) {
       groupedTokens[address] = {
         token: item.token as Token,
-        totalTokenRewarded: Number(item.tokenRewarded),
-        totalUsdValueTokenRewarded: Number(item.usdValueTokenRewarded),
+        totalTokenRewarded: Number(item.tokenReceived),
+        // @ts-expect-error
+        totalUsdValueTokenRewarded: Number(item.usdValueTokenRewarded ?? "0"),
       };
     } else {
-      groupedTokens[address].totalTokenRewarded += Number(item.tokenRewarded);
+      groupedTokens[address].totalTokenRewarded += Number(item.tokenReceived);
       groupedTokens[address].totalUsdValueTokenRewarded += Number(
-        item.usdValueTokenRewarded,
+        // @ts-expect-error
+        item.usdValueTokenRewarded ?? "0",
       );
     }
     groupedData[dateKey].tokens.push({
-      ...{
-        ...item.token,
-        address: item.token.address as `0x${string}`,
-      },
-      tokenRewarded: item.tokenRewarded,
-      usdValueTokenRewarded: item.usdValueTokenRewarded,
+      ...item.token,
+      address: item.token.address as `0x${string}`,
+      tokenReceived: item.tokenReceived,
+      // @ts-expect-error
+      usdValueTokenRewarded: item.usdValueTokenRewarded ?? "0",
     });
 
     groupedData[dateKey].totalTokenRewardedOnTimestamp += parseFloat(
-      item.tokenRewarded,
+      item.tokenReceived,
     );
     groupedData[dateKey].totalUsdValueTokenRewardedOnTimestamp += parseFloat(
-      item.usdValueTokenRewarded,
+      // @ts-expect-error
+      item.usdValueTokenRewarded ?? "0",
     );
   });
 
@@ -232,7 +242,7 @@ export const formatValidatorTokenRewardsUsage = (
 };
 
 export const formatValidatorBgtDelegatedDelta = (
-  data: ValidatorBgtStaked[],
+  data: ValidatorStakedBgtsFragment[],
   days: number,
 ) => {
   const groupedData = {} as GroupedValidatorBgtStakedDataDelta;
@@ -240,16 +250,16 @@ export const formatValidatorBgtDelegatedDelta = (
   let delegationIn = 0;
   let delegationOut = 0;
 
-  data.forEach((item: ValidatorBgtStaked) => {
+  data.forEach((item: ValidatorStakedBgtsFragment) => {
     const timestamp = item.timestamp;
     const dateKey = new Date(parseInt(timestamp) / 1000)
       .toISOString()
       .split("T")[0];
 
-    if (Number(item.bgtStaked) > 0) {
-      delegationIn += Number(item.bgtStaked);
+    if (Number(item.BGTStaked) > 0) {
+      delegationIn += Number(item.BGTStaked);
     } else {
-      delegationOut += Number(item.bgtStaked);
+      delegationOut += Number(item.BGTStaked);
     }
     if (!groupedData[dateKey]) {
       groupedData[dateKey] = item;

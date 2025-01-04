@@ -78,7 +78,7 @@ export const useProposalFromTx = (
           calldata: String(creationEvent?.args.calldatas[index]),
         }) satisfies ExecutableCallSubsetFragment,
     ),
-    timelockId: undefined,
+    timelock: undefined,
   } satisfies ProposalWithVotesFragment;
 
   return { ...transactionRes, data: proposal };

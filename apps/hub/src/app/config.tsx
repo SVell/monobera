@@ -1,8 +1,6 @@
 import {
   blockExplorerName,
   blockExplorerUrl,
-  dexName,
-  dexUrl,
   faucetName,
   faucetUrl,
   homepageName,
@@ -49,20 +47,6 @@ export const navItems = [
         icon: <Icons.honeyFav className="h-8 w-8" />,
       },
       {
-        href: lendUrl,
-        type: "external",
-        title: lendName,
-        blurb: "Supply assets and borrow honey",
-        icon: <Icons.bendFav className="h-8 w-8" />,
-      },
-      {
-        href: perpsUrl,
-        type: "external",
-        title: perpsName,
-        blurb: "Trade your favourite pairs",
-        icon: <Icons.berpsFav className="h-8 w-8" />,
-      },
-      {
         href: blockExplorerUrl,
         type: "external",
         title: blockExplorerName,
@@ -75,13 +59,6 @@ export const navItems = [
         title: homepageName,
         blurb: "Explore Berachain and learn more about our vision",
         icon: <Icons.foundationFav className="h-8 w-8" />,
-      },
-      {
-        href: faucetUrl,
-        type: "external",
-        title: faucetName,
-        blurb: "Fund your testnet wallet with BERA tokens",
-        icon: <Icons.faucetFav className="h-8 w-8" />,
       },
     ],
   },

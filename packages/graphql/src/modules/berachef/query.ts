@@ -68,26 +68,6 @@ export const getGlobalCuttingBoard = gql`
   }
 `;
 
-export const getApyInfo = gql`
-  query getGlobalCuttingBoard {
-    globalCuttingBoardWeights {
-      id
-      amount
-      vault {
-        id
-        stakingToken {
-          id
-        }
-      }
-    }
-    globalInfo(id: "global") {
-      totalBgtStaked
-      rewardRate
-      baseRewardRate
-    }
-  }
-`;
-
 export const GetStakingToken = gql`
   query MyQuery($stakingToken: String) {
     vaults(where: { stakingToken: $stakingToken }) {

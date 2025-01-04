@@ -1,9 +1,8 @@
 import { Button } from "@bera/ui/button";
 
-import { Icons } from "@bera/ui/icons";
-import { Input, InputWithLabel } from "@bera/ui/input";
+import { InputWithLabel } from "@bera/ui/input";
 import { TextArea } from "@bera/ui/text-area";
-import { Dispatch, SetStateAction, useCallback, useState } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
 import {
   CustomProposal,
   CustomProposalErrors,
@@ -11,7 +10,6 @@ import {
 } from "~/app/governance/types";
 import {
   checkProposalField,
-  getBodyErrors,
   type useCreateProposal,
 } from "~/hooks/useCreateProposal";
 import { useGovernance } from "../../components/governance-provider";
@@ -33,13 +31,19 @@ export const CreateProposalBody = ({
   const handleNext = useCallback(() => {
     const e: CustomProposalErrors = {};
 
-    e.title = checkProposalField("title", proposal.title);
-    e.description = checkProposalField("description", proposal.description);
-    e.forumLink = checkProposalField(
-      "forumLink",
-      proposal.forumLink,
-      currentTopic.forumLink,
-    );
+    e.title = checkProposalField({
+      fieldOrType: "title",
+      value: proposal.title,
+    });
+    e.description = checkProposalField({
+      fieldOrType: "description",
+      value: proposal.description,
+    });
+    e.forumLink = checkProposalField({
+      fieldOrType: "forumLink",
+      value: proposal.forumLink,
+      baseUrl: currentTopic.forumLink,
+    });
 
     setErrors(e);
 
@@ -114,11 +118,11 @@ export const CreateProposalBody = ({
           }));
           setErrors((errs) => ({
             ...errs,
-            forumLink: checkProposalField(
-              "forumLink",
-              e.target.value,
-              currentTopic.forumLink,
-            ),
+            forumLink: checkProposalField({
+              fieldOrType: "forumLink",
+              value: e.target.value,
+              baseUrl: currentTopic.forumLink,
+            }),
           }));
         }}
       />

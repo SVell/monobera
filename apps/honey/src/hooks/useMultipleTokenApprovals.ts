@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePollAllowances, type Token } from "@bera/berajs";
-
-import { type TokenInput } from "./useMultipleTokenInput";
+import {
+  TokenWithAmount,
+  usePollAllowances,
+  type Token,
+  type TokenInput,
+} from "@bera/berajs";
 import { Address } from "viem";
 
 const useMultipleTokenApprovals = (
@@ -16,7 +19,7 @@ const useMultipleTokenApprovals = (
     .filter((token: TokenInput) => token !== undefined)
     .map((token) => token);
 
-  const { data: allowances } = usePollAllowances({
+  const { data: allowances, refresh } = usePollAllowances({
     spender,
     tokens,
   });
@@ -30,7 +33,7 @@ const useMultipleTokenApprovals = (
           );
           if (
             allowance.formattedAllowance === "0" ||
-            Number(allowance.formattedAllowance) < (token?.amount ?? 0)
+            Number(allowance.formattedAllowance) < Number(token?.amount ?? 0)
           ) {
             return allowance;
           }
@@ -41,7 +44,8 @@ const useMultipleTokenApprovals = (
   }, [allowances]);
 
   return {
-    needsApproval,
+    needsApproval: needsApproval as TokenWithAmount[],
+    refresh,
   };
 };
 

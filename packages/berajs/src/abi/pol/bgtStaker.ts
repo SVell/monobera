@@ -1,459 +1,1034 @@
 export const BGT_STAKER_ABI = [
-  { type: "constructor", inputs: [], stateMutability: "nonpayable" },
   {
-    type: "function",
-    name: "FEE_COLLECTOR",
     inputs: [],
-    outputs: [{ name: "", type: "address", internalType: "address" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "REWARD_TOKEN",
-    inputs: [],
-    outputs: [{ name: "", type: "address", internalType: "contract IERC20" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "STAKE_TOKEN",
-    inputs: [],
-    outputs: [{ name: "", type: "address", internalType: "contract IERC20" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "UPGRADE_INTERFACE_VERSION",
-    inputs: [],
-    outputs: [{ name: "", type: "string", internalType: "string" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "balanceOf",
-    inputs: [{ name: "account", type: "address", internalType: "address" }],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "earned",
-    inputs: [{ name: "account", type: "address", internalType: "address" }],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getReward",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "nonpayable",
+    type: "constructor",
   },
   {
-    type: "function",
-    name: "getRewardForDuration",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "initialize",
-    inputs: [
-      { name: "_bgt", type: "address", internalType: "address" },
-      { name: "_feeCollector", type: "address", internalType: "address" },
-      { name: "_governance", type: "address", internalType: "address" },
-      { name: "_rewardToken", type: "address", internalType: "address" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "lastTimeRewardApplicable",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "lastUpdateTime",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "notifyRewardAmount",
-    inputs: [{ name: "reward", type: "uint256", internalType: "uint256" }],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "owner",
-    inputs: [],
-    outputs: [{ name: "", type: "address", internalType: "address" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "periodFinish",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "proxiableUUID",
-    inputs: [],
-    outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "recoverERC20",
-    inputs: [
-      { name: "tokenAddress", type: "address", internalType: "address" },
-      { name: "tokenAmount", type: "uint256", internalType: "uint256" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "renounceOwnership",
-    inputs: [],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "rewardPerToken",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "rewardPerTokenStored",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "rewardRate",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "rewards",
-    inputs: [{ name: "account", type: "address", internalType: "address" }],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "rewardsDuration",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "setRewardsDuration",
-    inputs: [
-      { name: "_rewardsDuration", type: "uint256", internalType: "uint256" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "stake",
-    inputs: [
-      { name: "account", type: "address", internalType: "address" },
-      { name: "amount", type: "uint256", internalType: "uint256" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "totalSupply",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "transferOwnership",
-    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "undistributedRewards",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "upgradeToAndCall",
-    inputs: [
-      { name: "newImplementation", type: "address", internalType: "address" },
-      { name: "data", type: "bytes", internalType: "bytes" },
-    ],
-    outputs: [],
-    stateMutability: "payable",
-  },
-  {
-    type: "function",
-    name: "userRewardPerTokenPaid",
-    inputs: [{ name: "account", type: "address", internalType: "address" }],
-    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "withdraw",
-    inputs: [
-      { name: "account", type: "address", internalType: "address" },
-      { name: "amount", type: "uint256", internalType: "uint256" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "event",
-    name: "Initialized",
     inputs: [
       {
-        name: "version",
-        type: "uint64",
-        indexed: false,
-        internalType: "uint64",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "OwnershipTransferred",
-    inputs: [
-      {
-        name: "previousOwner",
-        type: "address",
-        indexed: true,
         internalType: "address",
-      },
-      {
-        name: "newOwner",
+        name: "target",
         type: "address",
-        indexed: true,
+      },
+    ],
+    name: "AddressEmptyCode",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "AlreadyInitialized",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "AmountLessThanMinIncentiveRate",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "CannotRecoverIncentiveToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "CannotRecoverRewardToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "CannotRecoverStakingToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "DepositNotMultipleOfGwei",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "DepositValueTooHigh",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "DonateAmountLessThanPayoutAmount",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "Recovered",
-    inputs: [
-      {
-        name: "token",
-        type: "address",
-        indexed: false,
-        internalType: "address",
-      },
-      {
-        name: "amount",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "RewardAdded",
-    inputs: [
-      {
-        name: "reward",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "RewardPaid",
-    inputs: [
-      {
-        name: "account",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-      { name: "to", type: "address", indexed: false, internalType: "address" },
-      {
-        name: "reward",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "RewardsDurationUpdated",
-    inputs: [
-      {
-        name: "newDuration",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "Staked",
-    inputs: [
-      {
-        name: "account",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-      {
-        name: "amount",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "Upgraded",
-    inputs: [
-      {
         name: "implementation",
         type: "address",
-        indexed: true,
-        internalType: "address",
       },
     ],
-    anonymous: false,
+    name: "ERC1967InvalidImplementation",
+    type: "error",
   },
   {
-    type: "event",
-    name: "Withdrawn",
+    inputs: [],
+    name: "ERC1967NonPayable",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "FailedCall",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "IncentiveRateTooHigh",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "IndexOutOfRange",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InsolventReward",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InsufficientDelegateStake",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InsufficientDeposit",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InsufficientSelfStake",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InsufficientStake",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidActivateBoostDelay",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidBaseRate",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidBoostMultiplier",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidCredentialsLength",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidDropBoostDelay",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidInitialization",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidMaxIncentiveTokensCount",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidMinBoostedRewardRate",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidProof",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidPubKeyLength",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidRewardAllocationWeights",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidRewardConvexity",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidRewardRate",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidRewardVaultAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidSignatureLength",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidStartBlock",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidateDefaultRewardAllocation",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvariantCheckFailed",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MaxNumWeightsPerRewardAllocationIsZero",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MinIncentiveRateIsZero",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotAContract",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotApprovedSender",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotBGT",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotBlockRewardController",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotDelegate",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotDistributor",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotEnoughBalance",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotEnoughBoostedBalance",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotEnoughTime",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotFactoryVault",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotFeeCollector",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotGovernance",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotIncentiveManager",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotInitializing",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotNewOperator",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotOperator",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotRootFollower",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotWhitelistedVault",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "OperatorAlreadySet",
+    type: "error",
+  },
+  {
     inputs: [
       {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "OwnableInvalidOwner",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "account",
         type: "address",
+      },
+    ],
+    name: "OwnableUnauthorizedAccount",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "PayoutAmountIsZero",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "RewardAllocationAlreadyQueued",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "RewardAllocationBlockDelayTooLarge",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "RewardCycleNotEnded",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "RewardsDurationIsZero",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+    ],
+    name: "SafeERC20FailedOperation",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "StakeAmountIsZero",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TimestampAlreadyProcessed",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TokenAlreadyWhitelistedOrLimitReached",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TokenNotWhitelisted",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TooManyWeights",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TotalSupplyOverflow",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "UUPSUnauthorizedCallContext",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "slot",
+        type: "bytes32",
+      },
+    ],
+    name: "UUPSUnsupportedProxiableUUID",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "VaultAlreadyExists",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "WithdrawAmountIsZero",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "ZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "ZeroOperatorOnFirstDeposit",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "ZeroPercentageWeight",
+    type: "error",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint64",
+        name: "version",
+        type: "uint64",
+      },
+    ],
+    name: "Initialized",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
+        name: "previousOwner",
+        type: "address",
       },
       {
-        name: "amount",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
       },
     ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
     anonymous: false,
-  },
-  {
-    type: "error",
-    name: "AddressEmptyCode",
-    inputs: [{ name: "target", type: "address", internalType: "address" }],
-  },
-  { type: "error", name: "AlreadyInitialized", inputs: [] },
-  { type: "error", name: "AmountLessThanMinIncentiveRate", inputs: [] },
-  { type: "error", name: "BlockDoesNotExist", inputs: [] },
-  { type: "error", name: "BlockNotInBuffer", inputs: [] },
-  { type: "error", name: "CannotRecoverRewardToken", inputs: [] },
-  { type: "error", name: "CannotRecoverStakingToken", inputs: [] },
-  {
-    type: "error",
-    name: "ERC1967InvalidImplementation",
     inputs: [
-      { name: "implementation", type: "address", internalType: "address" },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
     ],
-  },
-  { type: "error", name: "ERC1967NonPayable", inputs: [] },
-  { type: "error", name: "FailedInnerCall", inputs: [] },
-  { type: "error", name: "InsufficientSelfStake", inputs: [] },
-  { type: "error", name: "InvalidCommission", inputs: [] },
-  { type: "error", name: "InvalidCuttingBoardWeights", inputs: [] },
-  { type: "error", name: "InvalidInitialization", inputs: [] },
-  { type: "error", name: "InvalidMaxIncentiveTokensCount", inputs: [] },
-  { type: "error", name: "InvalidMinter", inputs: [] },
-  { type: "error", name: "InvalidStartBlock", inputs: [] },
-  { type: "error", name: "InvariantCheckFailed", inputs: [] },
-  { type: "error", name: "MaxNumWeightsPerCuttingBoardIsZero", inputs: [] },
-  { type: "error", name: "NoWhitelistedTokens", inputs: [] },
-  { type: "error", name: "NotActionableBlock", inputs: [] },
-  { type: "error", name: "NotApprovedSender", inputs: [] },
-  { type: "error", name: "NotBGT", inputs: [] },
-  { type: "error", name: "NotBlockRewardController", inputs: [] },
-  { type: "error", name: "NotDistributor", inputs: [] },
-  { type: "error", name: "NotEnoughBalance", inputs: [] },
-  { type: "error", name: "NotEnoughTime", inputs: [] },
-  { type: "error", name: "NotFeeCollector", inputs: [] },
-  { type: "error", name: "NotFriendOfTheChef", inputs: [] },
-  { type: "error", name: "NotGovernance", inputs: [] },
-  { type: "error", name: "NotInitializing", inputs: [] },
-  { type: "error", name: "NotOperator", inputs: [] },
-  { type: "error", name: "NotProver", inputs: [] },
-  { type: "error", name: "NotRootFollower", inputs: [] },
-  { type: "error", name: "NotStaker", inputs: [] },
-  { type: "error", name: "NotValidatorOrOperator", inputs: [] },
-  {
-    type: "error",
-    name: "OwnableInvalidOwner",
-    inputs: [{ name: "owner", type: "address", internalType: "address" }],
+    name: "Recovered",
+    type: "event",
   },
   {
-    type: "error",
-    name: "OwnableUnauthorizedAccount",
-    inputs: [{ name: "account", type: "address", internalType: "address" }],
-  },
-  { type: "error", name: "PayoutAmountIsZero", inputs: [] },
-  { type: "error", name: "ProvidedRewardTooHigh", inputs: [] },
-  { type: "error", name: "QueuedCuttingBoardNotFound", inputs: [] },
-  { type: "error", name: "QueuedCuttingBoardNotReady", inputs: [] },
-  { type: "error", name: "RewardCycleNotEnded", inputs: [] },
-  { type: "error", name: "StakeAmountIsZero", inputs: [] },
-  { type: "error", name: "TokenAlreadyWhitelistedOrLimitReached", inputs: [] },
-  { type: "error", name: "TokenNotWhitelisted", inputs: [] },
-  { type: "error", name: "TooManyWeights", inputs: [] },
-  { type: "error", name: "UUPSUnauthorizedCallContext", inputs: [] },
-  {
-    type: "error",
-    name: "UUPSUnsupportedProxiableUUID",
-    inputs: [{ name: "slot", type: "bytes32", internalType: "bytes32" }],
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "reward",
+        type: "uint256",
+      },
+    ],
+    name: "RewardAdded",
+    type: "event",
   },
   {
-    type: "error",
-    name: "Unauthorized",
-    inputs: [{ name: "", type: "address", internalType: "address" }],
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "reward",
+        type: "uint256",
+      },
+    ],
+    name: "RewardPaid",
+    type: "event",
   },
-  { type: "error", name: "VaultAlreadyExists", inputs: [] },
-  { type: "error", name: "WithdrawAmountIsZero", inputs: [] },
-  { type: "error", name: "ZeroAddress", inputs: [] },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newDuration",
+        type: "uint256",
+      },
+    ],
+    name: "RewardsDurationUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "Staked",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "implementation",
+        type: "address",
+      },
+    ],
+    name: "Upgraded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "Withdrawn",
+    type: "event",
+  },
+  {
+    inputs: [],
+    name: "FEE_COLLECTOR",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "UPGRADE_INTERFACE_VERSION",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "balanceOf",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "earned",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getReward",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getRewardForDuration",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_bgt",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_feeCollector",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_governance",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_rewardToken",
+        type: "address",
+      },
+    ],
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "lastTimeRewardApplicable",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "lastUpdateTime",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "reward",
+        type: "uint256",
+      },
+    ],
+    name: "notifyRewardAmount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "periodFinish",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "proxiableUUID",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "tokenAmount",
+        type: "uint256",
+      },
+    ],
+    name: "recoverERC20",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "rewardPerToken",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "rewardPerTokenStored",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "rewardRate",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "rewardToken",
+    outputs: [
+      {
+        internalType: "contract IERC20",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "rewards",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "rewardsDuration",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_rewardsDuration",
+        type: "uint256",
+      },
+    ],
+    name: "setRewardsDuration",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "stake",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "stakeToken",
+    outputs: [
+      {
+        internalType: "contract IERC20",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalSupply",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "undistributedRewards",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "upgradeToAndCall",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "userRewardPerTokenPaid",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "withdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ] as const;

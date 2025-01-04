@@ -8,9 +8,9 @@ import {
   gasTokenName,
   gasTokenSymbol,
   jsonRpcUrl,
-  publicJsonRpcUrl,
   multicallAddress,
   multicallCreationBlock,
+  publicJsonRpcUrl,
 } from "@bera/config";
 import { EvmNetwork } from "@dynamic-labs/sdk-react-core";
 import { type Chain } from "viem";
@@ -86,11 +86,15 @@ export const wagmiConfig = createConfig({
 
   batch: {
     /**
+     * Undefined multicall address will disable batching
+     *
      * @see https://viem.sh/docs/clients/public#batchmulticallwait-optional
      */
-    multicall: {
-      wait: 10,
-    },
+    multicall: multicallAddress
+      ? {
+          wait: 10,
+        }
+      : undefined,
   },
   transports: {
     [defaultBeraNetworkConfig.chain.id]: http(

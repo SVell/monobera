@@ -15,7 +15,7 @@ const _AddLiquidityStaticPage = () => {
   const searchParams = useSearchParams();
   const poolId = searchParams.get("address");
 
-  if (!poolId || !isAddress(poolId)) {
+  if (!poolId) {
     return notFound();
   }
   return <AddLiquidityContent poolId={poolId} />;

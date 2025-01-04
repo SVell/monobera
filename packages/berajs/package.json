@@ -23,6 +23,7 @@
     "@bera/config": "workspace:*",
     "@bera/graphql": "workspace:*",
     "@bera/wagmi": "workspace:*",
+    "@berachain-foundation/berancer-sdk": "^0.29.0",
     "@dynamic-labs/sdk-react-core": "^2.5.2",
     "@metamask/browser-passworder": "^5.0.0",
     "@tanstack/react-query": "^5.26.3",
@@ -68,6 +69,10 @@
     "./actions": {
       "types": "./dist/actions/index.d.ts",
       "import": "./dist/actions/index.js"
+    },
+    "./abi": {
+      "types": "./dist/abi/index.d.ts",
+      "import": "./dist/abi/index.js"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",

@@ -51,8 +51,10 @@ interface IUseTxn {
 interface UseTxnApi {
   write<
     TAbi extends Abi | any[] = Abi,
-    TFunctionName extends
-      ContractFunctionName<TAbi> = ContractFunctionName<TAbi>,
+    TFunctionName extends ContractFunctionName<
+      TAbi,
+      "payable" | "nonpayable"
+    > = ContractFunctionName<TAbi>,
   >(props: IContractWrite<TAbi, TFunctionName>): void;
   fundWrite: (props: IValueSend) => void;
   isLoading: boolean;
@@ -64,6 +66,7 @@ interface UseTxnApi {
   isFundingSuccess: boolean;
   isFundingError: boolean;
   ModalPortal: ReactElement<any, any>;
+  reset: () => void;
 }
 
 const DURATION = 3000;
@@ -121,7 +124,7 @@ export const useTxn = ({
 
   const { captureException, track } = useAnalytics();
 
-  const { write, isLoading, isSubmitting, isSuccess, isError } =
+  const { write, isLoading, isSubmitting, isSuccess, isError, reset } =
     useBeraContractWrite({
       /**
        * Error callback function executed when a transaction encounters an error.
@@ -538,5 +541,6 @@ export const useTxn = ({
     isFundingSuccess,
     isFundingError,
     ModalPortal: memoizedModalPortal as ReactElement<any, any>,
+    reset,
   };
 };

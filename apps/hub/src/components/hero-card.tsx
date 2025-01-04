@@ -18,7 +18,7 @@ export const HeroCard: React.FC<HeroCardProps> = ({
 }) => {
   return (
     <Link
-      className="group flex w-full flex-1 flex-col justify-end rounded-xl border-2 border-border transition duration-300 hover:border-accent"
+      className="bg-background group z-10 flex w-full flex-1  flex-col justify-end rounded-xl border-2 border-border transition duration-300 hover:border-accent"
       href={link}
       target="_self"
     >
@@ -55,23 +55,32 @@ export const HeroCards: React.FC = () => {
     },
     {
       image: `${cloudinaryUrl}/Station/rgytgfadryf0gotnwkdi.jpg`,
-      title: "Rewards Vaults",
+      title: "Reward Vaults",
       subtitle: "Deposit receipt tokens to earn rewards",
       link: "/vaults",
     },
     {
       image: `${cloudinaryUrl}/Station/ug8exzswd7l3acphln0g.jpg`,
-      title: "Delegate",
-      subtitle: "Delegate BGT to validators",
+      title: "Boost",
+      subtitle: "Boost BGT to validators",
       link: "/validators",
     },
   ];
 
   return (
-    <div className=" grid  w-full auto-rows-[330px] grid-cols-1 justify-around gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card, index) => (
-        <HeroCard key={index} {...card} />
-      ))}
+    <div className="w-full">
+      <Image
+        src={`${cloudinaryUrl}/Station/ispp5eq38llprtravgjc`}
+        alt="top-bee-path"
+        className="absolute hidden md:block left-0 z-0 w-full"
+        width={2100}
+        height={100}
+      />
+      <div className="z-1 grid w-full auto-rows-[330px] grid-cols-1 justify-around gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {cards.map((card, index) => (
+          <HeroCard key={index} {...card} />
+        ))}
+      </div>
     </div>
   );
 };

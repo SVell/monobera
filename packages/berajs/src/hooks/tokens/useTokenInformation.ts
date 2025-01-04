@@ -20,19 +20,28 @@ export type UseTokenInformationResponse = DefaultHookReturnType<
   Token | undefined
 >;
 
-export type useTokenInformationArgs = {
+export type UseTokenInformationArgs = {
   address: string | undefined;
 };
 export const useTokenInformation = (
-  args: useTokenInformationArgs,
+  args: UseTokenInformationArgs,
   options?: DefaultHookOptions,
 ): UseTokenInformationResponse => {
   const publicClient = usePublicClient();
   const { config: beraConfig } = useBeraJs();
-  const QUERY_KEY = args?.address ? [args.address, publicClient] : null;
+  const QUERY_KEY =
+    args?.address && publicClient ? [args.address, publicClient] : null;
   const swrResponse = useSWRImmutable<Token | undefined>(
     QUERY_KEY,
     async () => {
+      if (args?.address === nativeTokenAddress) {
+        return {
+          address: nativeTokenAddress,
+          decimals: gasTokenDecimals,
+          name: gasTokenName,
+          symbol: gasTokenSymbol,
+        } satisfies Token;
+      }
       if (!args?.address || !isAddress(args.address, { strict: false })) {
         throw new Error("Invalid address");
       }

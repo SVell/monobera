@@ -76,11 +76,11 @@ export const DelegatedAddressTable = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <span className="text-md font-semibold">Delegated Addresses</span>
+      <span className="text-md font-semibold">Boosted Addresses</span>
 
       <Tabs className="mb-4" defaultValue="delegated">
         <TabsList variant="ghost" className="mb-4">
-          <TabsTrigger value="delegated">Top 10 Delegated</TabsTrigger>
+          <TabsTrigger value="delegated">Top 10 Boosts</TabsTrigger>
           <TabsTrigger value="queued">Top 10 Queued</TabsTrigger>
         </TabsList>
         <TabsContent value="delegated">

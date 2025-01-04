@@ -11,14 +11,25 @@ export type Token = {
   decimals: number;
   symbol: string;
   name: string;
+  totalSupply?: string;
   usdValue?: string;
   beraValue?: string;
   weight?: number;
+  base64?: string;
 };
+
+export interface TokenWithAmount extends Token {
+  amount: string;
+}
 
 export interface BalanceToken extends Token {
   balance: bigint;
   formattedBalance: string;
+}
+
+export interface TokenInput extends Token {
+  amount: string;
+  exceeding: boolean;
 }
 
 export interface SwapRequest {
@@ -112,4 +123,12 @@ export interface IProvision {
 
 export interface IUserPool extends PoolV2 {
   userPosition: IUserPosition | undefined;
+}
+
+export enum PoolCreationStep {
+  POOL_TYPE = "Pool Type",
+  SELECT_TOKENS = "Select Tokens",
+  DEPOSIT_LIQUIDITY = "Deposit Liquidity",
+  SET_PARAMETERS = "Set Parameters",
+  SET_INFO = "Set Info",
 }

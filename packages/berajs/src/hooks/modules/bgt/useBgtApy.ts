@@ -1,8 +1,6 @@
 import useSWR from "swr";
 import { Address } from "viem";
 
-import { getBgtApy } from "~/actions/bgt/getBgtApy";
-import { useBeraJs, useBlockTime } from "~/contexts";
 import POLLING from "~/enum/polling";
 import { DefaultHookOptions, DefaultHookReturnType } from "~/types/global";
 
@@ -21,17 +19,12 @@ export const useBgtApy = (
   options?: DefaultHookOptions,
 ): DefaultHookReturnType<string | undefined> => {
   const QUERY_KEY = ["bgtApy", args.receiptTokenAddress, args.tvlInHoney];
-  const { config: beraConfig } = useBeraJs();
-  const blockTime = useBlockTime();
+
   const swrResponse = useSWR<string | undefined>(
     QUERY_KEY,
     async () => {
-      return getBgtApy({
-        blockTime,
-        receiptTokenAddress: args.receiptTokenAddress,
-        tvlInHoney: args.tvlInHoney,
-        config: options?.beraConfigOverride ?? beraConfig,
-      });
+      // This once used to work, but has been removed to avoid showing untested apy
+      return "0";
     },
     {
       ...options,

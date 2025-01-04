@@ -4,3 +4,6 @@
 [submodule "packages/b-sdk"]
 	path = packages/b-sdk
 	url = https://github.com/berachain/berancer-sdk.git
+[submodule "secrets"]
+	path = secrets
+	url = git@github.com:berachain/internal-dapps-env.git

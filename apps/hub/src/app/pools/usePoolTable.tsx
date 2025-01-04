@@ -1,12 +1,18 @@
-import { useState } from "react";
-import { useBgtInflation, type PoolV2 } from "@bera/berajs";
+import { useMemo, useState } from "react";
+import {
+  ADDRESS_ZERO,
+  useBgtInflation,
+  useIsWhitelistedVault,
+  useRewardVaultsFromTokens,
+} from "@bera/berajs";
+import { MinimalPoolInListFragment } from "@bera/graphql/dex/api";
 import {
   DataTableColumnHeader,
   FormattedNumber,
   useAsyncTable,
 } from "@bera/shared-ui";
+
 import { PoolSummary } from "../../components/pools-table-columns";
-import { MinimalPoolInListFragment } from "@bera/graphql/dex/api";
 import { usePools } from "./usePools";
 
 export const usePoolTable = ({
@@ -22,7 +28,7 @@ export const usePoolTable = ({
   const [search, setSearch] = useState("");
   const [keyword, setKeyword] = useState("");
 
-  const handleEnter = (e: any) => {
+  const handleEnter: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
       setKeyword(search);
     }
@@ -35,6 +41,32 @@ export const usePoolTable = ({
   } = usePools({ keyword });
 
   const pools = userPoolsOnly ? walletPools : allPools;
+
+  // Fetch reward vault addresses from token addresses
+  const tokenAddresses = useMemo(
+    () => pools?.map((pool) => pool.address) || [],
+    [pools],
+  );
+
+  // Extract vault addresses from the token addresse and fetch the whitelist statuses for all of those vaults
+  const { data: rewardVaults } = useRewardVaultsFromTokens({
+    tokenAddresses,
+  });
+
+  const vaultAddresses = useMemo(
+    () => Object.values(rewardVaults ?? {}).filter((v) => v !== ADDRESS_ZERO),
+    [rewardVaults],
+  );
+
+  const { data: whitelistedVaults } = useIsWhitelistedVault(vaultAddresses);
+
+  // Map vault whitelist status
+  const whitelistStatusMap = useMemo(() => {
+    return new Map(
+      whitelistedVaults?.map((vault) => [vault.address, vault.isWhitelisted]) ||
+        [],
+    );
+  }, [whitelistedVaults]);
 
   const table = useAsyncTable<MinimalPoolInListFragment>({
     data: pools ?? [],
@@ -53,22 +85,38 @@ export const usePoolTable = ({
           <DataTableColumnHeader
             column={column}
             className="flex items-center gap-1"
-            // tooltip={"Base and Quote assets in the liquidity pool."}
             title={"Pool Composition"}
           />
         ),
-        cell: ({ row }) => <PoolSummary pool={row.original} />,
+        cell: ({ row }) => {
+          const rewardVault =
+            rewardVaults?.[row.original.address.toLowerCase()];
+          const isWhitelistedVault = rewardVault
+            ? whitelistedVaults?.some(
+                (vault) =>
+                  vault.address.toLowerCase() === rewardVault.toLowerCase() &&
+                  vault.isWhitelisted,
+              ) ?? false
+            : false;
+
+          return (
+            <div className="flex items-center gap-2">
+              <PoolSummary
+                pool={row.original}
+                isWhitelistedVault={isWhitelistedVault}
+              />
+            </div>
+          );
+        },
         enableSorting: false,
         enableHiding: false,
-        // maxSize: 250,
-        minSize: 280,
+        minSize: 320,
       },
       {
         accessorKey: "totalLiquidity",
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            // tooltip="Total amount of assets currently locked in the Pool, valued in HONEY"
             title="TVL"
             className="min-w-[95px]"
           />
@@ -98,8 +146,7 @@ export const usePoolTable = ({
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Fees"
-            // tooltip="Total trading fees this pool has generated in the last 24 hours, valued in HONEY"
+            title="Fees (24h)"
             className="whitespace-nowrap"
           />
         ),
@@ -129,8 +176,7 @@ export const usePoolTable = ({
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Volume"
-            // tooltip="Total trading or transaction volume in the last 24 hours"
+            title="Volume (24h)"
             className="whitespace-nowrap"
           />
         ),
@@ -161,17 +207,15 @@ export const usePoolTable = ({
           <DataTableColumnHeader
             column={column}
             title="APR"
-            // tooltip={apyTooltipText()}
             className="whitespace-nowrap"
           />
         ),
         cell: ({ row }) => {
-          const { data: bgtInflation } = useBgtInflation();
           return (
             <div
               className={`flex items-center justify-start text-sm ${
                 row.original.dynamicData.aprItems?.at(0)?.apr === 0
-                  ? "text-muted-foreground"
+                  ? "text-info-foreground"
                   : "text-warning-foreground"
               }`}
             >
@@ -197,27 +241,6 @@ export const usePoolTable = ({
           );
         },
       },
-      // {
-      //   accessorKey: "btns",
-      //   header: ({ column }) => (
-      //     <DataTableColumnHeader
-      //       column={column}
-      //       title="Actions"
-      //       className="text-center"
-      //     />
-      //   ),
-      //   cell: ({ row }) => (
-      //     <Link
-      //       href={getPoolAddLiquidityUrl(row.original)}
-      //       onClick={(e) => e.stopPropagation()}
-      //     >
-      //       <Button variant={"outline"} className="flex items-center gap-1">
-      //         <Icons.add className="h-5 w-5" /> Add
-      //       </Button>
-      //     </Link>
-      //   ),
-      //   enableSorting: false,
-      // },
     ],
   });
 

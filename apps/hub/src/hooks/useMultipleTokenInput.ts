@@ -1,10 +1,5 @@
 import { useEffect, useReducer, type Reducer } from "react";
-import { type Token } from "@bera/berajs";
-
-export interface TokenInput extends Token {
-  amount: string;
-  exceeding: boolean;
-}
+import { type Token, type TokenInput } from "@bera/berajs";
 
 interface IState {
   tokens: TokenInput[];

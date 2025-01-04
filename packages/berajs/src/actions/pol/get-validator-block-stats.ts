@@ -1,12 +1,12 @@
 import { bgtClient } from "@bera/graphql";
 import {
   GetValidatorBlockStats,
+  GetValidatorBlockStatsQueryVariables,
   type GetValidatorBlockStatsQuery,
-} from "@bera/graphql/pol";
+} from "@bera/graphql/pol/subgraph";
 import { Address } from "viem";
 
 import { type BeraConfig } from "~/types";
-import { formatDaysToTimestamps } from "~/utils";
 
 export const getValidatorBlockStats = async ({
   config,
@@ -20,7 +20,10 @@ export const getValidatorBlockStats = async ({
       throw new Error("pol subgraph uri is not found in config");
     }
 
-    const result = await bgtClient.query<GetValidatorBlockStatsQuery>({
+    const result = await bgtClient.query<
+      GetValidatorBlockStatsQuery,
+      GetValidatorBlockStatsQueryVariables
+    >({
       query: GetValidatorBlockStats,
       variables: {
         address: address.toLowerCase(),
@@ -29,7 +32,7 @@ export const getValidatorBlockStats = async ({
 
     return result.data;
   } catch (e) {
-    console.error("GetValidatorBlockRewardStats:", e);
+    console.error("GetValidatorBlockStats:", e);
     return undefined;
   }
 };

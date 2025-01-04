@@ -26,7 +26,6 @@ interface Call {
 /**
  * Returns the amount of BGT queued up to be used by an account to boost with all validator.
  */
-
 export const getUserBoostedQueue = async ({
   account,
   validatorAddressList,

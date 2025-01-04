@@ -16,10 +16,8 @@ export const StatusAction = ({
   proposal: ProposalWithVotesFragment;
   userVote: Vote | false | undefined;
 }) => {
-  const status = proposal.status;
-
   const { data: proposalTimelockState } = useProposalTimelockState({
-    proposalTimelockId: proposal.timelockId,
+    proposalTimelockId: proposal.timelock?.id,
     timelockAddress: governanceTimelockAddress,
   });
 
@@ -27,22 +25,24 @@ export const StatusAction = ({
     return null;
   }
 
+  const status =
+    proposal.status === ProposalStatus.PendingExecution &&
+    proposal.queueEnd === null &&
+    proposal.queueStart === null &&
+    proposalTimelockState !== "ready"
+      ? ProposalStatus.InQueue
+      : proposal.status;
+
   return (
     <div className="flex items-center gap-3 font-medium">
       {status === ProposalStatus.PendingExecution ||
       proposalTimelockState === "ready" ? (
         <ExecuteButton proposal={proposal} title={proposal.title || ""} />
-      ) : (
-        status === ProposalStatus.InQueue && (
-          <CancelButton
-            proposal={proposal}
-            proposalTimelockId={proposal.timelockId}
-          />
-        )
-      )}
-      {status === ProposalStatus.Pending && (
-        <CancelButton proposal={proposal} />
-      )}
+      ) : null}
+      <CancelButton
+        proposal={proposal}
+        proposalTimelockId={proposal.timelock?.id}
+      />
       {status === ProposalStatus.Active && (
         <VoteDialog
           proposal={proposal}
